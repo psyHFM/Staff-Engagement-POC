@@ -1,0 +1,36 @@
+project_constitution:
+  version: 1.0.0
+  last_updated: 2026-06-22
+  objective: "Staff-Engagement-POC"
+
+  tech_stack:
+    backend:
+      runtime:
+        language: "Java"
+        version: "21"
+      framework:
+        core: "Spring Boot"
+        security: ["JWT", "Spring Security"]
+        persistence: ["Spring Data JPA", "Hibernate"]
+      build_system: "Maven"
+      database_migration: "Liquibase"
+      utilities: ["Lombok"]
+
+    database:
+      engine: "PostgreSQL"
+      version: "latest"
+
+    frontend:
+      framework:
+        name: "Angular"
+        version: "22.0.2"
+      reactive_programming: "RxJS"
+      ui_assets: ["PrimeIcons"]
+
+  infrastructure:
+    orchestration: "Docker Compose"
+    deployment_target: "Containerized"
+
+  constraints:
+    frontend_style_guide: ".claude/angular-style-guide.md"
+    backend_conventions: "Standard Spring Boot / Maven conventions"
