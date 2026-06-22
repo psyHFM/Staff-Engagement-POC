@@ -1,0 +1,40 @@
+backend_architecture:
+  version: 1.0.0
+  last_updated: 2026-06-22
+
+  system_type: "Modular Monolith"
+
+  modularization:
+    structure: "Package-based Modules"
+    boundary_enforcement:
+      tool: "ArchUnit"
+      policy: "Strict package dependency rules (no illegal cross-module imports)"
+    communication:
+      primary_method: "Direct Service Calls"
+      style: "Synchronous"
+    api_distribution:
+      controller_placement: "Module-Specific"
+      strategy: "Each module exposes its own REST endpoints"
+
+  internal_module_design:
+    pattern: "Traditional Layered Architecture"
+    layers:
+      - "Web/API (Controllers)"
+      - "Business/Service (Logic)"
+      - "Persistence/Data (Repositories)"
+    domain_model:
+      style: "Anemic Domain Model"
+      logic_placement: "Service Layer"
+
+  persistence_strategy:
+    isolation: "Logical Isolation"
+    policy: "Modules may only access tables assigned to their specific domain (Schema-per-module logic)"
+    transaction_model:
+      type: "Cross-Module Transactions"
+      mechanism: "Standard Spring @Transactional"
+      scope: "Atomic operations across multiple modules are permitted for POC simplicity"
+
+  constraints:
+    - "No direct repository access from the Web layer (must go through Service)"
+    - "No circular dependencies between modules"
+    - "Cross-module communication must occur only via Service interfaces"

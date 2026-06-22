@@ -1,0 +1,39 @@
+frontend_state:
+  version: 1.0.0
+  last_updated: 2026-06-22
+
+  primary_mechanism:
+    tool: "Angular Signals"
+    distribution: "Service-Based State"
+    flow_pattern: "Unidirectional Data Flow"
+
+  state_hierarchy:
+    local_state:
+      tool: "component-level signals"
+      usage: "Transient UI state (e.g., loading spinners, open/closed toggles)"
+    global_state:
+      tool: "Root-level State Services"
+      usage: "Shared domain data (e.g., currentUser, activeProject, systemSettings)"
+
+  async_integration:
+    pipeline: "RxJS -> Signal"
+    method: "toSignal()"
+    description: "Use RxJS for data fetching streams and convert them to Signals for UI consumption."
+
+  side_effects:
+    placement: "State Service Handlers"
+    logic: "The state service is responsible for calling the API and updating the associated signal."
+    example: "stateService.updateUser(data) { this.api.put(data).subscribe(() => this.user.set(updated)); }"
+
+  derived_state:
+    mechanism: "Pure computed()"
+    policy: "Any state that can be calculated from other signals must use computed() to avoid manual synchronization errors."
+
+  persistence:
+    strategy: "In-Memory Only"
+    policy: "No state persistence across refreshes for the POC; state is reset on page load."
+
+  constraints:
+    - "Components must not update global state signals directly (must call a method on the state service)"
+    - "Avoid using BehaviorSubjects if a Signal can achieve the same result"
+    - "Derived state must never be set manually via .set() or .update()"
