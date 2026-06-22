@@ -1,0 +1,53 @@
+api_standards:
+  version: 1.0.0
+  last_updated: 2026-06-22
+
+  architecture:
+    style: "REST"
+    versioning:
+      strategy: "URL Path"
+      prefix: "/api/v1"
+    casing:
+      urls: "kebab-case"
+      json_keys: "camelCase"
+
+  responses:
+    wrapping: "Unwrapped"
+    content_type: "application/json"
+    date_time_format: "ISO 8601"
+    null_handling: "Exclude Nulls"
+    status_codes: "Strict Semantic"
+
+  error_handling:
+    structure: "Uniform Error Envelope"
+    envelope_schema:
+      timestamp: "ISO 8601"
+      status: "Integer (HTTP Status)"
+      error: "String (Standard HTTP Error Name)"
+      message: "String (Detailed error description)"
+      path: "String (Request URI)"
+
+  data_retrieval:
+    pagination:
+      strategy: "Offset-based"
+      params:
+        offset: "offset"
+        limit: "limit"
+    filtering:
+      strategy: "Simple Query Params"
+      example: "/resource?field1=value1&field2=value2"
+    sorting:
+      strategy: "Standard Query Param"
+      format: "sort=field,direction"
+      example: "/resource?sort=createdAt,desc"
+    limits:
+      ceiling: "Flexible"
+      default_limit: 20
+
+  security:
+    authentication:
+      mechanism: "Bearer JWT"
+      header: "Authorization: Bearer <token>"
+    authorization:
+      model: "RBAC (Role-Based Access Control)"
+      enforcement: "Spring Security @PreAuthorize"

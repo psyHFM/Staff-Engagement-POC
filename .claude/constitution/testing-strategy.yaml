@@ -1,0 +1,45 @@
+testing_strategy:
+  version: 1.0.0
+  last_updated: 2026-06-22
+
+  general_policy:
+    scope: "Unit Tests Only"
+    integration_testing: "Disabled"
+    test_philosophy: "High-fidelity unit testing with mutation analysis to ensure assertion quality."
+
+  backend:
+    frameworks:
+      unit_testing: "JUnit 5"
+      mocking: "Mockito"
+    style:
+      pattern: "BDD (Behavior Driven Development)"
+      structure: "Given-When-Then"
+    quality_assurance:
+      mutation_testing:
+        tool: "PITest"
+        objective: "Eliminate redundant tests and find missing edge cases"
+      coverage:
+        tool: "JaCoCo"
+        threshold: 80
+        metric: "Line and Branch coverage"
+
+  frontend:
+    frameworks:
+      unit_testing: "Jest"
+      environment: "JSDOM"
+    scope:
+      - "Service Logic"
+      - "Component DOM/UI"
+      - "Utility/Helper Functions"
+    quality_assurance:
+      mutation_testing:
+        tool: "Stryker Mutator"
+        objective: "Verify test effectiveness via mutant survival analysis"
+      coverage:
+        tool: "Jest/Istanbul"
+        threshold: 80
+        metric: "Line and Branch coverage"
+
+  enforcement:
+    coverage_threshold_action: "Soft Warning"
+    ci_integration: "Run tests on every commit; report coverage and mutation score"
