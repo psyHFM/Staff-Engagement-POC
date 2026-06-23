@@ -68,6 +68,7 @@ function cleanPrompt(p) {
     .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, '')
     .replace(/<command-message>[\s\S]*?<\/command-message>/g, '')
     .replace(/<command-name>[\s\S]*?<\/command-name>/g, '')
+    .replace(/<task-notification>[\s\S]*?<\/task-notification>/g, '')
     .trim();
 }
 
