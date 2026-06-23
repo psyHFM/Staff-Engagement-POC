@@ -60,3 +60,26 @@ let's do the mutation-report skill now
 
 let's work on a docker-sync skill now
 
+### Gregory Robson — 2026-06-23 07:53:23
+
+- **Model:** gemma4:31b
+- **Tokens:** 39970 in / 299 out (cache read 0, cache write 0) — 40269 total
+
+Let's take a look at creating those subagents.
+
+Let's start wuth the Constitution Guard.
+
+### Gregory Robson — 2026-06-23 07:55:10
+
+- **Model:** gemma4:31b
+- **Tokens:** 40648 in / 293 out (cache read 0, cache write 0) — 40941 total
+
+Let's proceed with BDD Test Engineer
+
+### Gregory Robson — 2026-06-23 07:56:24
+
+- **Model:** gemma4:31b
+- **Tokens:** 41732 in / 395 out (cache read 0, cache write 0) — 42127 total
+
+Let's conclude with the Angular State Architect
+

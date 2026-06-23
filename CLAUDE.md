@@ -24,6 +24,11 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
 - **Modular Monolith**: Respect package-based module boundaries. No illegal cross-module imports.
 - **Testing First**: Implement unit tests (BDD style) for all business logic. Note: Integration testing is explicitly disabled.
 - **Casing**: Strict adherence to `kebab-case` for URLs and `camelCase` for JSON/Java.
+## 🤖 Subagents
+- **Constitution Guard**: (Defined in `.claude/personas/constitution-guard.md`) The absolute authority auditor. Used to "Red Team" plans and code against the Constitution YAMLs.
+- **BDD Test Engineer**: (Defined in `.claude/personas/bdd-test-engineer.md`) Specialist in Gherkin-style tests and mutation-driven quality.
+- **Angular State Architect**: (Defined in `.claude/personas/angular-state-architect.md`) Specialist in Signals and unidirectional data flow.
+
 ## 🚀 Custom Skills
 - `/constitution-audit`: Runs `.claude/skills/constitution-audit.sh` to gather the project constitution and current diff, then audits the changes for compliance.
   - **Checklist**:
