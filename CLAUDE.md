@@ -26,7 +26,7 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
 - **Casing**: Strict adherence to `kebab-case` for URLs and `camelCase` for JSON/Java.
 ## 🤖 Subagents
 - **Constitution Guard**: (Defined in `.claude/personas/constitution-guard.md`) The absolute authority auditor. Used to "Red Team" plans and code against the Constitution YAMLs.
-- **BDD Test Engineer**: (TBD) Specialist in Gherkin-style tests and mutation-driven quality.
+- **BDD Test Engineer**: (Defined in `.claude/personas/bdd-test-engineer.md`) Specialist in Gherkin-style tests and mutation-driven quality.
 - **Angular State Architect**: (TBD) Specialist in Signals and unidirectional data flow.
 
 ## 🚀 Custom Skills
