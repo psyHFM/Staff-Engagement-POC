@@ -225,6 +225,10 @@ what are other decisions i could be missing out on before we propose? like what 
 > **Tokens:** `115,509` in / `566` out · cache read `0` / write `0` · **116,075 total**
 
 Base directory for this skill: C:\myworkbench\projects\Staff-Engagement-POC\.claude\skills\openspec-propose
+### Gregory Robson — 2026-06-23 15:43:04
+
+> **Model:** `gemma4:31b`  
+> **Tokens:** `47,961` in / `219` out · cache read `0` / write `0` · **48,180 total**
 
 Propose a new change - create the change and generate all artifacts in one step.
 
@@ -242,6 +246,11 @@ When ready to implement, run /opsx:apply
 **Steps**
 
 1. **If no clear input provided, ask what they want to build**
+**Input**: The argument after `/opsx:propose` is the change name (kebab-case), OR a description of what the user wants to build.
+
+**Steps**
+
+1. **If no input provided, ask what they want to build**
 
    Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
    > "What change do you want to work on? Describe what you want to build or fix."
@@ -308,6 +317,7 @@ After completing all artifacts, summarize:
 - List of artifacts created with brief descriptions
 - What's ready: "All artifacts created! Ready for implementation."
 - Prompt: "Run `/opsx:apply` or ask me to implement to start working on the tasks."
+- Prompt: "Run `/opsx:apply` to start implementing."
 
 **Artifact Creation Guidelines**
 
@@ -491,4 +501,7 @@ This skill supports the "actions on a change" model:
 
 
 ARGUMENTS: phase-1-employee — apply ONLY Group 1 (tasks 1.1–1.7: the shared-kernel Model B coordination). Implement on the current branch chore/phase-1-shared-kernel-model-b. Do NOT start Group 2 or any employee-module code.
+ARGUMENTS: I am working on phase 3. Use the entire consitution for context. Create the plan for the workload of phase 3 (Task). 
+
+Use AskUserQuestions as much as needed for clarity
 
