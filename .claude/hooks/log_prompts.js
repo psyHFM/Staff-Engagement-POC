@@ -118,12 +118,14 @@ function parseTranscript(transcriptPath) {
   const cacheWrite = usage.cache_creation_input_tokens || 0;
   const total = inTok + outTok + cacheRead + cacheWrite;
 
-  const ts = new Date().toISOString().replace('T', ' ').replace(/\..+$/, '');
+  // Local time as UTC+2 (project timezone) — avoid host locale variance.
+  const ts = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().replace('T', ' ').replace(/\..+$/, '');
+  const fmt = (n) => Number(n).toLocaleString('en-US');
   const entry =
     `### ${gitName} — ${ts}\n` +
     `\n` +
-    `- **Model:** ${model}\n` +
-    `- **Tokens:** ${inTok} in / ${outTok} out (cache read ${cacheRead}, cache write ${cacheWrite}) — ${total} total\n` +
+    `> **Model:** \`${model}\`  \n` +
+    `> **Tokens:** \`${fmt(inTok)}\` in / \`${fmt(outTok)}\` out · cache read \`${fmt(cacheRead)}\` / write \`${fmt(cacheWrite)}\` · **${fmt(total)} total**\n` +
     `\n` +
     `${cleanPrompt(lastUserPrompt)}\n\n`;
 

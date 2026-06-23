@@ -1,0 +1,3 @@
+# Shared team prompt log — concurrent devs append entries, so keep both
+# sides on merge instead of raising a conflict.
+Prompts.md merge=union
