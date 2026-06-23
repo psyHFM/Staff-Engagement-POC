@@ -327,4 +327,18 @@ Continue the conversation from where it left off without asking the user any fur
 <summary>Monitor event: "docker compose build completion/failure"</summary>
 <event>#11 DONE 3.7s</event>
 </task-notification>
+### Hendrik Muller — 2026-06-23 14:02:18
+
+> **Model:** `glm-5.2`  
+> **Tokens:** `66,306` in / `327` out · cache read `0` / write `0` · **66,633 total**
+
+help me do ATSE1-8 with openspec do this on new branch
+
+
+### Hendrik Muller — 2026-06-23 14:05:58
+
+> **Model:** `glm-5.2`  
+> **Tokens:** `77,633` in / `178` out · cache read `0` / write `0` · **77,811 total**
+
+the prompt hook recorded something other than the prompt i used
 
