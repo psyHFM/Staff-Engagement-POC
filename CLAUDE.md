@@ -27,7 +27,7 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
 ## 🤖 Subagents
 - **Constitution Guard**: (Defined in `.claude/personas/constitution-guard.md`) The absolute authority auditor. Used to "Red Team" plans and code against the Constitution YAMLs.
 - **BDD Test Engineer**: (Defined in `.claude/personas/bdd-test-engineer.md`) Specialist in Gherkin-style tests and mutation-driven quality.
-- **Angular State Architect**: (TBD) Specialist in Signals and unidirectional data flow.
+- **Angular State Architect**: (Defined in `.claude/personas/angular-state-architect.md`) Specialist in Signals and unidirectional data flow.
 
 ## 🚀 Custom Skills
 - `/constitution-audit`: Runs `.claude/skills/constitution-audit.sh` to gather the project constitution and current diff, then audits the changes for compliance.
