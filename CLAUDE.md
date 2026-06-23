@@ -34,3 +34,13 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
     - Frontend State (Signals, toSignal, computed, State Services)
   - **Output**: Compliant ✅, Warnings ⚠️, Violations ❌, and Remediation 🛠️.
 
+- `/api-check`: Runs `.claude/skills/api-check.sh` to audit REST controllers and DTOs against `api-standards.yaml`.
+  - **Checklist**:
+    - URL Casing (kebab-case)
+    - JSON Casing (camelCase)
+    - Versioning (/api/v1 prefix)
+    - Error Envelopes (timestamp, status, error, message, path)
+    - Pagination (offset, limit) & Sorting (sort=field,direction)
+    - Security (@PreAuthorize, Bearer JWT)
+  - **Output**: Compliant ✅, Warnings ⚠️, Violations ❌, and Remediation 🛠️.
+
