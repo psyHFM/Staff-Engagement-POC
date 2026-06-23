@@ -68,6 +68,9 @@ function cleanPrompt(p) {
     .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, '')
     .replace(/<command-message>[\s\S]*?<\/command-message>/g, '')
     .replace(/<command-name>[\s\S]*?<\/command-name>/g, '')
+    .replace(/<local-command-caveat>[\s\S]*?<\/local-command-caveat>/g, '')
+    .replace(/<local-command-stdout>[\s\S]*?<\/local-command-stdout>/g, '')
+    .replace(/<local-command-stderr>[\s\S]*?<\/local-command-stderr>/g, '')
     .replace(/<task-notification>[\s\S]*?<\/task-notification>/g, '')
     .trim();
 }
@@ -75,10 +78,15 @@ function cleanPrompt(p) {
 // Text that marks a synthetic (non-human) user message we should never log.
 // Claude Code injects these into the transcript as `user`-role messages:
 //   - context-compaction summaries ("This session is being continued...")
-//   - <command-message>/<command-name>/<system-reminder> wrappers
+//   - skill invocations: the skill body is injected starting with
+//     "Base directory for this skill: ..." (carries the ARGUMENTS, not the prompt)
+//   - interrupt markers ("[Request interrupted by user]")
+//   - <command-*>/<system-reminder>/<local-command-*> wrappers (stripped above)
 //   - tool_result blocks (no `text` block, so extractText returns null)
 const SYNTHETIC_MARKERS = [
   'This session is being continued from a previous conversation',
+  'Base directory for this skill:',
+  '[Request interrupted by user]',
 ];
 
 function isSynthetic(text) {
