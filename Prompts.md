@@ -16,3 +16,47 @@ this is a project has multiple devs, can you make a skill. I need to have everyo
 
 can you add to new branch commit and make PR
 
+### Gregory Robson — 2026-06-23 07:22:21
+
+- **Model:** gemma4:31b
+- **Tokens:** 27395 in / 1587 out (cache read 0, cache write 0) — 28982 total
+
+Looking at my constitution, and my claude.md
+
+recommend some skills, and subagents that i could add before starting the project.
+
+### Gregory Robson — 2026-06-23 07:28:50
+
+- **Model:** gemma4:31b
+- **Tokens:** 34002 in / 404 out (cache read 0, cache write 0) — 34406 total
+
+Yes let's start with the constitution-audit skill
+
+### Gregory Robson — 2026-06-23 07:31:03
+
+- **Model:** gemma4:31b
+- **Tokens:** 33873 in / 372 out (cache read 0, cache write 0) — 34245 total
+
+let's implement the api-check skill
+
+### Gregory Robson — 2026-06-23 07:34:32
+
+- **Model:** gemma4:31b
+- **Tokens:** 35106 in / 420 out (cache read 0, cache write 0) — 35526 total
+
+let's go ahead with the arch-verify skill now
+
+### Gregory Robson — 2026-06-23 07:36:33
+
+- **Model:** gemma4:31b
+- **Tokens:** 36279 in / 475 out (cache read 0, cache write 0) — 36754 total
+
+let's do the mutation-report skill now
+
+### Gregory Robson — 2026-06-23 07:39:41
+
+- **Model:** gemma4:31b
+- **Tokens:** 37755 in / 494 out (cache read 0, cache write 0) — 38249 total
+
+let's work on a docker-sync skill now
+
