@@ -1,0 +1,45 @@
+databaseChangeLog:
+  # Phase 2 owns db/changelog/modules/interaction/ (ROADMAP §2.3). Discovered by
+  # master.yaml's includeAll over db/changelog/modules/ — no edit to master.yaml.
+  - changeSet:
+      id: interaction-001
+      author: phase2
+      changes:
+        - createTable:
+            tableName: interaction
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subject_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: facilitator_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: note
+                  type: text
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
