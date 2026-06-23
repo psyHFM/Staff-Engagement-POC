@@ -119,11 +119,12 @@ function parseTranscript(transcriptPath) {
   const total = inTok + outTok + cacheRead + cacheWrite;
 
   const ts = new Date().toISOString().replace('T', ' ').replace(/\..+$/, '');
+  const fmt = (n) => Number(n).toLocaleString('en-US');
   const entry =
     `### ${gitName} — ${ts}\n` +
     `\n` +
-    `- **Model:** ${model}\n` +
-    `- **Tokens:** ${inTok} in / ${outTok} out (cache read ${cacheRead}, cache write ${cacheWrite}) — ${total} total\n` +
+    `> **Model:** \`${model}\`  \n` +
+    `> **Tokens:** \`${fmt(inTok)}\` in / \`${fmt(outTok)}\` out · cache read \`${fmt(cacheRead)}\` / write \`${fmt(cacheWrite)}\` · **${fmt(total)} total**\n` +
     `\n` +
     `${cleanPrompt(lastUserPrompt)}\n\n`;
 

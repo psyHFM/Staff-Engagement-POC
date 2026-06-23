@@ -24,11 +24,13 @@ node .claude/hooks/log_prompts.js
 ```markdown
 ### <git name> — 2026-06-22 14:30:05
 
-- **Model:** <model id>
-- **Tokens:** 1234 in / 567 out (cache read 8900, cache write 200) — 10801 total
+> **Model:** `<model id>`
+> **Tokens:** `1,234` in / `567` out · cache read `8,900` / write `200` · **10,801 total**
 
 <the prompt text>
 ```
+
+The credits block (model + tokens) is a blockquote so it visually separates from the prompt text. Numeric values are code-formatted and thousand-separated for readability.
 
 ## Setup for the team
 
