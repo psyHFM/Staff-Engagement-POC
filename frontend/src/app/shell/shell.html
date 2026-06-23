@@ -1,0 +1,23 @@
+<header class="shell__bar">
+  <a class="shell__brand" routerLink="/dashboard">
+    <i class="pi pi-th-large" aria-hidden="true"></i>
+    Staff Engagement
+  </a>
+
+  <nav class="shell__nav">
+    <a routerLink="/dashboard" routerLinkActive="shell__nav-link--active">Dashboard</a>
+  </nav>
+
+  <div class="shell__auth">
+    @if (auth.isAuthenticated()) {
+      <span class="shell__user">{{ auth.currentUser() }}</span>
+      <button type="button" class="shell__logout" (click)="logout()">Sign out</button>
+    } @else {
+      <a routerLink="/login" class="shell__login">Sign in</a>
+    }
+  </div>
+</header>
+
+<main class="shell__main">
+  <router-outlet />
+</main>

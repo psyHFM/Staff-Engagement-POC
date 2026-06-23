@@ -1,0 +1,7 @@
+databaseChangeLog:
+  # Phase 0 owns and freezes this file (ROADMAP §2.3). Splices append only by
+  # adding changelog files under db/changelog/modules/<module>/ — never edit this.
+  - include:
+      file: db/changelog/baseline.yaml
+  - includeAll:
+      path: db/changelog/modules/

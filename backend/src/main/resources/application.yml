@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: StaffEngagement
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/staffengagement}
+    username: ${DB_USERNAME:staffeng}
+    password: ${DB_PASSWORD:staffeng}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  liquibase:
+    change-log: classpath:db/changelog/master.yaml
+  jackson:
+    default-property-inclusion: non_null
+
+staffengagement:
+  security:
+    jwt:
+      # HS256 key (base64). Replace via JWT_SECRET env var in real deployments.
+      secret: ${JWT_SECRET:Y2hhbmdlLW1lLXRvLWEtcmVhbC1zZWNyZXQta2V5LWZvci1zdGFmZi1lbmdhZ2VtZW50LXBvYw==}
+      issuer: staff-engagement-poc
+      expiration-minutes: 60

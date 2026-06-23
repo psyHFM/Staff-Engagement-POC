@@ -1,0 +1,2 @@
+# Employee feature module — implemented in Phase 1 (ROADMAP.md).
+# Convention: each feature adds one lazy-loaded line to app.routes.ts.

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker/master/packages/api/schema/stryker-schema.json",
+  "_comment": "Constitution (testing-strategy.yaml): Stryker Mutator + Jest. Mutation analysis for the Angular frontend.",
+  "concurrency": 2,
+  "mutator": {
+    "excludedMutations": ["StringLiteral"]
+  },
+  "coverageAnalysis": "perTest",
+  "packageManager": "npm",
+  "testRunner": "jest",
+  "jest": {
+    "configFile": "jest.config.js",
+    "projectType": "custom"
+  },
+  "mutate": [
+    "src/app/**/*.ts",
+    "!src/app/**/*.spec.ts",
+    "!src/app/**/*.routes.ts",
+    "!src/main.ts"
+  ],
+  "reporters": ["html", "clear-text", "progress"],
+  "thresholds": { "high": 80, "low": 60, "break": null },
+  "cleanTempDir": true
+}

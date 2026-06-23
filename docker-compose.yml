@@ -1,0 +1,54 @@
+# Staff Engagement POC — Phase 0 orchestration.
+# `docker compose up` starts Postgres + backend + frontend.
+# Credentials/JWT secret come from a local .env file (see .env.example).
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-staffengagement}
+      POSTGRES_USER: ${DB_USERNAME:-staffeng}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-staffeng}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-staffeng} -d ${DB_NAME:-staffengagement}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - staffeng
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-staffengagement}
+      DB_USERNAME: ${DB_USERNAME:-staffeng}
+      DB_PASSWORD: ${DB_PASSWORD:-staffeng}
+      JWT_SECRET: ${JWT_SECRET:-Y2hhbmdlLW1lLXRvLWEtcmVhbC1zZWNyZXQta2V5LWZvci1zdGFmZi1lbmdhZ2VtZW50LXBvYw==}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - staffeng
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - staffeng
+
+volumes:
+  postgres-data:
+
+networks:
+  staffeng:
+    driver: bridge
