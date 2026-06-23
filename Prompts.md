@@ -183,3 +183,18 @@ time should be UTC + 2
 
 make git attributes file merge union for PRomts.md
 
+### Hendrik Muller — 2026-06-23 14:02:18
+
+> **Model:** `glm-5.2`  
+> **Tokens:** `66,306` in / `327` out · cache read `0` / write `0` · **66,633 total**
+
+help me do ATSE1-8 with openspec do this on new branch
+
+
+### Hendrik Muller — 2026-06-23 14:05:58
+
+> **Model:** `glm-5.2`  
+> **Tokens:** `77,633` in / `178` out · cache read `0` / write `0` · **77,811 total**
+
+the prompt hook recorded something other than the prompt i used
+
