@@ -44,3 +44,11 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
     - Security (@PreAuthorize, Bearer JWT)
   - **Output**: Compliant ✅, Warnings ⚠️, Violations ❌, and Remediation 🛠️.
 
+- `/arch-verify`: Runs `.claude/skills/arch-verify.sh` to enforce Modular Monolith boundaries and Layered Architecture.
+  - **Checklist**:
+    - Module Boundaries (No illegal cross-module imports)
+    - Layer Adherence (Web -> Service -> Persistence)
+    - Dependency Rules (No circular dependencies)
+    - Service Interfaces (Cross-module comms via interfaces only)
+  - **Output**: Compliant ✅, Warnings ⚠️, Violations ❌, and Remediation 🛠️.
+
