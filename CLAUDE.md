@@ -14,6 +14,12 @@ Agents should reference the following files for specific constraints:
 - `backend-architecture.yaml`: Modular Monolith structure, ArchUnit boundaries, and Layered Architecture.
 - `frontend-state.yaml`: Angular Signals, unidirectional data flow, and state service patterns.
 
+## 🎨 Frontend Development
+All frontend work must strictly adhere to the [Angular Style Guide](.claude/angular-style-guide.md).
+
+- **Compliance**: Cross-reference the style guide for naming conventions (kebab-case), component structure, and DI patterns (`inject()`).
+- **State**: Follow the rules defined in `frontend-state.yaml`.
+
 ## 🛠️ Development Workflow
 - **Modular Monolith**: Respect package-based module boundaries. No illegal cross-module imports.
 - **Testing First**: Implement unit tests (BDD style) for all business logic. Note: Integration testing is explicitly disabled.
