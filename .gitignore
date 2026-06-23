@@ -5,6 +5,7 @@ out/
 .kotlin
 .idea/
 *.iml
+/node_modules
 
 ### Eclipse ###
 .apt_generated

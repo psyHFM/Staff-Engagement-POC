@@ -16,8 +16,76 @@ this is a project has multiple devs, can you make a skill. I need to have everyo
 
 can you add to new branch commit and make PR
 
-> **Model:** `glm-5.2`  
+### Gregory Robson — 2026-06-23 07:22:21
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `27,395` in / `1,587` out · cache read `0` / write `0` · **28,982 total**
+
+Looking at my constitution, and my claude.md
+
+recommend some skills, and subagents that i could add before starting the project.
+
+### Gregory Robson — 2026-06-23 07:28:50
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `34,002` in / `404` out · cache read `0` / write `0` · **34,406 total**
+
+Yes let's start with the constitution-audit skill
+
+### Gregory Robson — 2026-06-23 07:31:03
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `33,873` in / `372` out · cache read `0` / write `0` · **34,245 total**
+
+let's implement the api-check skill
+
+### Gregory Robson — 2026-06-23 07:34:32
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `35,106` in / `420` out · cache read `0` / write `0` · **35,526 total**
+
+let's go ahead with the arch-verify skill now
+
+### Gregory Robson — 2026-06-23 07:36:33
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `36,279` in / `475` out · cache read `0` / write `0` · **36,754 total**
+
+let's do the mutation-report skill now
+
+### Gregory Robson — 2026-06-23 07:39:41
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `37,755` in / `494` out · cache read `0` / write `0` · **38,249 total**
+
+let's work on a docker-sync skill now
+
+### Gregory Robson — 2026-06-23 07:53:23
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `39,970` in / `299` out · cache read `0` / write `0` · **40,269 total**
+
+Let's take a look at creating those subagents.
+
+Let's start wuth the Constitution Guard.
+
+### Gregory Robson — 2026-06-23 07:55:10
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `40,648` in / `293` out · cache read `0` / write `0` · **40,941 total**
+
+Let's proceed with BDD Test Engineer
+
+### Gregory Robson — 2026-06-23 07:56:24
+
+> **Model:** `gemma4:31b`
+> **Tokens:** `41,732` in / `395` out · cache read `0` / write `0` · **42,127 total**
+
+Let's conclude with the Angular State Architect
+
+### Hendrik Muller — 2026-06-23 08:17:38
+
+> **Model:** `glm-5.2`
 > **Tokens:** `50,733` in / `316` out · cache read `0` / write `0` · **51,049 total**
 
 update format for the prompt hook, add formatting to the credits to make more readable
-
