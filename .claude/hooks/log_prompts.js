@@ -71,6 +71,21 @@ function cleanPrompt(p) {
     .trim();
 }
 
+// Text that marks a synthetic (non-human) user message we should never log.
+// Claude Code injects these into the transcript as `user`-role messages:
+//   - context-compaction summaries ("This session is being continued...")
+//   - <command-message>/<command-name>/<system-reminder> wrappers
+//   - tool_result blocks (no `text` block, so extractText returns null)
+const SYNTHETIC_MARKERS = [
+  'This session is being continued from a previous conversation',
+];
+
+function isSynthetic(text) {
+  const t = cleanPrompt(text);
+  if (!t) return true; // empty after stripping wrappers = not a real prompt
+  return SYNTHETIC_MARKERS.some((m) => t.startsWith(m));
+}
+
 function parseTranscript(transcriptPath) {
   const raw = fs.readFileSync(transcriptPath, 'utf8').split('\n');
   let lastUserPrompt = null, lastAssistant = null, lastUserLine = -1;
@@ -81,7 +96,10 @@ function parseTranscript(transcriptPath) {
     try { obj = JSON.parse(line); } catch { continue; }
     if (obj.type === 'user' && obj.message && obj.message.content) {
       const text = extractText(obj.message.content);
-      if (text) { lastUserPrompt = text; lastUserLine = i; }
+      // Skip synthetic messages (compaction summaries, wrapper-only, tool results).
+      if (text && !isSynthetic(text)) {
+        lastUserPrompt = text; lastUserLine = i;
+      }
     } else if (obj.type === 'assistant' && obj.message) {
       lastAssistant = obj.message;
     }
