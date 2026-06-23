@@ -50,12 +50,12 @@
 - [x] 6.1 `docker compose build && docker compose up` (Docker Desktop running) — all three healthy
 - [x] 6.2 `GET /api/v1/health` returns 200 (with JWT); login stub issues JWT; protected endpoint returns 401 + uniform `ErrorEnvelope` without a token; bad-credentials returns 400 + envelope; nginx proxies `/api/v1/*` to backend
 - [x] 6.3 Frontend: `npm ci`, `npm run lint`, `npm run build`, `npm test` pass
-- [ ] 6.4 Push branch → CI backend + frontend jobs green  *(needs user to approve push/PR)*
+- [x] 6.4 Push branch → CI backend + frontend jobs green  *(PR #11 merged; CI run #28029533275 — conclusion: success)*
 
 ## 7. OpenSpec finalize
 
 - [x] 7.1 Track/tick tasks through implementation (this file)
-- [ ] 7.2 After merge, run `openspec-archive-change` to archive the change
+- [x] 7.2 After merge, run `openspec-archive-change` to archive the change  *(archived 2026-06-23)*
 
 ---
 
