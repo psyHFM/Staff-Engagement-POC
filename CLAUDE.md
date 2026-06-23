@@ -52,3 +52,12 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
     - Service Interfaces (Cross-module comms via interfaces only)
   - **Output**: Compliant ✅, Warnings ⚠️, Violations ❌, and Remediation 🛠️.
 
+- `/mutation-report`: Runs `.claude/skills/mutation-report.sh` to check test fidelity and coverage thresholds.
+  - **Checklist**:
+    - Backend Mutation Score (PITest >= 80%)
+    - Backend Coverage (JaCoCo >= 80%)
+    - Frontend Mutation Score (Stryker >= 80%)
+    - Frontend Coverage (Jest/Istanbul >= 80%)
+    - Testing Scope (Unit Tests Only, no Integration tests)
+  - **Output**: Compliant ✅, Warnings ⚠️, Violations ❌, and Remediation 🛠️.
+
