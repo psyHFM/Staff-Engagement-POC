@@ -24,4 +24,13 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
 - **Modular Monolith**: Respect package-based module boundaries. No illegal cross-module imports.
 - **Testing First**: Implement unit tests (BDD style) for all business logic. Note: Integration testing is explicitly disabled.
 - **Casing**: Strict adherence to `kebab-case` for URLs and `camelCase` for JSON/Java.
-- **Infrastructure**: All components must be orchestratable via Docker Compose.
+## 🚀 Custom Skills
+- `/constitution-audit`: Runs `.claude/skills/constitution-audit.sh` to gather the project constitution and current diff, then audits the changes for compliance.
+  - **Checklist**:
+    - Tech Stack (Java 21, Angular 22)
+    - API Standards (kebab-case URLs, camelCase JSON, /api/v1)
+    - Testing Strategy (BDD, JUnit 5, Mutation testing)
+    - Backend Arch (Modular Monolith, Layered Architecture, ArchUnit)
+    - Frontend State (Signals, toSignal, computed, State Services)
+  - **Output**: Compliant ✅, Warnings ⚠️, Violations ❌, and Remediation 🛠️.
+
