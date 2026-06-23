@@ -1,0 +1,87 @@
+# CI runs on every Pull Request and on pushes to main.
+#
+# Two jobs:
+#   - backend:  Java 21 + Maven (build, test, mutation coverage via PIT)
+#   - frontend: Node 22 + Angular (install, build/type-check, test)
+#
+# NOTE: This assumes the repo has `backend/` and `frontend/` directories
+# (i.e. a `pom.xml` in backend/, a `package.json` in frontend/).
+# Rename the working-directory values below to match your real folders.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend — Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
+      - name: Build
+        run: ./mvnw clean package -DskipTests -q
+
+      - name: Test
+        run: ./mvnw test
+
+      - name: Mutation coverage
+        run: ./mvnw test-compile org.pitest:pitest-maven:mutationCoverage
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit-mutation-report
+          path: backend/target/pit-reports/
+
+  frontend:
+    name: Frontend — Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (type-check + AOT compile)
+        run: npm run build -- --configuration production
+
+      - name: Test
+        run: npm test -- --no-watch --no-progress
