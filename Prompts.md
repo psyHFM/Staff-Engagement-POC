@@ -16,6 +16,46 @@ this is a project has multiple devs, can you make a skill. I need to have everyo
 
 can you add to new branch commit and make PR
 
+### psyTayobHarrison — 2026-06-23 09:01:32
+
+- **Model:** glm-5.2
+- **Tokens:** 43389 in / 1106 out (cache read 0, cache write 0) — 44495 total
+
+regarding the mission.md: For interactions, we want a record of the type, but also who it was for, and who facilitated it.
+For tasks, just to clarify, they can spawn from interactions, but can also be spawned regardless of whether an interaction took place or not
+Interactions can spawn tasks, but don't have to (they are optional)
+under point 6, the architecture should be as follows:
+Project -> Backend-Frontend-postgres, then inside them should be modular as well -> e.g. Employee, Interactions, and then inside those modules, it should be layered architecture
+Use AskUserQuestions for clarity, and use it as much as necessary for a clear picture
+
+### psyTayobHarrison — 2026-06-23 09:12:50
+
+- **Model:** glm-5.2
+- **Tokens:** 52145 in / 724 out (cache read 0, cache write 0) — 52869 total
+
+in the layered architecture follow something like this: Layered architecture** — controller/ → service/ → repository/
+
+### psyTayobHarrison — 2026-06-23 09:18:49
+
+- **Model:** glm-5.2
+- **Tokens:** 58777 in / 772 out (cache read 0, cache write 0) — 59549 total
+
+update the roadmap accroding to this new mission version
+
+### psyTayobHarrison — 2026-06-23 09:28:37
+
+- **Model:** glm-5.2
+- **Tokens:** 59559 in / 925 out (cache read 0, cache write 0) — 60484 total
+
+what is the kernel folder under shared?
+
+### psyTayobHarrison — 2026-06-23 09:31:38
+
+- **Model:** glm-5.2
+- **Tokens:** 60845 in / 99 out (cache read 0, cache write 0) — 60944 total
+
+yes
+
 ### Gregory Robson — 2026-06-23 07:22:21
 
 - **Model:** gemma4:31b
