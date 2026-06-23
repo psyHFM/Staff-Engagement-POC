@@ -109,7 +109,7 @@ GitHub Actions runs on every PR and on pushes to `main` (see `.github/workflows/
 CI runs two jobs:
 
 - **Backend** (`backend/`) — Java 21 + Maven. Builds, runs tests, then runs PIT mutation coverage and uploads the report as an artifact.
-- **Frontend** (`frontend/`) — Node 22 + Angular. Installs deps, builds (type-check + AOT compile), then runs tests.
+- **Frontend** (`frontend/`) — Node 22 + Angular. Installs deps, lints (ESLint), builds (type-check + AOT compile), then runs tests.
 
 The repo is structured as two apps: a `backend/` directory (Maven, `pom.xml`, `mvnw` wrapper) and a `frontend/` directory (Node, `package.json`). All code lives in one of these two folders.
 
@@ -127,6 +127,7 @@ Frontend:
 ```powershell
 cd frontend
 npm ci                                          # install
+npm run lint                                    # lint (ESLint)
 npm run build -- --configuration production     # build (type-check + AOT)
 npm test -- --no-watch --no-progress            # tests (headless)
 ```
