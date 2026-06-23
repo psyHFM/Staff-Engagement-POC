@@ -1,0 +1,4 @@
+# Per-module Liquibase changelogs live here (ROADMAP §2.3).
+# Each splice adds files under db/changelog/modules/<module>/ with module-prefixed,
+# zero-padded changeset IDs (e.g. employee-001, interaction-001). No two modules
+# share an ID prefix. This file only reserves the directory for git.

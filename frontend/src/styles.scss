@@ -1,0 +1,14 @@
+/* Global styles for the Staff Engagement POC. PrimeIcons are loaded via
+   angular.json (node_modules/primeicons/primeicons.css). */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+}

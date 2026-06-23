@@ -1,0 +1,68 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.shell__bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1.25rem;
+  height: 56px;
+  background: #1f2937;
+  color: #f9fafb;
+}
+
+.shell__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #f9fafb;
+  text-decoration: none;
+}
+
+.shell__nav {
+  display: flex;
+  gap: 1rem;
+
+  a {
+    color: #d1d5db;
+    text-decoration: none;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  .shell__nav-link--active {
+    color: #fff;
+    border-bottom: 2px solid #60a5fa;
+  }
+}
+
+.shell__auth {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.shell__user {
+  color: #d1d5db;
+}
+
+.shell__logout,
+.shell__login {
+  cursor: pointer;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #4b5563;
+  background: transparent;
+  color: #f9fafb;
+  text-decoration: none;
+}
+
+.shell__main {
+  padding: 1.5rem;
+}
