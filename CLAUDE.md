@@ -61,3 +61,10 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
     - Testing Scope (Unit Tests Only, no Integration tests)
   - **Output**: Compliant ✅, Warnings ⚠️, Violations ❌, and Remediation 🛠️.
 
+- `/docker-sync`: Runs `.claude/skills/docker-sync.sh` to verify and sync the containerized infrastructure.
+  - **Checklist**:
+    - Presence of `docker-compose.yml`
+    - Service Health (Checking `docker compose ps`)
+    - Image Alignment (Ensuring containers match current config)
+  - **Output**: Status Report ✅/⚠️/❌ and suggested sync commands.
+
