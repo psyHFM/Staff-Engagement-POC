@@ -8,6 +8,8 @@ This project is governed by a strict constitution located in the `.claude/consti
 
 ### Constitution Map
 Agents should reference the following files for specific constraints:
+- `MISSION.md`: Why the project exists, the domain model (Employee, Interaction, Task, Portfolio, Skills register), scope, and success criteria.
+- `ROADMAP.md`: How the mission is delivered — parallel-safe splices/phases, ownership boundaries, frozen contracts, and the conflict-avoidance rules for multi-dev work.
 - `tech-stack.yaml`: Core languages, frameworks, and versions (Java 21, Spring Boot, Angular 22, Postgres).
 - `api-standards.yaml`: REST contracts, versioning, casing, and error handling.
 - `testing-strategy.yaml`: Unit testing requirements, mutation testing (PITest/Stryker), and coverage thresholds.
@@ -21,6 +23,7 @@ All frontend work must strictly adhere to the [Angular Style Guide](.claude/angu
 - **State**: Follow the rules defined in `frontend-state.yaml`.
 
 ## 🛠️ Development Workflow
+- **Roadmap & splices**: Before starting feature work, consult `ROADMAP.md` for the phase/splice you're in, your owned folders, and the conflict-avoidance contract. Work only within your splice's files; cross-module access is via the frozen Service-interface contracts in `shared/api/`.
 - **Modular Monolith**: Respect package-based module boundaries. No illegal cross-module imports.
 - **Testing First**: Implement unit tests (BDD style) for all business logic. Note: Integration testing is explicitly disabled.
 - **Casing**: Strict adherence to `kebab-case` for URLs and `camelCase` for JSON/Java.

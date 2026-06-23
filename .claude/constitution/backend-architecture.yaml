@@ -1,6 +1,6 @@
 backend_architecture:
-  version: 1.0.0
-  last_updated: 2026-06-22
+  version: 1.1.0
+  last_updated: 2026-06-23
 
   system_type: "Modular Monolith"
 
@@ -19,9 +19,9 @@ backend_architecture:
   internal_module_design:
     pattern: "Traditional Layered Architecture"
     layers:
-      - "Web/API (Controllers)"
-      - "Business/Service (Logic)"
-      - "Persistence/Data (Repositories)"
+      - "Controller"
+      - "Service"
+      - "Repository"
     domain_model:
       style: "Anemic Domain Model"
       logic_placement: "Service Layer"
@@ -35,6 +35,6 @@ backend_architecture:
       scope: "Atomic operations across multiple modules are permitted for POC simplicity"
 
   constraints:
-    - "No direct repository access from the Web layer (must go through Service)"
+    - "No direct repository access from the controller layer (must go through Service)"
     - "No circular dependencies between modules"
     - "Cross-module communication must occur only via Service interfaces"
