@@ -1,6 +1,7 @@
 package com.staffengagement.shared.api;
 
 import com.staffengagement.shared.kernel.EmployeeId;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,4 +21,11 @@ public interface EmployeeContract {
     boolean exists(EmployeeId id);
 
     Optional<EmployeeSummary> findByEmail(String email);
+
+    /**
+     * Returns every employee as a summary. Additive contract extension (ROADMAP §2.2)
+     * enabling the Phase 5 Skills register to aggregate skill strength across the
+     * whole workforce without importing Employee module internals.
+     */
+    List<EmployeeSummary> allEmployees();
 }
