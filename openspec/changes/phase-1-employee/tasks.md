@@ -29,10 +29,10 @@ Scope: shared-kernel coordination PR only — `shared/kernel/EmployeeRole`, `sha
 
 ## 2. Backend employee domain & persistence (splice branch)
 
-- [ ] 2.1 Create `employee/domain/Employee` anemic entity (fields per record model incl. `role`; no `active`)
-- [ ] 2.2 Reference `shared/kernel.EmployeeRole` for the role column; add `EmployeeLevel` enum (`JUNIOR`, `INTERMEDIATE`, `SENIOR`) in `employee/domain`
-- [ ] 2.3 Create `employee/repository/EmployeeRepository` (lookup by id; `findByEmail`; `existsByEmail`; pagination/sort support)
-- [ ] 2.4 Create Liquibase changeset under `db/changelog/modules/employee/` — `employee` table (columns incl. `role`, unique `email`, identity/sequence for `id`) + seed exactly one `admin@staff.eng` row with `role = ADMIN`
+- [x] 2.1 Create `employee/domain/Employee` anemic entity (fields per record model incl. `role`; no `active`)
+- [x] 2.2 Reference `shared/kernel.EmployeeRole` for the role column; add `EmployeeLevel` enum (`JUNIOR`, `INTERMEDIATE`, `SENIOR`) in `employee/domain`
+- [x] 2.3 Create `employee/repository/EmployeeRepository` (lookup by id; `findByEmail`; `existsByEmail`; pagination/sort support)
+- [x] 2.4 Create Liquibase changeset under `db/changelog/modules/employee/` — `employee` table (columns incl. `role`, unique `email`, identity/sequence for `id`) + seed exactly one `admin@staff.eng` row with `role = ADMIN`
 
 ## 3. Backend employee service & contract (splice branch)
 

@@ -1,0 +1,79 @@
+databaseChangeLog:
+  # Phase 1 owns db/changelog/modules/employee/ (ROADMAP §2.3). Discovered by
+  # master.yaml's includeAll over db/changelog/modules/ — no edit to master.yaml.
+  - changeSet:
+      id: employee-001
+      author: phase1
+      changes:
+        - createTable:
+            tableName: employee
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: role
+                  type: varchar(32)
+                  defaultValue: EMPLOYEE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: job_title
+                  type: varchar(255)
+              - column:
+                  name: department
+                  type: varchar(255)
+              - column:
+                  name: level
+                  type: varchar(32)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+  # Seed exactly one admin Employee (email admin@staff.eng, role ADMIN) so a
+  # privileged user exists immediately and its first login yields ROLE_ADMIN.
+  # No other employees are seeded; the employee@staff.eng stub user self-creates.
+  # id is omitted so the IDENTITY column assigns it (avoids a sequence/seed clash).
+  - changeSet:
+      id: employee-002-seed-admin
+      author: phase1
+      changes:
+        - insert:
+            tableName: employee
+            columns:
+              - column:
+                  name: full_name
+                  value: Admin User
+              - column:
+                  name: email
+                  value: admin@staff.eng
+              - column:
+                  name: role
+                  value: ADMIN
+              - column:
+                  name: created_at
+                  valueComputed: now()
+              - column:
+                  name: updated_at
+                  valueComputed: now()
