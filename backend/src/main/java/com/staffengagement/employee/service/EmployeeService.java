@@ -55,12 +55,22 @@ public class EmployeeService implements EmployeeContract {
 
     @Override
     public boolean exists(EmployeeId id) {
-        return repository.existsById(id.value());
+        return id != null && repository.existsById(id.value());
     }
 
     @Override
     public Optional<EmployeeSummary> findByEmail(String email) {
+        if (email == null) {
+            return Optional.empty();
+        }
         return repository.findByEmail(email).map(EmployeeMapper::toSummary);
+    }
+
+    @Override
+    public List<EmployeeSummary> allEmployees() {
+        return repository.findAll().stream()
+                .map(EmployeeMapper::toSummary)
+                .toList();
     }
 
     // ---- Module operations (controller-facing) ----

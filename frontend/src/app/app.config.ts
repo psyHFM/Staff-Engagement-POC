@@ -3,7 +3,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 
 import { routes } from './app.routes';
-import { bearerAuthInterceptorProvider } from './shared/auth/bearer-auth.interceptor';
+import { bearerAuthInterceptor } from './shared/auth/bearer-auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [

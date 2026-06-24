@@ -12,14 +12,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
  *
  * <p>The behavioural 401/403 envelope is produced by the shared security layer
  * (Phase 0: {@code AuthErrorHandlers} + {@code SecurityConfig}, already tested);
- * the splice's responsibility is to <em>declare</em> the MANAGER-only rule. A
+ * the splice's responsibility is to <em>declare</em> the ADMIN-only rule. A
  * reflection check keeps this a pure unit test (no Spring/AOP context) per
  * {@code testing-strategy.yaml} (unit tests only) while still being
  * mutation-resilient — flipping "MANAGER" to any other value fails the test.
  */
 class InteractionAccessControlTest {
 
-    private static final String MANAGER_ONLY = "hasRole('MANAGER')";
+    private static final String ADMIN_ONLY = "hasRole('ADMIN')";
 
     @Test
     void createEndpointRequiresManagerRole() throws Exception {
@@ -30,7 +30,7 @@ class InteractionAccessControlTest {
         // When / Then
         PreAuthorize annotation = create.getAnnotation(PreAuthorize.class);
         assertThat(annotation).as("create must be @PreAuthorize-protected").isNotNull();
-        assertThat(annotation.value()).isEqualTo(MANAGER_ONLY);
+        assertThat(annotation.value()).isEqualTo(ADMIN_ONLY);
     }
 
     @Test
@@ -42,7 +42,7 @@ class InteractionAccessControlTest {
         // When / Then
         PreAuthorize annotation = list.getAnnotation(PreAuthorize.class);
         assertThat(annotation).as("listBySubject must be @PreAuthorize-protected").isNotNull();
-        assertThat(annotation.value()).isEqualTo(MANAGER_ONLY);
+        assertThat(annotation.value()).isEqualTo(ADMIN_ONLY);
     }
 
     @Test
@@ -53,6 +53,6 @@ class InteractionAccessControlTest {
         // When / Then
         PreAuthorize annotation = getById.getAnnotation(PreAuthorize.class);
         assertThat(annotation).as("getById must be @PreAuthorize-protected").isNotNull();
-        assertThat(annotation.value()).isEqualTo(MANAGER_ONLY);
+        assertThat(annotation.value()).isEqualTo(ADMIN_ONLY);
     }
 }

@@ -97,6 +97,12 @@ class EmployeeServiceTest {
     }
 
     @Test
+    void existsReturnsFalseForNullId() {
+        // When / Then
+        assertThat(service.exists(null)).isFalse();
+    }
+
+    @Test
     void findByEmailReturnsSummaryWhenPresentAndEmptyWhenUnknown() {
         // Given
         when(repository.findByEmail("jane@staff.eng"))
@@ -107,6 +113,41 @@ class EmployeeServiceTest {
         assertThat(service.findByEmail("jane@staff.eng")).isPresent()
                 .get().extracting(EmployeeSummary::role).isEqualTo(EmployeeRole.EMPLOYEE);
         assertThat(service.findByEmail("nobody@staff.eng")).isEmpty();
+    }
+
+    @Test
+    void findByEmailReturnsEmptyForNullEmail() {
+        // When / Then
+        assertThat(service.findByEmail(null)).isEmpty();
+    }
+
+    @Test
+    void allEmployeesReturnsSummaryForEveryEmployee() {
+        // Given
+        Employee a = persistedEmployee(1L, "a@staff.eng", EmployeeRole.EMPLOYEE);
+        Employee b = persistedEmployee(2L, "b@staff.eng", EmployeeRole.ADMIN);
+        when(repository.findAll()).thenReturn(List.of(a, b));
+
+        // When
+        List<EmployeeSummary> result = service.allEmployees();
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(EmployeeSummary::id).containsExactly(
+                new EmployeeId(1L), new EmployeeId(2L));
+        assertThat(result).extracting(EmployeeSummary::fullName).containsExactly("Jane Doe", "Jane Doe");
+    }
+
+    @Test
+    void allEmployeesReturnsEmptyListWhenNoneExist() {
+        // Given
+        when(repository.findAll()).thenReturn(List.of());
+
+        // When
+        List<EmployeeSummary> result = service.allEmployees();
+
+        // Then
+        assertThat(result).isEmpty();
     }
 
     // ---- Create ----
