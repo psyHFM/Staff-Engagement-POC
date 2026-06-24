@@ -1,0 +1,72 @@
+<section class="employee-page">
+  <header class="employee-page__header">
+    <h1><i class="pi pi-users" aria-hidden="true"></i> Employees</h1>
+    <a routerLink="/dashboard" class="employee-page__back">← Dashboard</a>
+  </header>
+
+  @if (state.error()) {
+    <div class="employee-page__error" role="alert">
+      {{ state.error()?.message }}
+      <button type="button" (click)="state.clearTransient()">Dismiss</button>
+    </div>
+  }
+
+  @if (state.created()) {
+    <div class="employee-page__success" role="status">
+      Profile created for {{ state.created()?.email }}.
+      <button type="button" (click)="state.clearTransient()">Dismiss</button>
+    </div>
+  }
+
+  @if (state.updated()) {
+    <div class="employee-page__success" role="status">
+      Profile updated for {{ state.updated()?.email }}.
+      <button type="button" (click)="state.clearTransient()">Dismiss</button>
+    </div>
+  }
+
+  <section class="employee-page__own">
+    <h2 class="employee-page__section-title">Your profile</h2>
+
+    @if (state.isLoading() && !state.employees()) {
+      <div class="employee-page__loading" role="status">
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        Loading your profile…
+      </div>
+    } @else if (ownProfile()) {
+      <app-employee-detail
+        [employee]="ownProfile()"
+        [canEdit]="true"
+        [canEditRole]="state.isAdmin()"
+        [showBack]="false"
+        (updated)="onUpdateOwn($event)"></app-employee-detail>
+    } @else {
+      <p class="employee-page__hint" role="note">
+        You haven't created your profile yet — add your details below. Your email is taken from your login and your role starts as Employee.
+      </p>
+      <app-employee-create-form (created)="onCreated()"></app-employee-create-form>
+    }
+  </section>
+
+  <section class="employee-page__directory">
+    <h2 class="employee-page__section-title">Employee directory</h2>
+    <app-employee-list
+      [directory]="state.employees()"
+      [loading]="state.isLoading()"
+      [sort]="sort()"
+      (pageRequested)="onPageRequested($event)"
+      (sortRequested)="onSortRequested($event)"
+      (selected)="state.selectEmployee($event)"></app-employee-list>
+
+    @if (state.selectedEmployee()) {
+      <div class="employee-page__selected">
+        <app-employee-detail
+          [employee]="state.selectedEmployee()"
+          [canEdit]="canEditSelected()"
+          [canEditRole]="canEditRoleSelected()"
+          (updated)="onUpdateSelected($event)"
+          (closed)="onClose()"></app-employee-detail>
+      </div>
+    }
+  </section>
+</section>

@@ -1,0 +1,91 @@
+<article class="employee-detail">
+  @if (employee) {
+    <header class="employee-detail__header">
+      <h2 class="employee-detail__name">{{ employee.fullName }}</h2>
+      @if (showBack) {
+        <button type="button" class="employee-detail__close" (click)="closed.emit()">← Back to directory</button>
+      }
+    </header>
+
+    <dl class="employee-detail__fields">
+      <div class="employee-detail__field">
+        <dt>Email</dt>
+        <dd>{{ employee.email }}</dd>
+      </div>
+      <div class="employee-detail__field">
+        <dt>Role</dt>
+        <dd>{{ employee.role }}</dd>
+      </div>
+      @if (employee.jobTitle) {
+        <div class="employee-detail__field">
+          <dt>Job title</dt>
+          <dd>{{ employee.jobTitle }}</dd>
+        </div>
+      }
+      @if (employee.department) {
+        <div class="employee-detail__field">
+          <dt>Department</dt>
+          <dd>{{ employee.department }}</dd>
+        </div>
+      }
+      @if (employee.level) {
+        <div class="employee-detail__field">
+          <dt>Level</dt>
+          <dd>{{ employee.level }}</dd>
+        </div>
+      }
+    </dl>
+
+    @if (canEdit) {
+      <form (ngSubmit)="submit()" class="employee-detail__form">
+        <h3 class="employee-detail__form-title">Edit profile</h3>
+
+        <div class="employee-detail__input">
+          <label for="fullName">Full name</label>
+          <input id="fullName" name="fullName" [(ngModel)]="fullName" required maxlength="255" />
+        </div>
+
+        <div class="employee-detail__input">
+          <label for="jobTitle">Job title</label>
+          <input id="jobTitle" name="jobTitle" [(ngModel)]="jobTitle" maxlength="255" />
+        </div>
+
+        <div class="employee-detail__input">
+          <label for="department">Department</label>
+          <input id="department" name="department" [(ngModel)]="department" maxlength="255" />
+        </div>
+
+        <div class="employee-detail__input">
+          <label for="level">Level</label>
+          <select id="level" name="level" [(ngModel)]="level">
+            <option [ngValue]="null">—</option>
+            @for (option of levels; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        @if (canEditRole) {
+          <div class="employee-detail__input">
+            <label for="role">Role</label>
+            <select id="role" name="role" [(ngModel)]="role">
+              @for (option of roles; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <button type="submit" class="employee-detail__save" [disabled]="!fullName.trim()">
+          <i class="pi pi-check" aria-hidden="true"></i> Save
+        </button>
+      </form>
+    } @else {
+      <p class="employee-detail__readonly" role="note">
+        You can only edit your own profile.
+      </p>
+    }
+  } @else {
+    <p class="employee-detail__empty" role="status">Select an employee from the directory to view their details.</p>
+  }
+</article>
