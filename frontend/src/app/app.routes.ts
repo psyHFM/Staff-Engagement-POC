@@ -24,6 +24,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'portfolio',
+    loadComponent: () => import('./features/portfolio/portfolio').then((m) => m.Portfolio),
+    canActivate: [authGuard]
+  },
+  {
     path: 'interactions',
     loadComponent: () => import('./features/interaction/interaction-page/interaction-page').then((m) => m.InteractionPage),
     canActivate: [authGuard]
