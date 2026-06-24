@@ -138,7 +138,15 @@
 					<targetClasses>
 						<param>com.staffengagement.shared.*</param>
 						<param>com.staffengagement.task.*</param>
+						<param>com.staffengagement.employee.*</param>
 					</targetClasses>
+					<!-- Exclude Spring Data JPA repository interfaces: declarative
+					     infrastructure untestable under the unit-only / integration-disabled
+					     rule (testing-strategy.yaml). Mutating derived query methods yields
+					     no-coverage mutants that drag the score down without signal. -->
+					<excludedClasses>
+						<param>com.staffengagement.*.repository.*</param>
+					</excludedClasses>
 					<targetTests>
 						<param>com.staffengagement.*Test</param>
 					</targetTests>
@@ -155,6 +163,16 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>${jacoco.version}</version>
+				<configuration>
+					<!-- Exclude Spring Data JPA repository interfaces: declarative
+					     infrastructure whose derived query methods are untestable under
+					     the unit-only / integration-disabled rule (testing-strategy.yaml).
+					     JaCoCo branch counters on them are synthetic bytecode noise;
+					     excluding them makes coverage measure testable business logic. -->
+					<excludes>
+						<exclude>com/staffengagement/**/repository/**</exclude>
+					</excludes>
+				</configuration>
 				<executions>
 					<execution>
 						<id>prepare-agent</id>
