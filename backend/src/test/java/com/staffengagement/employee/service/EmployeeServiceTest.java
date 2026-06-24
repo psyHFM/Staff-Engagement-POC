@@ -152,7 +152,8 @@ class EmployeeServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> service.create("Jane Doe", null, null, null, caller))
-                .isInstanceOf(DuplicateEmailException.class);
+                .isInstanceOfSatisfying(EmployeeException.class,
+                        ex -> assertThat(ex.kind()).isEqualTo(EmployeeException.Kind.DUPLICATE_EMAIL));
     }
 
     @Test
@@ -213,7 +214,8 @@ class EmployeeServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> service.update(7L, "X", null, null, null, null, null, other))
-                .isInstanceOf(EmployeeAccessDeniedException.class);
+                .isInstanceOfSatisfying(EmployeeException.class,
+                        ex -> assertThat(ex.kind()).isEqualTo(EmployeeException.Kind.ACCESS_DENIED));
     }
 
     @Test
@@ -226,7 +228,8 @@ class EmployeeServiceTest {
         // When / Then
         assertThatThrownBy(() -> service.update(7L, "Jane", null, null, null,
                 EmployeeRole.ADMIN, null, owner))
-                .isInstanceOf(EmployeeAccessDeniedException.class);
+                .isInstanceOfSatisfying(EmployeeException.class,
+                        ex -> assertThat(ex.kind()).isEqualTo(EmployeeException.Kind.ACCESS_DENIED));
     }
 
     @Test
@@ -266,7 +269,8 @@ class EmployeeServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> service.update(99L, "Jane", null, null, null, null, null, admin))
-                .isInstanceOf(EmployeeNotFoundException.class);
+                .isInstanceOfSatisfying(EmployeeException.class,
+                        ex -> assertThat(ex.kind()).isEqualTo(EmployeeException.Kind.NOT_FOUND));
     }
 
     @Test
