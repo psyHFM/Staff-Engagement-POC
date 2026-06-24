@@ -1,0 +1,41 @@
+<section class="interaction-page">
+  <header class="interaction-page__header">
+    <h1><i class="pi pi-comments" aria-hidden="true"></i> Interactions</h1>
+    <a routerLink="/dashboard" class="interaction-page__back">← Dashboard</a>
+  </header>
+
+  <div class="interaction-page__subject">
+    <label for="subject">Employee</label>
+    <select id="subject" (change)="onSubjectSelected($event)">
+      @for (subject of state.subjects(); track subject.id.value) {
+        <option [value]="subject.id.value"
+                [selected]="state.subject()?.value === subject.id.value">
+          {{ subject.fullName }}
+        </option>
+      }
+    </select>
+  </div>
+
+  @if (state.error()) {
+    <div class="interaction-page__error" role="alert">
+      {{ state.error()?.message }}
+    </div>
+  }
+
+  @if (state.created()) {
+    <div class="interaction-page__success" role="status">
+      Interaction logged successfully.
+      <button type="button" (click)="state.clearTransient()">Dismiss</button>
+    </div>
+  }
+
+  <div class="interaction-page__layout">
+    <app-log-interaction [subject]="state.subject()"
+                         [subjects]="state.subjects()"
+                         (logged)="state.loadHistory()"></app-log-interaction>
+
+    <app-interaction-list [history]="state.history()"
+                          [loading]="state.isLoading()"
+                          (pageRequested)="state.loadHistory($event.offset, $event.limit)"></app-interaction-list>
+  </div>
+</section>

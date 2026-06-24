@@ -1,0 +1,61 @@
+<article class="interaction-list">
+  <h2 class="interaction-list__title">Interaction history</h2>
+
+  @if (loading) {
+    <div class="interaction-list__loading" role="status">
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      Loading interactions…
+    </div>
+  }
+
+  @if (!loading && (!history || history.content.length === 0)) {
+    <div class="interaction-list__empty" role="status">
+      <i class="pi pi-inbox" aria-hidden="true"></i>
+      <p>No interactions recorded for this employee yet.</p>
+    </div>
+  }
+
+  @if (!loading && history && history.content.length > 0) {
+    <ul class="interaction-list__items" role="list">
+      @for (interaction of history.content; track interaction.id.value) {
+        <li class="interaction-list__item">
+          <div class="interaction-list__meta">
+            <span class="interaction-list__badge interaction-list__badge--{{ interaction.type }}">
+              {{ interaction.type }}
+            </span>
+            <span class="interaction-list__facilitator">
+              Facilitator: {{ interaction.facilitator.value }}
+            </span>
+          </div>
+          @if (interaction.note) {
+            <p class="interaction-list__note">{{ interaction.note }}</p>
+          }
+        </li>
+      }
+    </ul>
+
+    <div class="interaction-list__pagination">
+      <button
+        type="button"
+        class="interaction-list__page-btn"
+        [disabled]="!hasPrevious"
+        (click)="previous()">
+        <i class="pi pi-chevron-left" aria-hidden="true"></i>
+        Previous
+      </button>
+
+      <span class="interaction-list__page-info" aria-live="polite">
+        {{ currentOffset + 1 }} – {{ currentOffset + history.content.length }} of {{ history.total }}
+      </span>
+
+      <button
+        type="button"
+        class="interaction-list__page-btn"
+        [disabled]="!hasNext"
+        (click)="next()">
+        Next
+        <i class="pi pi-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
+</article>
