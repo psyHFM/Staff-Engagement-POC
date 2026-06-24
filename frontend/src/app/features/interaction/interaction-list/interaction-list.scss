@@ -1,0 +1,141 @@
+.interaction-list {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.interaction-list__title {
+  margin: 0 0 1rem;
+  font-size: 1.125rem;
+}
+
+.interaction-list__loading,
+.interaction-list__empty {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: #6b7280;
+  justify-content: center;
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+.interaction-list__empty {
+  flex-direction: column;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.interaction-list__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.interaction-list__item {
+  border: 1px solid #f3f4f6;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+}
+
+.interaction-list__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.interaction-list__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  background-color: #e5e7eb;
+  color: #374151;
+
+  &--check-in {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+
+  &--mentoring {
+    background-color: #fce7f3;
+    color: #9d174d;
+  }
+
+  &--catch-up {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  &--performance {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+
+  &--other {
+    background-color: #f3f4f6;
+    color: #4b5563;
+  }
+}
+
+.interaction-list__facilitator {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.interaction-list__note {
+  margin: 0;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.interaction-list__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.interaction-list__page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-weight: 500;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: #f9fafb;
+  }
+}
+
+.interaction-list__page-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
