@@ -98,4 +98,27 @@ class ArchUnitTest {
                             "com.staffengagement.task..",
                             "com.staffengagement.skills..")
                     .because("the portfolio module talks to other modules only via frozen shared.api contracts and shared.kernel ids, and uses shared.error only via the uniform ErrorEnvelope; it never reaches another module's internals");
+
+    /**
+     * Phase 5 skills-module isolation (ROADMAP §3 / backend-architecture.yaml).
+     *
+     * <p>The skills module is read-only aggregation: it consumes the frozen
+     * {@code EmployeeContract} and {@code PortfolioContract} and must never reach into
+     * another module's {@code domain}/{@code repository}/{@code service} packages or into
+     * the shared foundation's internal packages ({@code shared.security}, {@code shared.health},
+     * {@code shared.error}). Validation errors surface through the global
+     * {@code IllegalArgumentException} handler; no module-local error handler is needed.
+     */
+    @ArchTest
+    static final ArchRule skillsModuleMustNotDependOnOtherModulesInternals =
+            noClasses().that().resideInAPackage("com.staffengagement.skills..")
+                    .should().dependOnClassesThat().resideInAnyPackage(
+                            "com.staffengagement.shared.error..",
+                            "com.staffengagement.shared.health..",
+                            "com.staffengagement.shared.security..",
+                            "com.staffengagement.employee..",
+                            "com.staffengagement.interaction..",
+                            "com.staffengagement.task..",
+                            "com.staffengagement.portfolio..")
+                    .because("the skills module talks to other modules only via frozen shared.api contracts and shared.kernel ids; it never reaches another module's internals");
 }
