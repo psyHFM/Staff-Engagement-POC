@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
  * {@code /api/v1} prefix, kebab-case paths, camelCase JSON, unwrapped responses,
  * uniform error envelope on failure.
  *
- * <p>RBAC is MANAGER-only across all three endpoints in this splice
- * ({@code @PreAuthorize("hasRole('MANAGER')")}). EMPLOYEE self-read and the
- * facilitator-default-to-logged-in-user are deferred (design D3/D7) — the Phase 0
- * principal is a username with no {@code EmployeeId} mapping.
+ * <p>RBAC is ADMIN-only across all three endpoints in this splice
+ * ({@code @PreAuthorize("hasRole('ADMIN')")}). The POC has no MANAGER role
+ * (EmployeeRole v1.1.0), so ADMIN acts as the manager stand-in. EMPLOYEE self-read
+ * and the facilitator-default-to-logged-in-user are deferred (design D3/D7).
  *
  * <p>The controller depends on {@link InteractionService} only — never on the
  * repository (ArchUnit: {@code ..controller..} must not depend on {@code ..repository..}).
@@ -44,7 +44,7 @@ public class InteractionController {
     }
 
     @PostMapping("/interactions")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InteractionSummary> create(@RequestBody CreateInteractionRequest body) {
         InteractionSummary created = interactionService.create(
                 body.type(), body.subject(), body.facilitator(), body.note());
@@ -52,7 +52,7 @@ public class InteractionController {
     }
 
     @GetMapping("/employees/{id}/interactions")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Paged<InteractionSummary> listBySubject(
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int offset,
@@ -62,7 +62,7 @@ public class InteractionController {
     }
 
     @GetMapping("/interactions/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public InteractionSummary getById(@PathVariable Long id) {
         return interactionService.findById(new InteractionId(id))
                 .orElseThrow(() -> new InteractionNotFoundException(id));

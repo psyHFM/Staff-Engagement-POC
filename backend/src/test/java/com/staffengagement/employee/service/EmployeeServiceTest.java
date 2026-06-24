@@ -97,6 +97,12 @@ class EmployeeServiceTest {
     }
 
     @Test
+    void existsReturnsFalseForNullId() {
+        // When / Then
+        assertThat(service.exists(null)).isFalse();
+    }
+
+    @Test
     void findByEmailReturnsSummaryWhenPresentAndEmptyWhenUnknown() {
         // Given
         when(repository.findByEmail("jane@staff.eng"))
@@ -107,6 +113,12 @@ class EmployeeServiceTest {
         assertThat(service.findByEmail("jane@staff.eng")).isPresent()
                 .get().extracting(EmployeeSummary::role).isEqualTo(EmployeeRole.EMPLOYEE);
         assertThat(service.findByEmail("nobody@staff.eng")).isEmpty();
+    }
+
+    @Test
+    void findByEmailReturnsEmptyForNullEmail() {
+        // When / Then
+        assertThat(service.findByEmail(null)).isEmpty();
     }
 
     // ---- Create ----
