@@ -6,13 +6,26 @@
 
 ## 1. Shared-kernel coordination (Model B expansion — own branch/PR, lands first)
 
-- [ ] 1.1 Add `EmployeeRole` enum (`EMPLOYEE`, `ADMIN`) to `shared/kernel` with a BDD test
-- [ ] 1.2 Additively amend `EmployeeSummary` to carry `role` → `(id, fullName, email, role)`; update any references (none produce it yet — verify)
-- [ ] 1.3 Additively amend `EmployeeContract` with `Optional<EmployeeSummary> findByEmail(String email)` (keep `findById`/`exists` unchanged)
-- [ ] 1.4 Rename stub `MANAGER`→`ADMIN`, user `manager`→`admin` in `StubUserStore` (+ its test); make usernames email-shaped (`admin@staff.eng`, `employee@staff.eng`); demote the stub role list to fallback-only
-- [ ] 1.5 Update `JwtTokenProvider`/`AuthController` to resolve the JWT role from `EmployeeContract.findByEmail(principal.name)` at login, falling back to `ROLE_EMPLOYEE` when no employee record exists; update security BDD tests
-- [ ] 1.6 Run `/constitution-audit` (Constitution Guard) on the shared-kernel change and record the verdict here
-- [ ] 1.7 `./mvnw test` green (Java 21 inline `JAVA_HOME`); ArchUnit green; `openspec validate --changes phase-1-employee` clean; PR + merge to `main`
+- [x] 1.1 Add `EmployeeRole` enum (`EMPLOYEE`, `ADMIN`) to `shared/kernel` with a BDD test
+- [x] 1.2 Additively amend `EmployeeSummary` to carry `role` → `(id, fullName, email, role)`; update any references (none produce it yet — verify)
+- [x] 1.3 Additively amend `EmployeeContract` with `Optional<EmployeeSummary> findByEmail(String email)` (keep `findById`/`exists` unchanged)
+- [x] 1.4 Rename stub `MANAGER`→`ADMIN`, user `manager`→`admin` in `StubUserStore` (+ its test); make usernames email-shaped (`admin@staff.eng`, `employee@staff.eng`); demote the stub role list to fallback-only
+- [x] 1.5 Update `JwtTokenProvider`/`AuthController` to resolve the JWT role from `EmployeeContract.findByEmail(principal.name)` at login, falling back to `ROLE_EMPLOYEE` when no employee record exists; update security BDD tests
+- [x] 1.6 Run `/constitution-audit` (Constitution Guard) on the shared-kernel change and record the verdict here
+- [x] 1.7 `./mvnw test` green (Java 21 inline `JAVA_HOME`); ArchUnit green; `openspec validate --changes phase-1-employee` clean; PR + merge to `main`
+
+### 1.6 Constitution Guard verdict (2026-06-24, branch `chore/phase-1-shared-kernel-model-b`)
+
+Scope: shared-kernel coordination PR only — `shared/kernel/EmployeeRole`, `shared/api/EmployeeSummary` (+`role`), `shared/api/EmployeeContract` (+`findByEmail`), `shared/security/StubUserStore` (rename/email-shaping), `shared/security/AuthController` (role resolution).
+
+- **Tech Stack** ✅ Compliant — Java 21 / Spring Boot; no frontend in this PR.
+- **API Standards** ✅ Compliant — no new endpoints; `/api/v1/auth/login` unchanged (kebab-case); `EmployeeRole` JSON form is lowercase via `@JsonProperty`, consistent with the `InteractionType` precedent; camelCase field keys.
+- **Testing Strategy** ✅ Compliant — new tests are BDD Given-When-Then (JUnit 5 + Mockito), unit-only (integration disabled). ⚠️ Soft: PITest mutation report not run for this coordination PR (no business logic to mutate); deferred to splice Group 5.4.
+- **Backend Arch** ✅ Compliant — ArchUnit green (4/4 rules). `shared` depends only on `shared/api` + `shared/kernel` (no `..repository..`/`..domain..` import). `EmployeeContract` remains an interface (`frozenContractsAreInterfaces`). Role crosses the module boundary via the frozen Service-interface seam, per `communication: Service interfaces`.
+- **Frontend State** ⚪ N/A — no frontend changes in this PR.
+- **Frozen-contract amendment (ROADMAP §2.2)** ✅ Compliant — strictly additive (no method/field removed or renamed); delivered as a coordination PR ahead of the splice. Record canonical-ctor change is source-breaking for producers, but `grep` confirms no `EmployeeSummary` producer existed in Phase 0; documented in `design.md` Risk #2.
+
+**Verdict: Compliant ✅** (one soft PITest deferral, frontend N/A). No remediation required for this coordination PR.
 
 ## 2. Backend employee domain & persistence (splice branch)
 
