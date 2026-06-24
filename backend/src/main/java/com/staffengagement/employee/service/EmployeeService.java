@@ -75,7 +75,7 @@ public class EmployeeService implements EmployeeContract {
         requireFullName(fullName);
         String email = caller.email();
         if (repository.existsByEmail(email)) {
-            throw new DuplicateEmailException(email);
+            throw new EmployeeException(EmployeeException.Kind.DUPLICATE_EMAIL, "Email already in use: " + email);
         }
         Employee entity = new Employee();
         entity.setFullName(fullName);
@@ -101,16 +101,16 @@ public class EmployeeService implements EmployeeContract {
     public EmployeeResponse update(Long id, String fullName, String jobTitle, String department,
                                     EmployeeLevel level, EmployeeRole role, String bodyEmail, Caller caller) {
         Employee entity = repository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException(id));
+                .orElseThrow(() -> new EmployeeException(EmployeeException.Kind.NOT_FOUND, "Employee not found: " + id));
 
         boolean owner = entity.getEmail().equals(caller.email());
         boolean isAdmin = caller.role() == EmployeeRole.ADMIN;
         if (!owner && !isAdmin) {
-            throw new EmployeeAccessDeniedException(id);
+            throw new EmployeeException(EmployeeException.Kind.ACCESS_DENIED, "Not allowed to update employee: " + id);
         }
         // Non-admin may not change role.
         if (role != null && !role.equals(entity.getRole()) && !isAdmin) {
-            throw new EmployeeAccessDeniedException(id);
+            throw new EmployeeException(EmployeeException.Kind.ACCESS_DENIED, "Not allowed to update employee: " + id);
         }
         // Email is immutable.
         if (bodyEmail != null && !bodyEmail.equals(entity.getEmail())) {
