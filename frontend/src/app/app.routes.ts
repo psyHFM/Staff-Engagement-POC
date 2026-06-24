@@ -22,6 +22,11 @@ export const routes: Routes = [
     path: 'tasks',
     loadComponent: () => import('./features/task/task').then((m) => m.Task),
     canActivate: [authGuard]
+  },
+  {
+    path: 'interactions',
+    loadComponent: () => import('./features/interaction/interaction-page/interaction-page').then((m) => m.InteractionPage),
+    canActivate: [authGuard]
   }
   // Phase 1: employees
   // Phase 2: interactions

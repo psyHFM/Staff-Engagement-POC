@@ -1,0 +1,63 @@
+.log-interaction {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.log-interaction__title {
+  margin: 0 0 1rem;
+  font-size: 1.125rem;
+}
+
+.log-interaction__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.log-interaction__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  label {
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  select,
+  textarea {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font: inherit;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.log-interaction__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-weight: 600;
+
+  &:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+  }
+
+  i {
+    font-size: 0.75rem;
+  }
+}

@@ -1,0 +1,41 @@
+<article class="log-interaction">
+  <h2 class="log-interaction__title">Log interaction</h2>
+
+  <form (ngSubmit)="submit()" class="log-interaction__form">
+    <div class="log-interaction__field">
+      <label for="type">Type</label>
+      <select id="type" [(ngModel)]="type" name="type" required>
+        @for (t of types; track t.value) {
+          <option [value]="t.value">{{ t.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="log-interaction__field">
+      <label for="subject">Subject</label>
+      <select id="subject" [(ngModel)]="subjectId" name="subject" required>
+        @for (s of subjects; track s.id.value) {
+          <option [value]="s.id.value">{{ s.fullName }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="log-interaction__field">
+      <label for="facilitator">Facilitator</label>
+      <select id="facilitator" [(ngModel)]="facilitatorId" name="facilitator" required>
+        @for (s of subjects; track s.id.value) {
+          <option [value]="s.id.value">{{ s.fullName }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="log-interaction__field">
+      <label for="note">Note</label>
+      <textarea id="note" [(ngModel)]="note" name="note" rows="4"></textarea>
+    </div>
+
+    <button type="submit" class="log-interaction__submit" [disabled]="!subjectId || !facilitatorId">
+      <i class="pi pi-plus" aria-hidden="true"></i> Log interaction
+    </button>
+  </form>
+</article>
