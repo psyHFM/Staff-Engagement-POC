@@ -11,6 +11,7 @@ import com.staffengagement.task.domain.Task;
 import com.staffengagement.task.repository.TaskRepository;
 import com.staffengagement.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,14 +35,22 @@ public class TaskController {
 
     private final TaskService taskService;
     private final TaskRepository taskRepository;
-    private final EmployeeContract employeeContract;
+    // EmployeeContract is optional: the employee module (Phase 1) lands on a
+    // parallel splice and may not be present when this module boots. Using an
+    // ObjectProvider keeps the monolith bootable on its own (ROADMAP parallel
+    // phases), and subject validation activates automatically once the employee
+    // module is merged.
+    private final ObjectProvider<EmployeeContract> employeeContractProvider;
     private final InteractionContract interactionContract;
 
     @PostMapping("/api/v1/tasks")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<TaskId> create(@RequestBody TaskRequest request) {
-        // 2.3 Validation for subject existence via EmployeeContract
-        if (!employeeContract.exists(new EmployeeId(request.subjectId()))) {
+        // 2.3 Validation for subject existence via EmployeeContract (skipped only
+        // while the employee module is absent).
+        EmployeeContract employeeContract = employeeContractProvider.getIfAvailable();
+        if (employeeContract != null
+                && !employeeContract.exists(new EmployeeId(request.subjectId()))) {
             throw new IllegalArgumentException("Employee not found: " + request.subjectId());
         }
 

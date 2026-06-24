@@ -36,8 +36,10 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: created_at
+                  # No DB default: the Task entity stamps createdAt = Instant.now()
+                  # at construction (updatable = false). Matches the interaction
+                  # module's timestamp convention.
                   type: TIMESTAMP
-                  defaultValue: current_timestamp
                   constraints:
                     nullable: false
               - column:
@@ -45,15 +47,9 @@ databaseChangeLog:
                   type: TIMESTAMP
                   constraints:
                     nullable: true
-        - addForeignKeyConstraint:
-            baseTableName: task
-            baseColumnNames: subject_id
-            constraintName: fk_task_subject
-            referencedTableName: employee
-            referencedColumnNames: id
-        - addForeignKeyConstraint:
-            baseTableName: task
-            baseColumnNames: source_interaction_id
-            constraintName: fk_task_interaction
-            referencedTableName: interaction
-            referencedColumnNames: id
+        # No cross-module DB foreign keys (subject_id -> employee,
+        # source_interaction_id -> interaction). Referential integrity across
+        # module boundaries is deferred to the Phase 6 integration migrations
+        # (ROADMAP §parallel phases), matching the interaction module, which
+        # also keeps its subject_id / facilitator_id as plain bigint columns.
+        # subject_id and source_interaction_id remain logical references here.

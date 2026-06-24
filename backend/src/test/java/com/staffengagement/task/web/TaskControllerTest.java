@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.lenient;
 
 /**
  * BDD unit tests for {@link TaskController} (Phase 3 / testing-strategy.yaml).
@@ -48,6 +50,8 @@ class TaskControllerTest {
     @Mock
     private EmployeeContract employeeContract;
     @Mock
+    private ObjectProvider<EmployeeContract> employeeContractProvider;
+    @Mock
     private InteractionContract interactionContract;
 
     @InjectMocks
@@ -58,6 +62,10 @@ class TaskControllerTest {
     @BeforeEach
     void setUp() {
         subject = new EmployeeId(1L);
+        // Controller resolves EmployeeContract via an ObjectProvider (optional
+        // dependency). Surface the mock contract so the create-validation paths
+        // are exercised; lenient because not every test calls create().
+        lenient().when(employeeContractProvider.getIfAvailable()).thenReturn(employeeContract);
     }
 
     @Test
