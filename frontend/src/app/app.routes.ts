@@ -34,10 +34,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'employees',
-    loadComponent: () => import('./features/employee/employee').then((m) => m.Employee),
+    path: 'skills',
+    loadComponent: () => import('./features/skills/skills-page').then((m) => m.SkillsPage),
     canActivate: [authGuard]
   }
+  // Phase 1: employees
   // Phase 2: interactions
   // Phase 3: tasks
   // Phase 4: portfolio
