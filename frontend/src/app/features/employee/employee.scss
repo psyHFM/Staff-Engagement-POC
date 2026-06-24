@@ -1,0 +1,74 @@
+.employee-page {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+
+    h1 {
+      margin: 0;
+    }
+  }
+
+  &__back {
+    color: var(--primary-color, #3b82f6);
+    text-decoration: none;
+  }
+
+  &__error,
+  &__success {
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  }
+
+  &__error {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  &__success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  &__own,
+  &__directory {
+    margin-bottom: 2rem;
+  }
+
+  &__section-title {
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--surface-border, #e5e7eb);
+  }
+
+  &__hint {
+    color: var(--surface-600, #6b7280);
+    font-style: italic;
+    margin: 0 0 1rem;
+  }
+
+  &__loading {
+    padding: 1rem;
+    color: var(--surface-600, #6b7280);
+
+    .pi {
+      margin-right: 0.5rem;
+    }
+  }
+
+  &__selected {
+    margin-top: 1rem;
+  }
+}
