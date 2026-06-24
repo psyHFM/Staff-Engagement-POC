@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /*
  * log_prompts.js — append the most recent prompt from the current Claude Code
- * session to Prompts.md in the project root, annotated with:
- *   - git author name (above the prompt)
+ * session to a per-developer file under `prompts/`, annotated with:
+ *   - git author name (in the file header and per-entry)
  *   - model used
  *   - token usage (input / output / cache read / cache write / total)
+ *
+ * Each developer gets their own file (e.g. `prompts/hendrik-muller.md`) so
+ * concurrent work never creates merge conflicts in a shared prompt log.
  *
  * Runs two ways:
  *   1. As a Stop hook: Claude pipes hook JSON on stdin (includes transcript_path + cwd).
@@ -20,6 +23,7 @@ const os = require('os');
 const { execSync } = require('child_process');
 
 const STATE_FILE = path.join(__dirname, '.log-prompts-state.json');
+const PROMPTS_DIR = 'prompts';
 
 function safeJson(s) { try { return JSON.parse(s); } catch { return null; } }
 
@@ -116,6 +120,30 @@ function parseTranscript(transcriptPath) {
   return { lastUserPrompt, lastAssistant, lastUserLine };
 }
 
+function slugifyDevName(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function devFilePath(cwd, name) {
+  const dir = path.join(cwd, PROMPTS_DIR);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  return path.join(dir, `${slugifyDevName(name)}.md`);
+}
+
+function ensureHeader(filePath, name) {
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(
+      filePath,
+      `# Prompts — ${name}\n\n` +
+      `Auto-appended by the \`log-prompts\` Stop hook. ` +
+      `Each developer has their own file to avoid merge conflicts.\n\n`
+    );
+  }
+}
+
 (async () => {
   const input = await readStdin();
   const cwd = (input && input.cwd) || process.cwd();
@@ -156,10 +184,8 @@ function parseTranscript(transcriptPath) {
     `\n` +
     `${cleanPrompt(lastUserPrompt)}\n\n`;
 
-  const promptsFile = path.join(cwd, 'Prompts.md');
-  if (!fs.existsSync(promptsFile)) {
-    fs.writeFileSync(promptsFile, '# Prompts\n\nShared log of prompts across the team. Auto-appended by the `log-prompts` Stop hook.\n\n');
-  }
+  const promptsFile = devFilePath(cwd, gitName);
+  ensureHeader(promptsFile, gitName);
   fs.appendFileSync(promptsFile, entry);
 
   writeState({ transcript: transcriptPath, lastUserLine });
