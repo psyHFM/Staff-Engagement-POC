@@ -21,7 +21,7 @@ export class Login {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  protected username = 'employee';
+  protected username = 'employee@staff.eng';
   protected password = 'staffeng';
   protected readonly error = signal<string | null>(null);
   protected readonly submitting = signal(false);
