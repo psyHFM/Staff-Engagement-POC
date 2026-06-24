@@ -1032,3 +1032,10 @@ the latter
 
 yep go ahead
 
+### psyTayobHarrison — 2026-06-24 12:14:04
+
+> **Model:** `glm-5.2`  
+> **Tokens:** `98,094` in / `459` out · cache read `0` / write `0` · **98,553 total**
+
+what's this hook error?
+
