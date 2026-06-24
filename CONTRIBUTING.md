@@ -132,6 +132,15 @@ npm run build -- --configuration production     # build (type-check + AOT)
 npm test -- --no-watch --no-progress            # tests (headless)
 ```
 
+E2E (smoke / vertical-slice acceptance tests with Playwright):
+```powershell
+docker compose up -d --build                    # start the full stack
+npm run e2e:install                             # install e2e deps + browsers (one-time)
+npm run e2e                                     # run Playwright tests
+```
+
+E2E tests live in `e2e/` and are intentionally thin — they verify key user journeys against the running Docker Compose stack. They do not replace unit tests or mutation testing.
+
 If the local command passes, CI should pass. Fix locally before pushing — CI is a verification gate, not a sandbox.
 
 ## Branch protection (enforced on GitHub)
