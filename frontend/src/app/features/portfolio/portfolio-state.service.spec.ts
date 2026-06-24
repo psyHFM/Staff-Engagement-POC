@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { PortfolioStateService } from './portfolio-state.service';
-import { Portfolio, SkillEntry, EducationEntry, ProjectEntry, LinkEntry, emptyPortfolio } from './portfolio.model';
+import { Portfolio, SkillEntry, emptyPortfolio } from './portfolio.model';
 
 describe('PortfolioStateService', () => {
   let service: PortfolioStateService;
@@ -35,8 +35,6 @@ describe('PortfolioStateService', () => {
   const flushError = (url: string): void => {
     httpMock.expectOne(url).flush('boom', { status: 500, statusText: 'Server Error' });
   };
-
-  const base = (employeeId: string): string => `employees/${employeeId}/portfolio`;
 
   it('loads a portfolio from GET /api/v1/employees/{id}/portfolio and exposes it via the portfolio signal', () => {
     // Given
