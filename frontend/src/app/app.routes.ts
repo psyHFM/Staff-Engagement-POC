@@ -17,6 +17,11 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
     canActivate: [authGuard]
+  },
+  {
+    path: 'tasks',
+    loadComponent: () => import('./features/task/task').then((m) => m.Task),
+    canActivate: [authGuard]
   }
   // Phase 1: employees
   // Phase 2: interactions

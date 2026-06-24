@@ -137,6 +137,7 @@
 				<configuration>
 					<targetClasses>
 						<param>com.staffengagement.shared.*</param>
+						<param>com.staffengagement.task.*</param>
 					</targetClasses>
 					<targetTests>
 						<param>com.staffengagement.*Test</param>

@@ -48,4 +48,29 @@ class ArchUnitTest {
                 .should().beFreeOfCycles()
                 .check(classes);
     }
+
+    /**
+     * Phase 3 task-module isolation (ROADMAP §3 / backend-architecture.yaml).
+     *
+     * <p>The task module must never reach into another module's internals (the employee,
+     * interaction, portfolio and skills {@code domain}/{@code repository}/{@code service}
+     * packages) nor into the shared foundation's internal packages
+     * ({@code shared.security}, {@code shared.health}, {@code shared.error}). Cross-module
+     * communication is exclusively via the frozen {@code shared.api} contracts and
+     * {@code shared.kernel} ids. The denylist below is the active guard — a denylist is
+     * used (rather than an allowlist) so the rule only evaluates {@code com.staffengagement}
+     * references and is not thrown off by JDK classes ArchUnit cannot fully resolve.
+     */
+    @ArchTest
+    static final ArchRule taskModuleMustNotDependOnOtherModulesInternals =
+            noClasses().that().resideInAPackage("com.staffengagement.task..")
+                    .should().dependOnClassesThat().resideInAnyPackage(
+                            "com.staffengagement.shared.error..",
+                            "com.staffengagement.shared.health..",
+                            "com.staffengagement.shared.security..",
+                            "com.staffengagement.employee..",
+                            "com.staffengagement.interaction..",
+                            "com.staffengagement.portfolio..",
+                            "com.staffengagement.skills..")
+                    .because("the task module talks to other modules only via frozen shared.api contracts and shared.kernel ids, never their internals");
 }

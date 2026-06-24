@@ -1,0 +1,59 @@
+databaseChangeLog:
+  - changeSet:
+      id: task-001
+      author: phase3
+      changes:
+        - createTable:
+            tableName: task
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: subject_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_interaction_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: description
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValue: current_timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: task
+            baseColumnNames: subject_id
+            constraintName: fk_task_subject
+            referencedTableName: employee
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: task
+            baseColumnNames: source_interaction_id
+            constraintName: fk_task_interaction
+            referencedTableName: interaction
+            referencedColumnNames: id
