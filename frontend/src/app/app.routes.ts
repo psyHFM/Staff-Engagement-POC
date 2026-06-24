@@ -32,6 +32,11 @@ export const routes: Routes = [
     path: 'interactions',
     loadComponent: () => import('./features/interaction/interaction-page/interaction-page').then((m) => m.InteractionPage),
     canActivate: [authGuard]
+  },
+  {
+    path: 'skills',
+    loadComponent: () => import('./features/skills/skills-page').then((m) => m.SkillsPage),
+    canActivate: [authGuard]
   }
   // Phase 1: employees
   // Phase 2: interactions
