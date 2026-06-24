@@ -86,3 +86,10 @@ test this is working with docker and playwright
 
 rebase with main and make PR
 
+### Hendrik Muller — 2026-06-24 13:04:14
+
+> **Model:** `kimi-k2.7-code`  
+> **Tokens:** `57,260` in / `500` out · cache read `0` / write `0` · **57,760 total**
+
+update prompt log hook, to put each devs prompt in their own .md file under a prompts folder, instead of a single prompts.md file to avoid conflicts
+
