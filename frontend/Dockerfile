@@ -4,8 +4,13 @@
 # ---- build stage ----
 FROM node:22-alpine AS build
 WORKDIR /workspace
-COPY package*.json ./
-RUN npm ci
+# Copy only package.json (NOT package-lock.json). The committed lockfile was
+# generated on Windows; installing from it on Alpine hits npm/cli#4828, where the
+# platform-specific optional native binary @rollup/rollup-linux-x64-musl is not
+# installed, breaking the Angular production bundle step. A lockfile-free
+# `npm install` resolves the correct platform optional per the build host.
+COPY package.json ./
+RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build -- --configuration=production
 

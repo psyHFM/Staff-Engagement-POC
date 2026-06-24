@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: task-001
+      author: phase3
+      changes:
+        - createTable:
+            tableName: task
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: subject_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_interaction_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: description
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  # No DB default: the Task entity stamps createdAt = Instant.now()
+                  # at construction (updatable = false). Matches the interaction
+                  # module's timestamp convention.
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
+        # No cross-module DB foreign keys (subject_id -> employee,
+        # source_interaction_id -> interaction). Referential integrity across
+        # module boundaries is deferred to the Phase 6 integration migrations
+        # (ROADMAP §parallel phases), matching the interaction module, which
+        # also keeps its subject_id / facilitator_id as plain bigint columns.
+        # subject_id and source_interaction_id remain logical references here.
