@@ -36,11 +36,11 @@ Scope: shared-kernel coordination PR only — `shared/kernel/EmployeeRole`, `sha
 
 ## 3. Backend employee service & contract (splice branch)
 
-- [ ] 3.1 Create `employee/service/EmployeeService implements EmployeeContract` — `findById`→`Optional<EmployeeSummary>`, `exists`, `findByEmail` (all returning the 4-field summary)
-- [ ] 3.2 Add module-local `EmployeeResponse` DTO (full field set) + request DTOs + `EmployeeMapper` (entity↔summary/response)
-- [ ] 3.3 Create logic: bind `email` to `principal.name`; force `role = EMPLOYEE`; reject an already-bound email with 409; persist; server-set timestamps and sequence `id`
-- [ ] 3.4 Update logic: owner (`email==principal.name`) or ADMIN only; full replace of `fullName/jobTitle/department/level`; ADMIN may also replace `role`; non-admin `role` change → 403; `email` immutable (differing → 400); refresh `updatedAt`
-- [ ] 3.5 List logic: `offset`/`limit` (default 20, max 100) + `sort` whitelist (`fullName,email,department,level,createdAt`, default `createdAt,desc`); no filters
+- [x] 3.1 Create `employee/service/EmployeeService implements EmployeeContract` — `findById`→`Optional<EmployeeSummary>`, `exists`, `findByEmail` (all returning the 4-field summary)
+- [x] 3.2 Add module-local `EmployeeResponse` DTO (full field set) + request DTOs + `EmployeeMapper` (entity↔summary/response)
+- [x] 3.3 Create logic: bind `email` to `principal.name`; force `role = EMPLOYEE`; reject an already-bound email with 409; persist; server-set timestamps and sequence `id`
+- [x] 3.4 Update logic: owner (`email==principal.name`) or ADMIN only; full replace of `fullName/jobTitle/department/level`; ADMIN may also replace `role`; non-admin `role` change → 403; `email` immutable (differing → 400); refresh `updatedAt`
+- [x] 3.5 List logic: `offset`/`limit` (default 20, max 100) + `sort` whitelist (`fullName,email,department,level,createdAt`, default `createdAt,desc`); no filters
 
 ## 4. Backend employee controller & validation (splice branch)
 
@@ -51,7 +51,7 @@ Scope: shared-kernel coordination PR only — `shared/kernel/EmployeeRole`, `sha
 
 ## 5. Backend tests & boundaries (splice branch)
 
-- [ ] 5.1 BDD unit tests (JUnit5 + Mockito) for `EmployeeService`: create (email-bound, forced EMPLOYEE, 409 dup), update (owner ok, admin ok incl. role, 403 other, 403 non-admin role change, 400 email change), findByEmail, list (default/sort/limit), findById/exists
+- [x] 5.1 BDD unit tests (JUnit5 + Mockito) for `EmployeeService`: create (email-bound, forced EMPLOYEE, 409 dup), update (owner ok, admin ok incl. role, 403 other, 403 non-admin role change, 400 email change), findByEmail, list (default/sort/limit), findById/exists — **done in Group 3** (testing-first; 21 tests in `EmployeeServiceTest`)
 - [ ] 5.2 BDD unit tests for `EmployeeController` (mock the service): status codes, envelope shape, RBAC enforcement incl. role-change rules
 - [ ] 5.3 Confirm ArchUnit green: employee module follows `controller/→service/→repository`, imports `shared/api` only
 - [ ] 5.4 `./mvnw test` green; PITest mutation report (soft); JaCoCo ≥80%
