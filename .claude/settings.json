@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/log_prompts.js"
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/log_prompts.js\""
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/surface_personas_on_apply.js"
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/surface_personas_on_apply.js\""
           }
         ]
       }
