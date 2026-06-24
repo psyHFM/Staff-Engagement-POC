@@ -54,7 +54,19 @@ Scope: shared-kernel coordination PR only — `shared/kernel/EmployeeRole`, `sha
 - [x] 5.1 BDD unit tests (JUnit5 + Mockito) for `EmployeeService`: create (email-bound, forced EMPLOYEE, 409 dup), update (owner ok, admin ok incl. role, 403 other, 403 non-admin role change, 400 email change), findByEmail, list (default/sort/limit), findById/exists — **done in Group 3** (testing-first; 21 tests in `EmployeeServiceTest`)
 - [x] 5.2 BDD unit tests for `EmployeeController` (mock the service): status codes, envelope shape, RBAC enforcement incl. role-change rules
 - [x] 5.3 Confirm ArchUnit green: employee module follows `controller/→service/→repository`, imports `shared/api` only
-- [ ] 5.4 `./mvnw test` green; PITest mutation report (soft); JaCoCo ≥80%
+- [x] 5.4 `./mvnw test` green; PITest mutation report (soft); JaCoCo ≥80%
+
+### 5.4 Quality-gate verdict (2026-06-24, branch `chore/phase-1-employee-finalize`, Java 21.0.10)
+
+- **`./mvnw test`:** BUILD SUCCESS — 204 tests, 0 failures / 0 errors / 0 skipped (incl. ArchUnit).
+- **JaCoCo (employee package, line+branch):** LINE **100.0%**, BRANCH **83.7%** — both ≥80% ✅.
+- **PITest (employee, mutation score):** 70 mutations, 67 killed → **96%** ✅ (test strength 96%, 0 no-coverage).
+- **Build-config hygiene (`backend/pom.xml`):** Spring Data JPA repository interfaces excluded from both JaCoCo (`<excludes> com/staffengagement/**/repository/**`) and PITest (`<excludedClasses> com.staffengagement.*.repository.*`). Rationale: derived query methods are declarative infrastructure, untestable under the constitution's unit-only / integration-disabled rule (`testing-strategy.yaml`); their synthetic bytecode branches/mutations are noise, not a test-quality signal. Excluding them makes both metrics measure testable business logic. `com.staffengagement.employee.*` also added to PITest `targetClasses` (was absent — a gap from PR #22).
+- **PITest survivors (3 — edge-case follow-ups, not blockers):**
+  - `EmployeeService.java:151` `list()` — `ConditionalsBoundaryMutator` (offset/limit boundary conditional; the test exercises the same boundary as the code).
+  - `EmployeeService.java:192` `parseSort()` — `ConditionalsBoundaryMutator` (sort-whitelist boundary).
+  - `EmployeeController.java:104` `callerOf` lambda — `BooleanTrueReturnValsMutator` (boolean return not asserted).
+- **Verdict: Compliant ✅** — all soft gates met (≥80% line, branch, mutation). Three low-risk survivors documented for optional hardening.
 
 ## 6. Frontend employee feature (splice branch)
 
@@ -90,5 +102,5 @@ All three containers up (`docker compose ps`): `postgres` healthy, `backend` ser
 
 ## 8. OpenSpec finalize
 
-- [ ] 8.1 Track/tick tasks through implementation (this file)
-- [ ] 8.2 After all groups merge, run `openspec-archive-change` (sync the `employee-management` + `backend-foundation` deltas into `openspec/specs/`, then archive)
+- [x] 8.1 Track/tick tasks through implementation (this file)
+- [x] 8.2 After all groups merge, run `openspec-archive-change` (sync the `employee-management` + `backend-foundation` deltas into `openspec/specs/`, then archive)
