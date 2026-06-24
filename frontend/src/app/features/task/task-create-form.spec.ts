@@ -69,13 +69,13 @@ describe('TaskCreateForm', () => {
     fixture.detectChanges();
     const component = fixture.componentInstance as unknown as {
       request: { subjectId: string; title: string; description: string };
-      close: { emit: (v?: void) => void };
+      formClosed: { emit: (v?: void) => void };
     };
     component.request.subjectId = '7';
     component.request.title = 'Follow up';
     component.request.description = 'Send the email';
     let closed = false;
-    component.close.emit = () => (closed = true);
+    component.formClosed.emit = () => (closed = true);
 
     // When
     (fixture.componentInstance as unknown as { submit: () => void }).submit();
@@ -93,7 +93,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     let closed = false;
-    (fixture.componentInstance as unknown as { close: { emit: (v?: void) => void } }).close.emit =
+    (fixture.componentInstance as unknown as { formClosed: { emit: (v?: void) => void } }).formClosed.emit =
       () => (closed = true);
 
     // When

@@ -55,7 +55,7 @@ import { Task as TaskModel } from './task.model';
 
       <app-task-create-form
         *ngIf="showCreateModal()"
-        (close)="showCreateModal.set(false)">
+        (formClosed)="showCreateModal.set(false)">
       </app-task-create-form>
     </div>
   `,

@@ -109,7 +109,7 @@ import { CreateTaskRequest } from './task.model';
     .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
   `]
 })
-export class TaskCreateForm {
+export class TaskCreateForm implements OnInit {
   protected readonly state = inject(TaskStateService);
 
   // Input for interaction context
@@ -121,7 +121,9 @@ export class TaskCreateForm {
     subjectId: ''
   };
 
-  @Output() close = new EventEmitter<void>();
+  // Renamed from `close` — `close` is a native DOM event name and trips
+  // @angular-eslint/no-output-native.
+  @Output() formClosed = new EventEmitter<void>();
 
   ngOnInit() {
     if (this.interactionId) {
@@ -130,7 +132,7 @@ export class TaskCreateForm {
   }
 
   closeForm() {
-    this.close.emit();
+    this.formClosed.emit();
   }
 
   submit() {
