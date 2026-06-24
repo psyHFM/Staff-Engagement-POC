@@ -1,0 +1,177 @@
+databaseChangeLog:
+  # Phase 4 owns db/changelog/modules/portfolio/ (ROADMAP §2.3). Discovered by
+  # master.yaml's includeAll over db/changelog/modules/ — no edit to master.yaml.
+  #
+  # Per the interaction/task module convention, employee_id is a plain bigint
+  # LOGICAL reference (no cross-module DB foreign key to employee). Referential
+  # integrity across module boundaries is deferred to the Phase 6 integration
+  # migrations (ROADMAP §parallel phases). The 1:1 portfolio-per-employee rule is
+  # enforced by a unique constraint on portfolio.employee_id.
+  - changeSet:
+      id: portfolio-001
+      author: phase4
+      changes:
+        - createTable:
+            tableName: portfolio
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: employee_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+  # Skill entries — the unit the Skills register (Phase 5) aggregates via the
+  # frozen PortfolioContract. years and project_count are non-negative ints.
+  - changeSet:
+      id: portfolio-002-skills
+      author: phase4
+      changes:
+        - createTable:
+            tableName: portfolio_skill
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: portfolio_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    # Same-module FK is fine (portfolio owns its child rows).
+                    references: portfolio(id)
+                    foreignKeyName: fk_portfolio_skill_portfolio
+              - column:
+                  name: skill
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: years
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: project_count
+                  type: int
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: portfolio-003-education
+      author: phase4
+      changes:
+        - createTable:
+            tableName: portfolio_education
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: portfolio_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    references: portfolio(id)
+                    foreignKeyName: fk_portfolio_education_portfolio
+              - column:
+                  name: institution
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: qualification
+                  type: varchar(255)
+              - column:
+                  name: start_year
+                  type: int
+              - column:
+                  name: end_year
+                  type: int
+  - changeSet:
+      id: portfolio-004-projects
+      author: phase4
+      changes:
+        - createTable:
+            tableName: portfolio_project
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: portfolio_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    references: portfolio(id)
+                    foreignKeyName: fk_portfolio_project_portfolio
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: start_year
+                  type: int
+              - column:
+                  name: end_year
+                  type: int
+  - changeSet:
+      id: portfolio-005-links
+      author: phase4
+      changes:
+        - createTable:
+            tableName: portfolio_link
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: portfolio_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    references: portfolio(id)
+                    foreignKeyName: fk_portfolio_link_portfolio
+              - column:
+                  name: label
+                  type: varchar(255)
+              - column:
+                  name: url
+                  type: varchar(2048)
+                  constraints:
+                    nullable: false
