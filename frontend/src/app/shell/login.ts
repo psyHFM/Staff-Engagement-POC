@@ -21,7 +21,9 @@ export class Login {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  protected username = 'employee@staff.eng';
+  // Prefilled with the POC admin demo account; this is the only stub user that
+  // has a seeded Employee record and ADMIN role for the Interaction feature.
+  protected username = 'admin@staff.eng';
   protected password = 'staffeng';
   protected readonly error = signal<string | null>(null);
   protected readonly submitting = signal(false);
