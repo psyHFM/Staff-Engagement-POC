@@ -44,16 +44,16 @@ Scope: shared-kernel coordination PR only — `shared/kernel/EmployeeRole`, `sha
 
 ## 4. Backend employee controller & validation (splice branch)
 
-- [ ] 4.1 Create `employee/controller/EmployeeController` with `POST/GET/GET-by-id/PUT /api/v1/employees` (kebab-case, camelCase JSON, unwrapped, uniform `ErrorEnvelope`)
-- [ ] 4.2 Bean Validation on request DTOs (`fullName` non-blank + max length, `level` enum, `jobTitle`/`department` max length, `role` enum when supplied); map violations → 400 envelope
-- [ ] 4.3 Enforce RBAC: create any-authenticated (own only); update owner-or-admin; role change admin-only; map 403/401 via `AuthErrorHandlers`; 404 not found; 409 dup email
-- [ ] 4.4 Return HTTP 201 on create, 200 on update/get/list; response DTO includes `role`
+- [x] 4.1 Create `employee/controller/EmployeeController` with `POST/GET/GET-by-id/PUT /api/v1/employees` (kebab-case, camelCase JSON, unwrapped, uniform `ErrorEnvelope`)
+- [x] 4.2 Bean Validation on request DTOs (`fullName` non-blank + max length, `level` enum, `jobTitle`/`department` max length, `role` enum when supplied); map violations → 400 envelope
+- [x] 4.3 Enforce RBAC: create any-authenticated (own only); update owner-or-admin; role change admin-only; map 403/401 via `AuthErrorHandlers`; 404 not found; 409 dup email
+- [x] 4.4 Return HTTP 201 on create, 200 on update/get/list; response DTO includes `role`
 
 ## 5. Backend tests & boundaries (splice branch)
 
 - [x] 5.1 BDD unit tests (JUnit5 + Mockito) for `EmployeeService`: create (email-bound, forced EMPLOYEE, 409 dup), update (owner ok, admin ok incl. role, 403 other, 403 non-admin role change, 400 email change), findByEmail, list (default/sort/limit), findById/exists — **done in Group 3** (testing-first; 21 tests in `EmployeeServiceTest`)
-- [ ] 5.2 BDD unit tests for `EmployeeController` (mock the service): status codes, envelope shape, RBAC enforcement incl. role-change rules
-- [ ] 5.3 Confirm ArchUnit green: employee module follows `controller/→service/→repository`, imports `shared/api` only
+- [x] 5.2 BDD unit tests for `EmployeeController` (mock the service): status codes, envelope shape, RBAC enforcement incl. role-change rules
+- [x] 5.3 Confirm ArchUnit green: employee module follows `controller/→service/→repository`, imports `shared/api` only
 - [ ] 5.4 `./mvnw test` green; PITest mutation report (soft); JaCoCo ≥80%
 
 ## 6. Frontend employee feature (splice branch)
