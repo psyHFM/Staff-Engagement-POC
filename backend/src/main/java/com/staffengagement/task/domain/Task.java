@@ -25,6 +25,9 @@ public class Task {
     @Column(name = "source_interaction_id")
     private Long sourceInteractionId;
 
+    @Column(name = "title", nullable = false, length = 255)
+    private String title = "";
+
     @Column(name = "description", nullable = false, length = 1000)
     private String description;
 

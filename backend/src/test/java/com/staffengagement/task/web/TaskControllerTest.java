@@ -73,7 +73,7 @@ class TaskControllerTest {
     @DisplayName("Should persist and return the new task id when the subject exists")
     void create_persistsAndReturnsId_whenSubjectExists() {
         // Given — the subject exists and the source interaction belongs to them
-        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, 42L, "Follow up");
+        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, 42L, "Follow up", "Send the email");
         given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
@@ -84,7 +84,8 @@ class TaskControllerTest {
                 .id(777L)
                 .subjectId(1L)
                 .sourceInteractionId(42L)
-                .description("Follow up")
+                .title("Follow up")
+                .description("Send the email")
                 .completed(false)
                 .build();
         given(taskRepository.save(any(Task.class))).willReturn(persisted);
@@ -104,11 +105,12 @@ class TaskControllerTest {
     @DisplayName("Should create a standalone task when no source interaction is supplied")
     void create_allowsStandaloneTask_withoutInteractionCheck() {
         // Given — no sourceInteractionId, so interaction validation is skipped
-        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, null, "Standalone");
+        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, null, "Standalone", "Standalone");
         given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         Task persisted = Task.builder()
                 .id(5L)
                 .subjectId(1L)
+                .title("Standalone")
                 .description("Standalone")
                 .completed(false)
                 .build();
@@ -126,7 +128,7 @@ class TaskControllerTest {
     @DisplayName("Should reject creation when the subject employee does not exist")
     void create_rejects_whenSubjectMissing() {
         // Given
-        TaskController.TaskRequest request = new TaskController.TaskRequest(99L, null, "Orphan");
+        TaskController.TaskRequest request = new TaskController.TaskRequest(99L, null, "Orphan", "Orphan body");
         given(employeeContract.exists(new EmployeeId(99L))).willReturn(false);
 
         // When / Then
@@ -141,7 +143,7 @@ class TaskControllerTest {
     @DisplayName("Should reject creation when the source interaction does not belong to the subject")
     void create_rejects_whenSourceInteractionNotForSubject() {
         // Given — the subject has interaction 42, but the request references 99
-        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, 99L, "From interaction");
+        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, 99L, "From interaction", "Body");
         given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(

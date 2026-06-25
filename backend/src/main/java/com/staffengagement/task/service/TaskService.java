@@ -55,7 +55,7 @@ public class TaskService implements TaskContract {
         return new TaskSummary(
                 task.getId(),
                 task.getSubjectId(),
-                task.getDescription(),
+                task.getTitle(),
                 task.getSourceInteractionId(),
                 task.isCompleted(),
                 task.getDescription()

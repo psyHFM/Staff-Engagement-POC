@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: task-002-add-title
+      author: atse1-31
+      comment: |
+        ATSE1-31 — add a `title` column to the task table.
+
+        The task controller's request body carries a `title` alongside
+        the existing `description`; the entity mapper currently maps
+        `description` into both summary fields, which is a latent bug
+        (§7.5 fix). Adding the column is additive — the existing
+        `description` column stays untouched. The `NOT NULL DEFAULT ''`
+        makes the migration safe for any pre-existing seeded rows that
+        landed before the controller started sending `title`.
+
+        master.yaml is untouched; this changeset is picked up via the
+        existing `includeAll` directive on `db/changelog/modules/task/`.
+      changes:
+        - addColumn:
+            tableName: task
+            columns:
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+                  defaultValue: ''
+                  constraints:
+                    nullable: false
