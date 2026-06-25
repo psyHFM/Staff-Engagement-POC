@@ -117,23 +117,28 @@ describe('InteractionPage', () => {
   it('closes the edit modal and clears the editing signal on close', () => {
     // Given
     fixture.componentInstance.editing.set(buildInteraction());
+    (stateMock.loadHistory as jest.Mock).mockClear();
 
     // When
     fixture.componentInstance.onEditClosed();
 
-    // Then
+    // Then — modal closes; we do NOT reload history on cancel
     expect(fixture.componentInstance.editing()).toBeNull();
+    expect(stateMock.loadHistory).not.toHaveBeenCalled();
   });
 
   it('closes the edit modal and clears the editing signal on save', () => {
     // Given
     fixture.componentInstance.editing.set(buildInteraction());
+    (stateMock.loadHistory as jest.Mock).mockClear();
 
     // When
     fixture.componentInstance.onEditSaved();
 
-    // Then
+    // Then — modal closes; the save's own subscriber chain refreshes
+    // history (state.updateInteraction taps loadHistory on success).
     expect(fixture.componentInstance.editing()).toBeNull();
+    expect(stateMock.loadHistory).not.toHaveBeenCalled();
   });
 
   it('opens the create-task modal when a row emits createTask', () => {
