@@ -13,17 +13,17 @@
 - [x] 2.3 Add a 401-clears-storage handler in the `bearerAuthInterceptor` (or a sibling interceptor) that removes the storage entry and routes to `/login`
 - [x] 2.4 Update `frontend/src/app/shared/auth/auth-state.spec.ts` with BDD specs: token round-trips on login, logout clears storage, cold-start hydrates from storage, 401 clears storage
 - [x] 2.5 Add `e2e/tests/auth-persistence.spec.ts` Playwright smoke (login → reload → still on /dashboard)
-- [ ] 2.6 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`; record findings in `persona-reviews/02-*`
+- [x] 2.6 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`; record findings in `persona-reviews/02-*` (0 violations across all three — see 02-constitution-guard-auth.md, 02-angular-state-architect-auth.md, 02-bdd-test-engineer-auth.md)
 
 ## 3. Employees directory + Your-details split (ATSE1-27, ATSE1-32)
 
-- [ ] 3.1 Delete the "Your profile" section from `frontend/src/app/features/employee/employee.html:28-49`
-- [ ] 3.2 Strip `ownProfile`, `onCreated`, `onUpdateOwn`, and the `EmployeeCreateForm` + `EmployeeDetail` imports from `frontend/src/app/features/employee/employee.ts:5-6, 40-47, 72-84`
-- [ ] 3.3 Slim `frontend/src/app/features/employee/employee.spec.ts` (drop the deleted-component specs)
-- [ ] 3.4 Add a `currentUserId()` derived signal on `AuthState` (parses the JWT subject claim)
-- [ ] 3.5 Add `{ path: 'profile', loadComponent: …, canActivate: [authGuard] }` to `app.routes.ts` that resolves the current user id and mounts the existing `ProfilePage`
-- [ ] 3.6 Turn `<span class="shell__user">` in `frontend/src/app/shell/shell.html:18` into an `<a routerLink="/profile">`
-- [ ] 3.7 Update `frontend/src/app/shell/shell.spec.ts` to assert the new link
+- [x] 3.1 Delete the "Your profile" section from `frontend/src/app/features/employee/employee.html:28-49`
+- [x] 3.2 Strip `ownProfile`, `onCreated`, `onUpdateOwn`, and the `EmployeeCreateForm` + `EmployeeDetail` imports from `frontend/src/app/features/employee/employee.ts:5-6, 40-47, 72-84`
+- [x] 3.3 Slim `frontend/src/app/features/employee/employee.spec.ts` (drop the deleted-component specs)
+- [x] 3.4 Add a `currentUserId()` derived signal on `AuthState` (parses the JWT subject claim) — implemented as `currentUserSubject` (the JWT `sub` is the email, not the numeric id; the directory filter is done client-side in `YourDetailsStateService.loadCurrent`)
+- [x] 3.5 Add `{ path: 'profile', loadComponent: …, canActivate: [authGuard] }` to `app.routes.ts` that resolves the current user id and mounts the existing `ProfilePage` — routes to a new lazy-loaded `YourDetailsPage` component
+- [x] 3.6 Turn `<span class="shell__user">` in `frontend/src/app/shell/shell.html:18` into an `<a routerLink="/profile">`
+- [x] 3.7 Update `frontend/src/app/shell/shell.spec.ts` to assert the new link
 - [ ] 3.8 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`
 
 ## 4. Interaction row edit + create-task-from-interaction (ATSE1-28, ATSE1-29)

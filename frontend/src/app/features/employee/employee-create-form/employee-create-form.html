@@ -27,7 +27,7 @@
       </select>
     </div>
 
-    <button type="submit" class="employee-create-form__submit" [disabled]="!fullName.trim()">
+    <button type="submit" class="employee-create-form__submit" [disabled]="!fullName.trim() || submitting">
       <i class="pi pi-plus" aria-hidden="true"></i> Create profile
     </button>
   </form>

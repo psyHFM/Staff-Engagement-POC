@@ -30,10 +30,10 @@ import {
  *
  * <p>Beyond the token, this service exposes the JWT subject claim
  * (the {@code sub} field) as {@link currentUserSubject}. The auth
- * controller sets the subject to the email-shaped principal (see
- * {@code shared.security.AuthController#login}), so today this equals
- * the email too — but the signal is read off the token itself, which
- * is the authoritative source. New callers should prefer
+ * controller sets the subject to the email-shaped principal
+ * (see {@code shared.security.AuthController#login}), so today this
+ * equals the email too — but the signal is read off the token itself,
+ * which is the authoritative source. New callers should prefer
  * {@link currentUserSubject} over {@link currentUser} when they need
  * to identify the logged-in user; the latter is a storage-only echo
  * kept for display in the shell.

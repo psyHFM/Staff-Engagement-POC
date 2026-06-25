@@ -177,7 +177,22 @@ describe('AuthState', () => {
       expect(auth.currentUserSubject()).toBeNull();
     });
 
-    it('returns the decoded sub claim from a well-formed JWT', () => {
+    it('decodes the JWT subject claim after login (authoritative identity)', () => {
+      // Given — no subject yet
+      expect(auth.currentUserSubject()).toBeNull();
+
+      // When — login issues a JWT with sub=admin@staff.eng
+      auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
+      httpMock.expectOne('/api/v1/auth/login').flush({
+        token: tokenWithSub('admin@staff.eng'),
+        tokenType: 'Bearer'
+      });
+
+      // Then — currentUserSubject reads the `sub` claim, not the storage username
+      expect(auth.currentUserSubject()).toBe('admin@staff.eng');
+    });
+
+    it('returns the decoded sub claim from a persisted JWT (post-rehydration)', () => {
       // Given — header.payload.signature with payload {"sub":"admin@staff.eng"}
       const payload = btoa(JSON.stringify({ sub: 'admin@staff.eng' }))
         .replace(/=+$/, '')
@@ -201,7 +216,20 @@ describe('AuthState', () => {
       configureAndInject();
 
       // When / Then
+      expect(auth.isAuthenticated()).toBe(true);
       expect(auth.currentUserSubject()).toBeNull();
     });
   });
 });
+
+/**
+ * Mint a fake JWT with the given subject claim. The signature is junk —
+ * we only need the payload to be a base64url-encoded JSON with `sub`.
+ * Mirrors what `JwtTokenProvider.generate(sub, roles)` produces for the
+ * middle segment.
+ */
+function tokenWithSub(sub: string): string {
+  const payload = JSON.stringify({ sub, roles: ['EMPLOYEE'] });
+  const base64 = globalThis.btoa(payload).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  return `header.${base64}.signature`;
+}
