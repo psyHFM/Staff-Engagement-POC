@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { DatePipe } from '@angular/common';
 
 import { InteractionSummary, Paged } from '../interaction.types';
 
@@ -13,9 +14,21 @@ export interface PageRequest {
  *
  * <p>Pure presentation component: receives the {@link Paged} history and loading
  * flag, and emits page-change requests to the parent / state service.
+ *
+ * <p>Per-row actions (ATSE1-28, ATSE1-29):
+ * <ul>
+ *   <li>{@link rowEdit} — emitted when the user clicks the row's Edit button.
+ *       The page opens an edit modal; the component does not know about it.</li>
+ *   <li>{@link createTask} — emitted when the user clicks the row's
+ *       "Create task" button. The page mounts a {@code TaskCreateForm} with
+ *       the interaction's id pre-populated.</li>
+ * </ul>
+ * Both events bubble the full {@link InteractionSummary} so the page does
+ * not need to re-look-it-up from the cached page.
  */
 @Component({
   selector: 'app-interaction-list',
+  imports: [DatePipe],
   templateUrl: './interaction-list.html',
   styleUrl: './interaction-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -24,6 +37,8 @@ export class InteractionList {
   @Input({ required: true }) history: Paged<InteractionSummary> | null = null;
   @Input({ required: true }) loading = false;
   @Output() pageRequested = new EventEmitter<PageRequest>();
+  @Output() rowEdit = new EventEmitter<InteractionSummary>();
+  @Output() createTask = new EventEmitter<InteractionSummary>();
 
   protected readonly limit = 20;
 
@@ -55,5 +70,13 @@ export class InteractionList {
     }
     const previousOffset = Math.max(0, this.currentOffset - this.limit);
     this.pageRequested.emit({ offset: previousOffset, limit: this.limit });
+  }
+
+  protected onEdit(interaction: InteractionSummary): void {
+    this.rowEdit.emit(interaction);
+  }
+
+  protected onCreateTask(interaction: InteractionSummary): void {
+    this.createTask.emit(interaction);
   }
 }

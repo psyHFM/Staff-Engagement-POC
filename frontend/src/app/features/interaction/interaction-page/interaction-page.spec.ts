@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 
 import { InteractionPage } from './interaction-page';
 import { InteractionStateService } from '../interaction-state.service';
+import { InteractionSummary } from '../interaction.types';
 
 describe('InteractionPage', () => {
   let fixture: ComponentFixture<InteractionPage>;
@@ -19,6 +20,16 @@ describe('InteractionPage', () => {
   const error = signal(null);
   const isLoading = signal(false);
 
+  const buildInteraction = (overrides: Partial<InteractionSummary> = {}): InteractionSummary => ({
+    id: { value: 7 },
+    type: 'check-in',
+    subject: { value: 1 },
+    facilitator: { value: 2 },
+    note: 'note',
+    createdAt: '2026-06-25T10:00:00Z',
+    ...overrides
+  });
+
   beforeEach(async () => {
     stateMock = {
       loadSubjects: jest.fn(),
@@ -26,6 +37,7 @@ describe('InteractionPage', () => {
       loadHistory: jest.fn(),
       clearTransient: jest.fn(),
       createInteraction: jest.fn(),
+      updateInteraction: jest.fn(),
       defaultFacilitator: () => ({ value: 2 }),
       subjects,
       subject,
@@ -86,5 +98,66 @@ describe('InteractionPage', () => {
     // Then
     const errorBanner = fixture.nativeElement.querySelector('.interaction-page__error');
     expect(errorBanner.textContent).toContain('Something went wrong');
+  });
+
+  // ---- ATSE1-28 / ATSE1-29 — row actions ---------------------------
+
+  it('opens the edit modal when a row emits rowEdit', () => {
+    // Given
+    fixture.detectChanges();
+    const target = buildInteraction();
+
+    // When
+    fixture.componentInstance.onRowEdit(target);
+
+    // Then
+    expect(fixture.componentInstance.editing()).toEqual(target);
+  });
+
+  it('closes the edit modal and clears the editing signal on close', () => {
+    // Given
+    fixture.componentInstance.editing.set(buildInteraction());
+
+    // When
+    fixture.componentInstance.onEditClosed();
+
+    // Then
+    expect(fixture.componentInstance.editing()).toBeNull();
+  });
+
+  it('closes the edit modal and clears the editing signal on save', () => {
+    // Given
+    fixture.componentInstance.editing.set(buildInteraction());
+
+    // When
+    fixture.componentInstance.onEditSaved();
+
+    // Then
+    expect(fixture.componentInstance.editing()).toBeNull();
+  });
+
+  it('opens the create-task modal when a row emits createTask', () => {
+    // Given
+    fixture.detectChanges();
+    const target = buildInteraction();
+
+    // When
+    fixture.componentInstance.onRowCreateTask(target);
+
+    // Then
+    expect(fixture.componentInstance.creatingTaskFor()).toEqual(target);
+  });
+
+  it('closes the create-task modal and refreshes history on form close', () => {
+    // Given
+    fixture.componentInstance.creatingTaskFor.set(buildInteraction());
+    (stateMock.loadHistory as jest.Mock).mockClear();
+
+    // When
+    fixture.componentInstance.onTaskFormClosed();
+
+    // Then
+    expect(fixture.componentInstance.creatingTaskFor()).toBeNull();
+    expect(stateMock.loadHistory).toHaveBeenCalled();
   });
 });

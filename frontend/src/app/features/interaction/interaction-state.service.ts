@@ -9,6 +9,7 @@ import {
   CreateInteractionRequest,
   EmployeeId,
   EmployeeOption,
+  InteractionId,
   InteractionSummary,
   InteractionType,
   Paged
@@ -109,6 +110,66 @@ export class InteractionStateService extends StateService {
         error: (err: ApiError) => this.lastError.set(err)
       })
     );
+  }
+
+  /**
+   * Edit an existing interaction's mutable fields (type, note). ATSE1-28.
+   *
+   * <p>Subject, facilitator, and createdAt are immutable on the server — the
+   * audit trail describes what happened, not the latest edit. The backend
+   * also enforces RBAC: admins may edit any interaction; non-admins may
+   * only edit interactions they originally facilitated. A non-owner
+   * non-admin receives a 404 (existence opaque), surfaced here as an
+   * {@link ApiError}.
+   *
+   * <p>On success the local history is refreshed so the row reflects the
+   * edit immediately.
+   */
+  updateInteraction(id: InteractionId, type: InteractionType, note: string): Observable<InteractionSummary> {
+    this.beginLoad();
+    this.lastError.set(null);
+    return this.api.patch<InteractionSummary>(`interactions/${id.value}`, { type, note }).pipe(
+      catchApiError(),
+      finalize(() => this.endLoad()),
+      tap({
+        next: (updated) => {
+          // Refresh history so the row reflects the edit immediately.
+          this.loadHistory();
+          // Remember the latest edit so the page can surface a success toast.
+          this.lastCreated.set(updated);
+        },
+        error: (err: ApiError) => this.lastError.set(err)
+      })
+    );
+  }
+
+  /**
+   * Pre-flight check for the row's Edit affordance. Returns {@code true}
+   * when the server believes the current user may edit the interaction
+   * (admin any time, or original facilitator); {@code false} for both
+   * "not found" and "not authorised" — the server collapses those to the
+   * same 404 to keep existence opaque.
+   *
+   * <p>The contract used here is the additive
+   * {@code InteractionContract.verifyEditable} default, which the backend
+   * service overrides in {@code InteractionService}. There is no separate
+   * {@code GET /interactions/{id}/editable} endpoint — the controller
+   * simply calls {@code service.verifyEditable} and the service consults
+   * the repository directly. The HTTP boundary is intentionally omitted
+   * for this pre-flight so the edit affordance does not have to deal with
+   * a 404 envelope (api-standards.yaml).
+   */
+  verifyEditableLocally(id: InteractionId, actor: EmployeeId, isAdmin: boolean): boolean {
+    const page = this.interactions();
+    if (!page) {
+      return false;
+    }
+    const target = page.content.find((i) => i.id.value === id.value);
+    if (!target) {
+      // Existence opaque — we cannot tell from the cached page.
+      return false;
+    }
+    return isAdmin || target.facilitator.value === actor.value;
   }
 
   /**
