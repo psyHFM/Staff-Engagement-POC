@@ -7,6 +7,24 @@
 
 ---
 
+## Resolution (committed in `a1917b7`)
+
+All 5 blocking violations were addressed in the same commit that
+landed this audit + the proposal:
+
+| ID   | Violation                                              | Resolution |
+|------|--------------------------------------------------------|------------|
+| V1   | `frontend-state.yaml -> persistence` (in-memory only)  | Added explicit `carve_outs` entry for the auth token (localStorage key `staff-engagement.auth.jwt`); bumped YAML to v1.1.0. |
+| V7   | `MISSION.md §6` out-of-scope: persistence              | Replaced clause with auth-token-only carve-out referencing the YAML; bumped to v1.2.0. |
+| V2   | EmployeePicker `ngModel` (anti-pattern)                | Rewrote `task-subject-dropdown` spec to require signal input + output on the shared picker (no `[(ngModel)]`); updated tasks §6.1. |
+| V3   | Adding `items` to `TaskSummary` record (binary break) | Created additive `TaskSummaryWithItems` wrapper + `TaskItemSummary`; added `TaskContract.taskWithItems(TaskId)` default method; `TaskSummary` is unchanged. |
+| V4   | `InteractionContract` lacks cross-module RBAC entry    | Added additive `verifyEditable(InteractionId, EmployeeId, boolean)` default method on `InteractionContract`. |
+
+Warnings (W1..W8) are tracked but not blocking; they will be revisited
+in the per-task persona gates.
+
+---
+
 ## Compliant ✅
 
 - **tech-stack.yaml** — the change touches only Java 21 / Spring Boot / Angular 22 / PostgreSQL / Liquibase / Maven. No new dependency declared. No `package.json` or `pom.xml` edits in `tasks.md` (ROADMAP §2.5).

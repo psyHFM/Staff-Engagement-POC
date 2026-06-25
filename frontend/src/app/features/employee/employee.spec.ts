@@ -7,7 +7,7 @@ import { Employee } from './employee';
 import { EmployeeStateService } from './employee-state.service';
 import { EmployeeResponse, Paged, UpdateEmployeeRequest } from './employee.types';
 
-describe('Employee', () => {
+describe('Employee (directory only — ATSE1-27)', () => {
   let fixture: ComponentFixture<Employee>;
   let stateMock: EmployeeStateService;
 
@@ -37,7 +37,6 @@ describe('Employee', () => {
       loadDirectory: jest.fn(),
       selectEmployee: jest.fn(),
       clearSelection: jest.fn(),
-      createEmployee: jest.fn(),
       updateEmployee: jest.fn().mockReturnValue(of({})),
       clearTransient: jest.fn(),
       employees,
@@ -93,61 +92,6 @@ describe('Employee', () => {
 
     // Then
     expect(stateMock.loadDirectory).toHaveBeenCalledWith(0, 20, 'fullName,asc');
-  });
-
-  it('reloads the directory when a profile is created', () => {
-    // Given
-    fixture.detectChanges();
-    (stateMock.loadDirectory as jest.Mock).mockClear();
-
-    // When
-    fixture.componentInstance.onCreated();
-
-    // Then
-    expect(stateMock.loadDirectory).toHaveBeenCalledWith(0, 20, 'createdAt,desc');
-  });
-
-  it('resolves ownProfile from the directory by the current email', () => {
-    // Given
-    currentEmail.set('jane@staff.eng');
-    employees.set({ content: [profile('jane@staff.eng', 7), profile('bob@staff.eng', 8)], offset: 0, limit: 20, total: 2 });
-
-    // Then
-    expect(fixture.componentInstance.ownProfile()?.id.value).toBe(7);
-  });
-
-  it('ownProfile is null when the current user has no profile yet', () => {
-    // Given
-    currentEmail.set('nobody@staff.eng');
-    employees.set({ content: [profile('jane@staff.eng', 7)], offset: 0, limit: 20, total: 1 });
-
-    // Then
-    expect(fixture.componentInstance.ownProfile()).toBeNull();
-  });
-
-  it('onUpdateOwn forwards the update for the current user own profile', () => {
-    // Given
-    currentEmail.set('jane@staff.eng');
-    employees.set({ content: [profile('jane@staff.eng', 7)], offset: 0, limit: 20, total: 1 });
-    const request: UpdateEmployeeRequest = { fullName: 'Jane Smith', email: null };
-
-    // When
-    fixture.componentInstance.onUpdateOwn(request);
-
-    // Then
-    expect(stateMock.updateEmployee).toHaveBeenCalledWith({ value: 7 }, request);
-  });
-
-  it('onUpdateOwn does nothing when there is no own profile', () => {
-    // Given
-    currentEmail.set('nobody@staff.eng');
-    employees.set({ content: [profile('jane@staff.eng', 7)], offset: 0, limit: 20, total: 1 });
-
-    // When
-    fixture.componentInstance.onUpdateOwn({ fullName: 'X', email: null });
-
-    // Then
-    expect(stateMock.updateEmployee).not.toHaveBeenCalled();
   });
 
   it('onUpdateSelected forwards the update for the selected directory row', () => {
