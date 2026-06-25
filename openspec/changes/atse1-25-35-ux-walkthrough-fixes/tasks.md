@@ -3,7 +3,7 @@
 - [x] 1.1 Create feature branch `feature/ATSE1-25-35-ux-walkthrough-fixes` from `origin/main`
 - [x] 1.2 Commit the carry-in (prompts/hendrik-muller.md, .claude/plans/atse1-skills-persona-reviews, .playwright-mcp, failure_logs.txt, notes)
 - [x] 1.3 Run `/openspec-propose atse1-25-35-ux-walkthrough-fixes`; write proposal.md, design.md, tasks.md, and 10 specs/*/spec.md files
-- [ ] 1.4 Append a coordination-points entry to `.claude/constitution/ROADMAP.md` for this UX-walkthrough-fixes cluster (also covers the auth-persistence carve-out and the additive `InteractionContract.verifyEditable` / `TaskContract.taskWithItems` extensions)
+- [x] 1.4 Append a coordination-points entry to `.claude/constitution/ROADMAP.md` for this UX-walkthrough-fixes cluster (also covers the auth-persistence carve-out and the additive `InteractionContract.verifyEditable` / `TaskContract.taskWithItems` extensions) — landed in `1cd6cff`-style follow-up commit (ROADMAP §2.1 frontend block + new §2.7 "Post-Phase-6 carve-outs" register; 0 violations across all 3 §3 personas)
 - [x] 1.5 Spawn `constitution-guard` persona to audit the proposal/design/tasks/specs; record findings in `persona-reviews/01-constitution-guard-proposal.md` (5 blocking violations + 8 warnings + 18 compliant items; all 5 blocking fixes committed in `a1917b7`: constitution YAML/MD carve-outs, signal-only EmployeePicker, additive `TaskSummaryWithItems` wrapper, additive `InteractionContract.verifyEditable`)
 
 ## 2. Auth session persistence (ATSE1-25)
@@ -24,7 +24,7 @@
 - [x] 3.5 Add `{ path: 'profile', loadComponent: …, canActivate: [authGuard] }` to `app.routes.ts` that resolves the current user id and mounts the existing `ProfilePage` — routes to a new lazy-loaded `YourDetailsPage` component
 - [x] 3.6 Turn `<span class="shell__user">` in `frontend/src/app/shell/shell.html:18` into an `<a routerLink="/profile">`
 - [x] 3.7 Update `frontend/src/app/shell/shell.spec.ts` to assert the new link
-- [ ] 3.8 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`
+- [x] 3.8 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer` (0 violations / 9 warnings / 23 compliant across all three — see 03-constitution-guard-employees.md, 03-angular-state-architect-employees.md, 03-bdd-test-engineer-employees.md; the one blocking W1 from the architect — `onCreated()` no-op — is fixed in the follow-up commit along with W2-W4 from the BDD engineer and the ROADMAP §2.1 / §2.7 amendment)
 
 ## 4. Interaction row edit + create-task-from-interaction (ATSE1-28, ATSE1-29)
 

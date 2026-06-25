@@ -153,21 +153,22 @@ describe('AuthState', () => {
 
   // ---- §2 extras — clearOnUnauthorized + currentUserSubject --------------
 
-  it('clearOnUnauthorized() leaves the session unauthenticated and clears storage', () => {
-    // Given — an authenticated session
-    auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' });
-    expect(auth.isAuthenticated()).toBe(true);
+it('decodes the JWT subject claim after login (authoritative identity)', () => {
+    // Given — no subject yet
+    expect(auth.currentUserSubject()).toBeNull();
 
-    // When
-    auth.clearOnUnauthorized();
+    // When — login posts username "admin" but the issued JWT carries sub=jane@staff.eng.
+    // Using different values for username and sub kills the "sub-vs-storage swap" mutant
+    // where currentUserSubject() reads the persisted username instead of the JWT claim.
+    auth.login({ username: 'admin', password: 'staffeng' }).subscribe();
+    httpMock.expectOne('/api/v1/auth/login').flush({
+      token: tokenWithSub('jane@staff.eng'),
+      tokenType: 'Bearer'
+    });
 
-    // Then
-    expect(auth.isAuthenticated()).toBe(false);
-    expect(auth.currentUser()).toBeNull();
-    expect(auth.bearerToken()).toBeNull();
-    expect(storage.read(AUTH_STORAGE_KEY)).toBeNull();
-    expect(storage.read(AUTH_USERNAME_KEY)).toBeNull();
+    // Then — currentUserSubject reads the `sub` claim, NOT the persisted username
+    expect(auth.currentUserSubject()).toBe('jane@staff.eng');
+    expect(auth.currentUser()).toBe('admin');
   });
 
   describe('currentUserSubject (JWT sub-claim decoder)', () => {

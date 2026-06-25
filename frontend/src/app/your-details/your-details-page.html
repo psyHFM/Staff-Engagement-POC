@@ -29,6 +29,6 @@
     <p class="your-details-page__hint" role="note">
       You haven't created your profile yet — add your details below. Your email is taken from your login and your role starts as Employee.
     </p>
-    <app-employee-create-form (created)="onCreated()"></app-employee-create-form>
+    <app-employee-create-form (create)="onCreated($event)"></app-employee-create-form>
   }
 </section>

@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import { EmployeeCreateForm } from '../features/employee/employee-create-form/employee-create-form';
 import { EmployeeDetail } from '../features/employee/employee-detail/employee-detail';
-import { UpdateEmployeeRequest } from '../features/employee/employee.types';
+import { CreateEmployeeRequest, UpdateEmployeeRequest } from '../features/employee/employee.types';
 import { YourDetailsStateService } from './your-details-state.service';
 
 /**
@@ -43,10 +43,11 @@ export class YourDetailsPage implements OnInit {
     this.state.loadCurrent();
   }
 
-  protected onCreated(): void {
-    // The create handler already populated `profile` via the service.
-    // Nothing else to do — the template flips to the detail form on
-    // the next CD cycle.
+  protected onCreated(request: CreateEmployeeRequest): void {
+    // Forward the form payload to the state service. On success the
+    // service populates `profile`, which flips the template from the
+    // create form to the detail form on the next CD cycle.
+    this.state.create(request).subscribe();
   }
 
   protected onUpdated(request: UpdateEmployeeRequest): void {

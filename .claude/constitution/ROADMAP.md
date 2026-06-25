@@ -107,6 +107,9 @@ frontend/src/app/
     portfolio/                 ← Phase 4 owns
     skills/                    ← Phase 5 owns
   profile/                     ← Phase 6 owns (integration feature)
+  your-details/                ← Post-Phase 6 (ATSE1-32 — self-service /profile page)
+                                Reuses employee DTOs + create/detail forms; the
+                                directory page is a sibling, not a parent.
 ```
 
 **Rule:** a splice only creates/edits files inside **its own module package**
@@ -166,6 +169,23 @@ the lock.
 | `frontend/.../app/routes.ts` | Phase 0 | Append one line per feature |
 | `frontend/.../app/app.config.ts` | Phase 0 | Append-only providers |
 | `frontend/package.json` | Phase 0 / coordination | Locked — no splice edits |
+
+### 2.7 Post-Phase-6 carve-outs (additive only)
+
+The Phase 6 PRs (rounded profile) merged without leaving room in the
+road map for the follow-up UX-walkthrough-fixes cluster. The carve-outs
+below amend the layout and the front-end routes for that cluster and
+**only for that cluster**; later post-Phase-6 work must open its own
+amendment.
+
+| Carve-out | Owner | Detail |
+|-----------|-------|--------|
+| `frontend/.../app/your-details/` | Post-Phase 6 / ATSE1-32 | New feature folder — self-service /profile page. Reuses `features/employee/` DTOs and form components. Sibling of `features/<x>/`, not a child. See §2.1 (frontend block). |
+| `frontend/.../app/routes.ts → { path: 'profile', … }` | Post-Phase 6 / ATSE1-32 | Appended line. The existing `employees/:id/profile` route is unchanged. |
+| `frontend/.../app/shell/shell.html → <a routerLink="/profile">` | Post-Phase 6 / ATSE1-32 | The Phase 0 shell exposes the authenticated user's identity as a clickable link. Read-only wiring — no new layout, no new nav items. |
+| Auth-state persistence (localStorage carve-out) | Post-Phase 6 / ATSE1-25 | `AuthState` reads/writes the JWT under `staff-engagement.auth.jwt` and a denormalised username under `staff-engagement.auth.username` via the `AUTH_STORAGE` injection token. **Single carve-out** from the "no persistence" rule in `frontend-state.yaml -> persistence`. The Phase 0 `AuthStorage` interface (in `shared/auth/`) is the only allowed read/write surface. |
+| `InteractionContract.verifyEditable` (additive) | Post-Phase 6 / ATSE1-28 | Additive default method on the frozen interaction port. Returns `boolean`; default `true`. No change to the existing methods. |
+| `TaskSummaryWithItems` (additive) | Post-Phase 6 / ATSE1-34 | A new additive wrapper record `{ ...TaskSummary, items: List<TaskItemSummary> }` is used by the new `/tasks/{id}/items` endpoints. `TaskSummary` itself is **not** modified — additive-only, no breaking change to existing callers. |
 
 ---
 
