@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { EmployeeList, PageRequest } from './employee-list';
 import { EmployeeResponse, Paged } from '../employee.types';
@@ -27,7 +28,8 @@ describe('EmployeeList', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EmployeeList]
+      imports: [EmployeeList],
+      providers: [provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmployeeList);
@@ -130,5 +132,15 @@ describe('EmployeeList', () => {
     // Then
     expect(emitted).toHaveLength(1);
     expect(emitted[0].id.value).toBe(1);
+  });
+
+  it('renders a Profile link for each employee', () => {
+    // When
+    fixture.detectChanges();
+
+    // Then
+    const links = fixture.nativeElement.querySelectorAll('.employee-list__profile');
+    expect(links.length).toBe(2);
+    expect(links[0].textContent).toContain('Profile');
   });
 });

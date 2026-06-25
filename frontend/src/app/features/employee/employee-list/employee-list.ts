@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { EmployeeResponse, EMPLOYEE_SORTS, Paged } from '../employee.types';
 
@@ -18,6 +19,8 @@ export interface PageRequest {
  */
 @Component({
   selector: 'app-employee-list',
+  standalone: true,
+  imports: [RouterLink],
   templateUrl: './employee-list.html',
   styleUrl: './employee-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

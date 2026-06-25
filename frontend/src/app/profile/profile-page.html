@@ -1,0 +1,174 @@
+<section class="profile-page">
+  <header class="profile-page__header">
+    <a routerLink="/employees" class="profile-page__back">← Employees</a>
+    <h1>Employee profile</h1>
+  </header>
+
+  @if (state.isLoading()) {
+    <div class="profile-page__loading" role="status">
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      Loading profile…
+    </div>
+  }
+
+  @if (state.error(); as error) {
+    <div class="profile-page__error" role="alert">
+      <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      <span>{{ error.message }}</span>
+    </div>
+  }
+
+  @if (state.profile(); as profile) {
+    <article class="profile-card">
+      <div class="profile-header">
+        <h2 class="profile-header__name">{{ profile.employee.fullName }}</h2>
+        <span class="profile-header__email">{{ profile.employee.email }}</span>
+        <span class="profile-header__badge profile-header__badge--{{ profile.employee.role }}">
+          {{ profile.employee.role }}
+        </span>
+        @if (profile.employee.jobTitle) {
+          <span class="profile-header__meta">{{ profile.employee.jobTitle }}</span>
+        }
+        @if (profile.employee.department) {
+          <span class="profile-header__meta">{{ profile.employee.department }}</span>
+        }
+        @if (profile.employee.level) {
+          <span class="profile-header__meta">{{ profile.employee.level }}</span>
+        }
+      </div>
+
+      @if (profile.topSkills.length > 0) {
+        <section class="profile-section">
+          <h3>Top skills</h3>
+          <ul class="profile-list">
+            @for (skill of profile.topSkills; track skill.skill) {
+              <li class="profile-skill">
+                <span class="profile-skill__name">{{ skill.skill }}</span>
+                <span class="profile-skill__metric">{{ skill.years }} year{{ skill.years === 1 ? '' : 's' }}</span>
+                <span class="profile-skill__metric">{{ skill.projectCount }} project{{ skill.projectCount === 1 ? '' : 's' }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <section class="profile-section">
+        <h3>Interactions</h3>
+        @if (profile.interactions.length === 0) {
+          <p class="profile-empty">No interactions recorded.</p>
+        } @else {
+          <ul class="profile-list">
+            @for (interaction of profile.interactions; track interaction.id.value) {
+              <li class="profile-interaction">
+                <span class="profile-interaction__type">{{ interaction.type }}</span>
+                <span class="profile-interaction__note">{{ interaction.note }}</span>
+                @if (interaction.createdAt) {
+                  <time [attr.datetime]="interaction.createdAt">
+                    {{ interaction.createdAt | date:'medium' }}
+                  </time>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="profile-section">
+        <h3>Tasks</h3>
+        @if (profile.tasks.length === 0) {
+          <p class="profile-empty">No tasks assigned.</p>
+        } @else {
+          <ul class="profile-list">
+            @for (task of profile.tasks; track task.id) {
+              <li class="profile-task">
+                <input
+                  type="checkbox"
+                  class="profile-task__checkbox"
+                  [checked]="task.completed"
+                  disabled
+                  [attr.aria-label]="task.title"
+                />
+                <span class="profile-task__title">{{ task.title }}</span>
+                @if (task.description) {
+                  <span class="profile-task__description">{{ task.description }}</span>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="profile-section">
+        <h3>Portfolio</h3>
+
+        <h4>Skills</h4>
+        @if (profile.portfolio.skills.length === 0) {
+          <p class="profile-empty">No skills listed.</p>
+        } @else {
+          <ul class="profile-list">
+            @for (skill of profile.portfolio.skills; track skill.id) {
+              <li class="profile-portfolio-skill">
+                <span class="profile-portfolio-skill__name">{{ skill.skill }}</span>
+                <span class="profile-portfolio-skill__metric">{{ skill.years }} yrs</span>
+                <span class="profile-portfolio-skill__metric">{{ skill.projectCount }} projects</span>
+              </li>
+            }
+          </ul>
+        }
+
+        <h4>Education</h4>
+        @if (profile.portfolio.education.length === 0) {
+          <p class="profile-empty">No education entries.</p>
+        } @else {
+          <ul class="profile-list">
+            @for (entry of profile.portfolio.education; track entry.id) {
+              <li class="profile-education">
+                <span class="profile-education__institution">{{ entry.institution }}</span>
+                @if (entry.qualification) {
+                  <span class="profile-education__qualification">{{ entry.qualification }}</span>
+                }
+                @if (entry.startYear) {
+                  <span class="profile-education__years">({{ entry.startYear }}@if (entry.endYear) {–{{ entry.endYear }}})</span>
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        <h4>Projects</h4>
+        @if (profile.portfolio.projects.length === 0) {
+          <p class="profile-empty">No projects listed.</p>
+        } @else {
+          <ul class="profile-list">
+            @for (project of profile.portfolio.projects; track project.id) {
+              <li class="profile-project">
+                <span class="profile-project__name">{{ project.name }}</span>
+                @if (project.description) {
+                  <span class="profile-project__description">{{ project.description }}</span>
+                }
+                @if (project.startYear) {
+                  <span class="profile-project__years">({{ project.startYear }}@if (project.endYear) {–{{ project.endYear }}})</span>
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        <h4>Links</h4>
+        @if (profile.portfolio.links.length === 0) {
+          <p class="profile-empty">No links listed.</p>
+        } @else {
+          <ul class="profile-list">
+            @for (link of profile.portfolio.links; track link.id) {
+              <li class="profile-link">
+                <a [href]="link.url" target="_blank" rel="noopener">
+                  {{ link.label || link.url }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </article>
+  }
+</section>
