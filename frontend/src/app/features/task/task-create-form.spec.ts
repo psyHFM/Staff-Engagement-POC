@@ -129,11 +129,63 @@ describe('TaskCreateForm', () => {
     const post = httpMock.expectOne('/api/v1/tasks');
     expect(post.request.method).toBe('POST');
     expect(post.request.body.title).toBe('Follow up');
+    expect(post.request.body.description).toBe('Send the email'); // W3: locks description
     expect(post.request.body.subjectId).toBe(7);
     expect(typeof post.request.body.subjectId).toBe('number');
     post.flush({});
 
     expect(closed).toBe(true);
+  });
+
+  it('forwards sourceInteractionId to the POST body when seeded from an interaction context', () => {
+    // Given — interactionId='42' was seeded (W4: combined with spec 6's POST assertion)
+    const fixture = TestBed.createComponent(TaskCreateForm);
+    fixture.componentRef.setInput('interactionId', '42');
+    fixture.detectChanges();
+    flushPicker();
+    const component = fixture.componentInstance as unknown as {
+      request: { subjectId: number; title: string; description: string; sourceInteractionId?: string };
+      formClosed: { emit: (v?: void) => void };
+    };
+    component.request.subjectId = 7;
+    component.request.title = 'Follow up from interaction';
+    component.request.description = 'Send the email';
+    component.formClosed.emit = () => undefined;
+
+    // When
+    (fixture.componentInstance as unknown as { submit: () => void }).submit();
+
+    // Then — the seeded interaction id is in the POST body as a string
+    const post = httpMock.expectOne('/api/v1/tasks');
+    expect(post.request.body.sourceInteractionId).toBe('42');
+    post.flush({});
+  });
+
+  it('resets subjectId on a fresh remount after submit (form lifecycle)', () => {
+    // Given — first mount, picker bridges an id, submit closes the form
+    const firstFixture = TestBed.createComponent(TaskCreateForm);
+    firstFixture.detectChanges();
+    flushPicker();
+    const firstComponent = firstFixture.componentInstance as unknown as {
+      request: { subjectId: number };
+      submit: () => void;
+      formClosed: { emit: (v?: void) => void };
+    };
+    firstComponent.request.subjectId = 7;
+    firstComponent.formClosed.emit = () => undefined;
+    firstComponent.submit();
+    httpMock.expectOne('/api/v1/tasks').flush({});
+
+    // When — a fresh form is mounted (W5: lifecycle reset)
+    const secondFixture = TestBed.createComponent(TaskCreateForm);
+    secondFixture.detectChanges();
+    flushPicker();
+    const secondComponent = secondFixture.componentInstance as unknown as {
+      request: { subjectId: number };
+    };
+
+    // Then — the new fixture starts blank (subjectId 0)
+    expect(secondComponent.request.subjectId).toBe(0);
   });
 
   it('emits close when the form is dismissed', () => {

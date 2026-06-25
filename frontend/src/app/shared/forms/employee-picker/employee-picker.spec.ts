@@ -77,12 +77,12 @@ describe('EmployeePicker', () => {
     // Then — 2 employees + 1 placeholder
     expect(select.options).toHaveLength(3);
     expect(select.options[0].textContent).toContain('Select an employee');
-    expect(select.options[1].textContent).toBe('Admin User');
-    expect(select.options[2].textContent).toBe('Employee User');
+    expect(select.options[1].textContent?.trim()).toBe('Admin User');
+    expect(select.options[2].textContent?.trim()).toBe('Employee User');
   });
 
   it('pre-selects the supplied value (numeric id) once the directory finishes loading', () => {
-    // Given
+    // Given — a directory whose options arrive after the [value] input is bound
     apiClientSpy.get.mockReturnValue(
       of({
         content: [
@@ -95,9 +95,7 @@ describe('EmployeePicker', () => {
       })
     );
 
-    // When — value=2 supplied and the directory finishes loading; the
-    // native select's `[value]` only sticks when the matching <option>
-    // exists, so we need a tick after the directory GET resolves.
+    // When — value=2 supplied before the directory GET resolves
     fixture.componentRef.setInput('value', 2);
     fixture.detectChanges();
     // The first detectChanges runs ngOnInit → loadEmployees which schedules
@@ -106,13 +104,26 @@ describe('EmployeePicker', () => {
     fixture.detectChanges();
     fixture.detectChanges();
 
-    // Then — the select reflects the supplied id (allow time for Angular
-    // to push the bound value to the native element after options render)
+    // Then — the bound id wins: the select reflects the supplied id
+    // (W1 fix: strict equality; the strict matcher kills a Stryker
+    // mutant that always renders value=1 instead of the bound input)
     const select = fixture.nativeElement.querySelector('select.employee-picker__select') as HTMLSelectElement;
-    // The placeholder (option value="") is selected when no matching
-    // option exists yet — that's acceptable UX. Once options arrive the
-    // binding updates.
-    expect(['1', '2']).toContain(select.value);
+    expect(select.value).toBe('2');
+  });
+
+  it('shows the placeholder when value is null and the directory is empty', () => {
+    // Given — empty directory
+    apiClientSpy.get.mockReturnValue(
+      of({ content: [], offset: 0, limit: 100, total: 0 })
+    );
+
+    // When — value is the default (null)
+    fixture.detectChanges();
+    fixture.detectChanges();
+
+    // Then — placeholder (empty string value) is selected
+    const select = fixture.nativeElement.querySelector('select.employee-picker__select') as HTMLSelectElement;
+    expect(select.value).toBe('');
   });
 
   it('emits valueChange with the picked id when a different option is chosen', () => {
@@ -139,6 +150,31 @@ describe('EmployeePicker', () => {
 
     // Then
     expect(emitted).toEqual([2]);
+  });
+
+  it('emits valueChange(null) when a non-numeric option is chosen (parseInt guard)', () => {
+    // Given — a directory with one valid entry + a manually injected bogus option
+    apiClientSpy.get.mockReturnValue(
+      of({
+        content: [
+          { id: { value: 1 }, fullName: 'Admin User', email: 'admin@staff.eng', role: 'admin' }
+        ],
+        offset: 0,
+        limit: 100,
+        total: 1
+      })
+    );
+    fixture.detectChanges();
+    const emitted: Array<number | null> = [];
+    component.valueChange.subscribe((id) => emitted.push(id));
+    const select = fixture.nativeElement.querySelector('select.employee-picker__select') as HTMLSelectElement;
+
+    // When — pathological "NaN" selection (W7: locks the Number.isFinite guard)
+    select.value = 'NaN';
+    select.dispatchEvent(new Event('change'));
+
+    // Then — the parseInt + isFinite guard coerces to null (not NaN)
+    expect(emitted).toEqual([null]);
   });
 
   it('surfaces directory failures via the error signal and keeps isLoading false', () => {
