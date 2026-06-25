@@ -1,9 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting
-} from '@angular/common/http/testing';
+import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 
 import { TaskCreateForm } from './task-create-form';
 
@@ -20,6 +17,13 @@ describe('TaskCreateForm', () => {
 
   afterEach(() => httpMock.verify());
 
+  /** Flush the EmployeePicker's GET /api/v1/employees request that fires on first paint. */
+  function flushPicker(directory: unknown[] = []): void {
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/employees');
+    expect(req.request.method).toBe('GET');
+    req.flush({ content: directory, offset: 0, limit: 100, total: directory.length });
+  }
+
   it('seeds the sourceInteractionId from the interaction context on init', () => {
     // Given — the form is opened from an interaction context
     const fixture = TestBed.createComponent(TaskCreateForm);
@@ -27,6 +31,7 @@ describe('TaskCreateForm', () => {
 
     // When
     fixture.detectChanges();
+    flushPicker();
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -39,15 +44,16 @@ describe('TaskCreateForm', () => {
     // Given / When
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
+    flushPicker();
 
     // Then
     const component = fixture.componentInstance as unknown as {
-      request: { title: string; description: string; subjectId: string; sourceInteractionId?: string };
+      request: { title: string; description: string; subjectId: number; sourceInteractionId?: string };
     };
     expect(component.request.sourceInteractionId).toBeUndefined();
     expect(component.request.title).toBe('');
     expect(component.request.description).toBe('');
-    expect(component.request.subjectId).toBe('');
+    expect(component.request.subjectId).toBe(0);
   });
 
   it('does not seed sourceInteractionId from a falsy (empty) interaction context', () => {
@@ -55,6 +61,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.componentRef.setInput('interactionId', '');
     fixture.detectChanges();
+    flushPicker();
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -63,15 +70,53 @@ describe('TaskCreateForm', () => {
     expect(component.request.sourceInteractionId).toBeUndefined();
   });
 
-  it('submits the request through the state service and emits close', () => {
+  it('mounts the EmployeePicker and forwards the chosen id to request.subjectId', () => {
     // Given
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
+    flushPicker([
+      { id: { value: 1 }, fullName: 'Admin User', email: 'admin@staff.eng', role: 'admin' },
+      { id: { value: 2 }, fullName: 'Employee User', email: 'employee@staff.eng', role: 'employee' }
+    ]);
+    const picker = fixture.nativeElement.querySelector('app-employee-picker');
+    expect(picker).not.toBeNull();
     const component = fixture.componentInstance as unknown as {
-      request: { subjectId: string; title: string; description: string };
+      request: { subjectId: number };
+      onSubjectChange: (id: number | null) => void;
+    };
+
+    // When — the picker fires valueChange(2)
+    component.onSubjectChange(2);
+
+    // Then — the request carries a numeric subjectId
+    expect(component.request.subjectId).toBe(2);
+  });
+
+  it('treats a null picker value as subjectId 0 (no selection)', () => {
+    // Given
+    const fixture = TestBed.createComponent(TaskCreateForm);
+    fixture.detectChanges();
+    flushPicker();
+    const component = fixture.componentInstance as unknown as {
+      request: { subjectId: number };
+      onSubjectChange: (id: number | null) => void;
+    };
+    component.onSubjectChange(null);
+
+    // Then
+    expect(component.request.subjectId).toBe(0);
+  });
+
+  it('submits the request through the state service with a numeric subjectId', () => {
+    // Given
+    const fixture = TestBed.createComponent(TaskCreateForm);
+    fixture.detectChanges();
+    flushPicker();
+    const component = fixture.componentInstance as unknown as {
+      request: { subjectId: number; title: string; description: string };
       formClosed: { emit: (v?: void) => void };
     };
-    component.request.subjectId = '7';
+    component.request.subjectId = 7;
     component.request.title = 'Follow up';
     component.request.description = 'Send the email';
     let closed = false;
@@ -79,12 +124,15 @@ describe('TaskCreateForm', () => {
 
     // When
     (fixture.componentInstance as unknown as { submit: () => void }).submit();
+
+    // Then — the POST hits the backend with a numeric body
     const post = httpMock.expectOne('/api/v1/tasks');
     expect(post.request.method).toBe('POST');
     expect(post.request.body.title).toBe('Follow up');
+    expect(post.request.body.subjectId).toBe(7);
+    expect(typeof post.request.body.subjectId).toBe('number');
     post.flush({});
 
-    // Then
     expect(closed).toBe(true);
   });
 
@@ -92,6 +140,7 @@ describe('TaskCreateForm', () => {
     // Given
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
+    flushPicker();
     let closed = false;
     (fixture.componentInstance as unknown as { formClosed: { emit: (v?: void) => void } }).formClosed.emit =
       () => (closed = true);
