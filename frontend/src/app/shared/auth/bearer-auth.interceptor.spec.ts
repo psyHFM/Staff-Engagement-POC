@@ -10,6 +10,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { AuthState } from './auth-state';
+import { AUTH_STORAGE, AuthStorage } from './auth-storage';
 import { bearerAuthInterceptor } from './bearer-auth.interceptor';
 
 describe('bearerAuthInterceptor', () => {
@@ -22,7 +23,8 @@ describe('bearerAuthInterceptor', () => {
       providers: [
         AuthState,
         provideHttpClient(withInterceptors([bearerAuthInterceptor])),
-        provideHttpClientTesting()
+        provideHttpClientTesting(),
+        { provide: AUTH_STORAGE, useValue: createInMemoryStorage() }
       ]
     });
     http = TestBed.inject(HttpClient);
@@ -77,3 +79,16 @@ describe('bearerAuthInterceptor', () => {
     req.flush([]);
   });
 });
+
+function createInMemoryStorage(): AuthStorage {
+  const map = new Map<string, string>();
+  return {
+    read: (key) => (map.has(key) ? (map.get(key) as string) : null),
+    write: (key, value) => {
+      map.set(key, value);
+    },
+    remove: (key) => {
+      map.delete(key);
+    }
+  };
+}
