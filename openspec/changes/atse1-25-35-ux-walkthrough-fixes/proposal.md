@@ -14,9 +14,11 @@ PRs #33 and #34 already merged it.
 
 ## What Changes
 
-- **Persist the JWT to `localStorage`** on login, re-hydrate the
+- **Persist the JWT to `sessionStorage`** on login, re-hydrate the
   `AuthState` signal on app bootstrap, and clear storage on logout /
-  401. (ATSE1-25)
+  401. (ATSE1-25 — implementation aligned with the upstream ATSE1-41
+  PR #37 which chose `sessionStorage` over `localStorage` so the
+  persistence is scoped to the tab)
 - **Replace the `/employees` inline "Your profile" section with the
   pure directory** (already built in PR #28) and **introduce a new
   top-level `/profile` route** wired to the same `ProfilePage` and
@@ -59,7 +61,7 @@ PRs #33 and #34 already merged it.
 
 ### New Capabilities
 
-- `auth-session`: AuthState JWT persistence to localStorage + cold-start
+- `auth-session`: AuthState JWT persistence to sessionStorage + cold-start
   hydration; cover reload-keeps-session smoke in Playwright.
 - `employee-directory`: pure directory on `/employees` after removing
   the inline "Your profile" section.

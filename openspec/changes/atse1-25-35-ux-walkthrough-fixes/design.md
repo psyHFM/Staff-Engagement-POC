@@ -94,24 +94,41 @@ already exist for ATSE1-32 to reuse.
 
 ## Decisions
 
-- **D1: Persist the JWT in `localStorage` (not `sessionStorage`).**
-  Cross-tab session continuity is the user-visible win (open a
-  link in a new tab, still logged in). For a POC, a 24h
-  expiration check on read-back is enough; a real refresh-token
-  flow is out of scope. `localStorage` keeps the change small
-  (no token encryption; the JWT is already a bearer token).
-  Considered: `sessionStorage` (rejected: doesn't help deep
-  links in new tabs); httpOnly cookie (rejected: requires
-  backend changes outside the scope of this PR cluster).
+- **D1: Persist the JWT in `sessionStorage` (supersedes the original
+  `localStorage` draft — see "Decision history" below).** A page
+  reload / direct nav must not bounce the user back to `/login`.
+  For a POC, a 24h expiration check on read-back is enough; a real
+  refresh-token flow is out of scope. `sessionStorage` scopes the
+  persistence to the tab, which is the natural fit for a JWT's
+  lifetime and avoids cross-tab leakage if a user logs out in one
+  tab. Considered: `localStorage` (the original draft — rejected
+  on the basis that it widens the persistence surface past the
+  JWT's intended lifetime and contradicts the upstream ATSE1-41
+  decision in PR #37); httpOnly cookie (rejected: requires backend
+  changes outside the scope of this PR cluster).
+
+  **Decision history:** the original §2 proposal chose `localStorage`
+  to support cross-tab session continuity. Before this change was
+  merged, ATSE1-41 (PR #37) landed on `main` with `sessionStorage`.
+  To avoid duplicating the work, this rebase aligns §2 with the
+  upstream choice while keeping the structural additions §2 added
+  on top: the `AuthStorage` injection token (so tests don't have to
+  stub `window.sessionStorage` directly), the dedicated
+  `authErrorInterceptor` that calls `AuthState.clearOnUnauthorized()`
+  on 401, and the `currentUserSubject` computed signal decoded from
+  the JWT `sub` claim.
 
 - **D2: Reuse the existing `AuthState` signal and the existing
   `bearerAuthInterceptor`.** The interceptor already reads
-  `AuthState.bearerToken()`; persistence just keeps the signal
-  hydrated. No new abstractions (no `AuthPersistence` helper
-  class) — the storage write/read is two lines in `login()` /
-  `logout()` and a `try { storage.getItem('jwt') }` in the
-  constructor. Considered: a `TokenStore` interface (rejected:
-  over-engineered for two call sites and one test).
+  `AuthState.bearerToken()` (now a `computed()` signal); persistence
+  keeps the signal hydrated via the injected `AuthStorage`. The
+  `AuthStorage` interface (read/write/remove) abstracts the storage
+  backend so tests can swap in an in-memory map; the production
+  binding `browserAuthStorage` is backed by `globalThis.sessionStorage`
+  with a `try { ... } catch { /* swallow */ }` for SSR / disabled
+  storage. Considered: a `TokenStore` interface (rejected: the same
+  shape as `AuthStorage` with three methods; not enough surface to
+  justify a second interface).
 
 - **D3: Reuse the existing `ProfilePage` for the new `/profile`
   route** rather than building a new `YourDetailsPage`. The
@@ -187,14 +204,17 @@ already exist for ATSE1-32 to reuse.
 
 ## Risks / Trade-offs
 
-- **[R1: `localStorage` is XSS-readable]** → Mitigation: the JWT
+- **[R1: `sessionStorage` is XSS-readable]** → Mitigation: the JWT
   is already a bearer token, so XSS exposure of the token is no
-  worse than it is today. A real fix (httpOnly cookie) is out
-  of scope.
+  worse than it is today. `sessionStorage` narrows the blast
+  radius further (a stolen token is only valid until the tab
+  closes). A real fix (httpOnly cookie) is out of scope.
 - **[R2: Stale token on 401 (admin demoted, user deleted)]** →
-  Mitigation: the interceptor on 401 clears the storage and
-  redirects to `/login`. (The current `bearerAuthInterceptor`
-  doesn't yet; this change adds it.)
+  Mitigation: the new `authErrorInterceptor` on 401 calls
+  `AuthState.clearOnUnauthorized()` which removes the storage
+  entry, clears the signals, and lets the next navigation fall
+  back to `/login` via `authGuard`. The current `bearerAuthInterceptor`
+  doesn't do this; the new sibling interceptor is the bridge.
 - **[R3: `task_item` is a new cross-table JPA relationship]**
   → Mitigation: ArchUnit already enforces
   `task` cannot import another module's `repository/` or

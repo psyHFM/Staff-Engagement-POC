@@ -8,7 +8,7 @@ import { AuthState } from './auth-state';
  * Functional error interceptor that wipes the persisted JWT when the backend
  * rejects a request with {@code 401 Unauthorized}.
  *
- * <p>Without this, a stale token in {@code localStorage} would keep
+ * <p>Without this, a stale token in {@code sessionStorage} would keep
  * {@link AuthState#isAuthenticated} returning {@code true} long after the
  * server stopped honouring the JWT — the auth guard would never fire and
  * protected pages would render behind a token the API rejects. Clearing on

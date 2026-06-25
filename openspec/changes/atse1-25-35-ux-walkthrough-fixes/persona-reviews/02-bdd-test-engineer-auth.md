@@ -286,3 +286,53 @@ single constitutional concern that this commit raises (the
 `01-constitution-guard-proposal.md`) was already resolved in
 `a1917b7` and is reflected in `frontend-state.yaml` lines 32-40;
 out of scope for the test-only audit.
+
+---
+
+## Re-audit after rebase onto `origin/main` (2026-06-25)
+
+**Subject:** the §2 implementation commit (`0a909e5`) was rebased onto
+`origin/main` after PR #37 (ATSE1-41) shipped a `sessionStorage`-based
+persistence layer. The rebase rewrites the implementation to align with
+main's chosen storage backend and key namespace, while preserving the
+§2 test additions that PR #37 did not ship (the `AuthStorage`-injected
+unit tests, the `currentUserSubject` decode specs, the smoke-shaped
+Playwright e2e).
+
+**Key migrations in the §2 test surface:**
+
+| Aspect                                        | Original draft                              | Post-rebase                                       |
+|-----------------------------------------------|---------------------------------------------|---------------------------------------------------|
+| Storage key (production + tests)              | `staff-engagement.auth.jwt`                 | `staff-engagement:token` (and `:username`)        |
+| Storage backend (browser + e2e)               | `globalThis.localStorage`                   | `globalThis.sessionStorage`                       |
+| `bearerToken` assertion shape                 | `auth.bearerToken()` (method call)          | `auth.bearerToken()` (still method-call-shaped; returns computed signal value) |
+| `currentUserSubject` decode specs             | absent                                      | 3 specs (decode `sub`, null on absent, null on malformed) |
+| `AuthStorage` test double injection           | `createInMemoryStorage()` via `useValue`    | unchanged — still injected via `useValue`         |
+| `W1` (e2e literal)                            | `'staff-engagement.auth.jwt'`               | `'staff-engagement:token'` / `'staff-engagement:username'` (still hard-coded) |
+
+**Compliance verdict against the post-rebase tree:**
+
+| Check | Verdict |
+|---|---|
+| BDD Given-When-Then preserved on all new specs | ✅ — markers intact across unit + e2e. |
+| Storage-key constant updated everywhere (`AUTH_STORAGE_KEY = 'staff-engagement:token'`) | ✅ — single source of truth; imported by `auth-state.spec.ts`; the e2e spec was updated to mirror the new key. |
+| `currentUserSubject` decode specs added | ✅ — three new specs cover the decode / null-on-absent / null-on-malformed cases. |
+| `W1` (e2e spec literal drift) reset for the new key | ⚠️ — e2e spec still hard-codes `'staff-engagement:token'` / `'staff-engagement:username'`; the original W1 traceability concern carries forward unchanged. |
+| `W5` (`browserAuthStorage` swallow branches uncovered) carried forward | ⚠️ — unchanged from the original audit; recommended follow-up ticket, not §2's responsibility. |
+| Branch coverage table (lines 78-92) refreshed for the rebase | ✅ — every conditional in the rewritten `AuthState` / `authStorage` / `authErrorInterceptor` is hit by at least one assertion (rebuild re-verified). |
+| `clearOnUnauthorized()` mutation killed by the 401 spec | ✅ — the 401 spec asserts on `isAuthenticated()` and the cleared storage entries; Stryker mutant (no-op `clearOnUnauthorized`) is killed. |
+| `currentUserSubject` JSDoc duplicate resolved | ✅ — the fuller §2 doc-block (with the malformed-token case) is kept in `auth-state.ts`; the §3 employees commit's redundant duplicate was dropped. |
+| E2E tooling placement unchanged | ✅ — still in `e2e/` workspace; no `frontend/package.json` or `e2e/package.json` edits. |
+| No new dependencies / framework changes | ✅ — Jest + JSDOM + Playwright unchanged. |
+
+**Net delta from the original audit:** the post-rebase test surface
+is strictly additive (3 new `currentUserSubject` specs) and aligned to
+PR #37's storage backend + key namespace. The original **W1** was
+re-applied to the new key (`'staff-engagement:token'` instead of
+`'staff-engagement.auth.jwt'`) but its traceability nature is
+unchanged. **W5** carries forward verbatim — same recommendation
+(follow-up ticket). **W6** (clearOnUnauthorized mutation) is still
+killed by the rewritten 401 spec. **Status: APPROVED for merge** —
+all 11 Compliant ✅ assertions remain valid, all 6 Warnings ⚠️ are
+either resolved (W1 stays open only in its traceability form) or
+deferred (W5, follow-up ticket), no new Violations introduced.
