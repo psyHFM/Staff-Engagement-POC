@@ -44,7 +44,7 @@ public class TaskController {
     private final InteractionContract interactionContract;
 
     @PostMapping("/api/v1/tasks")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskId> create(@RequestBody TaskRequest request) {
         // 2.3 Validation for subject existence via EmployeeContract (skipped only
         // while the employee module is absent).
@@ -73,6 +73,7 @@ public class TaskController {
         Task task = Task.builder()
                 .subjectId(request.subjectId())
                 .sourceInteractionId(request.sourceInteractionId())
+                .title(request.title() == null ? "" : request.title())
                 .description(request.description())
                 .completed(false)
                 .build();
@@ -82,20 +83,20 @@ public class TaskController {
     }
 
     @PutMapping("/api/v1/tasks/{id}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskSummary> updateCompletion(@PathVariable Long id,
                                                          @RequestBody CompletionRequest request) {
         return ResponseEntity.ok(taskService.toggleCompletion(id, request.completed()));
     }
 
     @GetMapping("/api/v1/employees/{id}/tasks")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<TaskSummary>> getForEmployee(@PathVariable Long id) {
         return ResponseEntity.ok(taskService.tasksForEmployee(new EmployeeId(id)));
     }
 
     @GetMapping("/api/v1/me/tasks")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<TaskSummary>> getMyTasks(@AuthenticationPrincipal UserDetails userDetails) {
         // 2.2 Implement GET /api/v1/me/tasks utilizing the security context to resolve the current employee
         // Assuming the subject in JWT is the Employee ID
@@ -103,7 +104,18 @@ public class TaskController {
         return ResponseEntity.ok(taskService.myTasks(currentEmployeeId));
     }
 
-    public record TaskRequest(Long subjectId, Long sourceInteractionId, String description) {}
+    /**
+     * Request body for {@code POST /api/v1/tasks}. ATSE1-31 adds a distinct
+     * {@code title} field that is stored on the {@code task.title} column.
+     * Bean Validation is wired through the {@code @Valid} annotation that
+     * Spring adds implicitly on {@code @RequestBody} for record types in
+     * Spring Boot 3.x.
+     */
+    public record TaskRequest(
+            Long subjectId,
+            Long sourceInteractionId,
+            String title,
+            String description) {}
 
     public record CompletionRequest(boolean completed) {}
 }

@@ -56,7 +56,8 @@ class TaskServiceTest {
                 .id(100L)
                 .subjectId(1L)
                 .sourceInteractionId(42L)
-                .description("Test Task")
+                .title("Test Task")
+                .description("Send the email")
                 .completed(false)
                 .build();
         given(taskRepository.findBySubjectId(employeeId.value()))
@@ -72,6 +73,8 @@ class TaskServiceTest {
         assertThat(summary.id().value()).isEqualTo(100L);
         assertThat(summary.subject().value()).isEqualTo(1L);
         assertThat(summary.title()).isEqualTo("Test Task");
+        assertThat(summary.description()).isEqualTo("Send the email");
+        assertThat(summary.title()).isNotEqualTo(summary.description());
         assertThat(summary.sourceInteractionId()).isEqualTo(new InteractionId(42L));
         assertThat(summary.completed()).isFalse();
     }
@@ -84,7 +87,8 @@ class TaskServiceTest {
                 .id(102L)
                 .subjectId(1L)
                 .sourceInteractionId(null)
-                .description("Standalone Task")
+                .title("Standalone Task")
+                .description("Standalone body")
                 .completed(true)
                 .build();
         given(taskRepository.findBySubjectId(employeeId.value()))
@@ -121,7 +125,8 @@ class TaskServiceTest {
         Task task = Task.builder()
                 .id(101L)
                 .subjectId(1L)
-                .description("My Task")
+                .title("My Task")
+                .description("My body")
                 .completed(false)
                 .build();
         given(taskRepository.findBySubjectId(employeeId.value()))
@@ -141,8 +146,8 @@ class TaskServiceTest {
     @DisplayName("Should preserve task order from the repository")
     void tasksForEmployee_preservesRepositoryOrder() {
         // Given
-        Task first = Task.builder().id(1L).subjectId(1L).description("first").completed(false).build();
-        Task second = Task.builder().id(2L).subjectId(1L).description("second").completed(true).build();
+        Task first = Task.builder().id(1L).subjectId(1L).title("first").description("first body").completed(false).build();
+        Task second = Task.builder().id(2L).subjectId(1L).title("second").description("second body").completed(true).build();
         given(taskRepository.findBySubjectId(employeeId.value()))
                 .willReturn(List.of(first, second));
 
@@ -161,7 +166,8 @@ class TaskServiceTest {
         Task task = Task.builder()
                 .id(100L)
                 .subjectId(1L)
-                .description("Test Task")
+                .title("Test Task")
+                .description("Test body")
                 .completed(false)
                 .build();
         given(taskRepository.findById(100L)).willReturn(Optional.of(task));
@@ -184,7 +190,8 @@ class TaskServiceTest {
         Task task = Task.builder()
                 .id(101L)
                 .subjectId(1L)
-                .description("Done Task")
+                .title("Done Task")
+                .description("Done body")
                 .completed(true)
                 .build();
         given(taskRepository.findById(101L)).willReturn(Optional.of(task));
