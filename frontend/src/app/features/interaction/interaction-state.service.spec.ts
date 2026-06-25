@@ -238,6 +238,8 @@ describe('InteractionStateService', () => {
     expect(apiClientSpy.get).toHaveBeenCalled();
     // And the success signal is set so the page can toast
     expect(service.created()).toEqual(updated);
+    // And the loading flag flipped back to false (beginLoad/endLoad pair)
+    expect(service.isLoading()).toBe(false);
   });
 
   it('updateInteraction surfaces a 404 (existence-opaque) as an API error', () => {

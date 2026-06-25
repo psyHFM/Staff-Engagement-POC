@@ -5,7 +5,7 @@ import { ApiClient } from '../../../shared/api/api-client';
 import { AuthState } from '../../../shared/auth/auth-state';
 import { InteractionStateService } from '../interaction-state.service';
 import { signal } from '@angular/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { InteractionSummary } from '../interaction.types';
 
 describe('EditInteraction', () => {
@@ -125,5 +125,65 @@ describe('EditInteraction', () => {
 
     // Then
     expect(apiClientSpy.patch).not.toHaveBeenCalled();
+  });
+
+  it('PATCHes the supplied type+note and emits saved on success', () => {
+    // Given
+    apiClientSpy.patch.mockClear();
+    apiClientSpy.patch.mockReturnValue(
+      of(interaction({ note: 'updated note', type: 'mentoring' }))
+    );
+    fixture.componentRef.setInput('editing', interaction({ note: 'to be updated' }));
+    fixture.detectChanges();
+    component.type = 'mentoring';
+    component.note = 'updated note';
+    const saved = jest.fn();
+    component.saved.subscribe(saved);
+
+    // When
+    component.submit();
+
+    // Then — the PATCH call shape matches the controller contract
+    expect(apiClientSpy.patch).toHaveBeenCalledWith(
+      'interactions/5',
+      { type: 'mentoring', note: 'updated note' }
+    );
+    // And the saved event fires with the API-confirmed summary
+    expect(saved).toHaveBeenCalledTimes(1);
+    expect(saved.mock.calls[0][0].type).toBe('mentoring');
+    expect(saved.mock.calls[0][0].note).toBe('updated note');
+  });
+
+  it('does not close or emit saved when the PATCH fails', () => {
+    // Given
+    apiClientSpy.patch.mockReturnValue(throwError(() => new Error('network down')));
+    fixture.componentRef.setInput('editing', interaction());
+    fixture.detectChanges();
+    const saved = jest.fn();
+    const closed = jest.fn();
+    component.saved.subscribe(saved);
+    component.closed.subscribe(closed);
+
+    // When
+    component.submit();
+
+    // Then — modal stays open so the user can retry
+    expect(saved).not.toHaveBeenCalled();
+    expect(closed).not.toHaveBeenCalled();
+  });
+
+  it('emits closed when Escape is pressed on the overlay', () => {
+    // Given
+    fixture.componentRef.setInput('editing', interaction());
+    fixture.detectChanges();
+    const closed = jest.fn();
+    component.closed.subscribe(closed);
+    const overlay = fixture.nativeElement.querySelector('.edit-interaction__overlay') as HTMLDivElement;
+
+    // When
+    overlay.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    // Then
+    expect(closed).toHaveBeenCalledTimes(1);
   });
 });

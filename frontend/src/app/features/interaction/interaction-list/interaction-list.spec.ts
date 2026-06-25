@@ -54,7 +54,7 @@ describe('InteractionList', () => {
     fixture.detectChanges();
 
     // Then
-    expect(fixture.nativeElement.querySelector('.interaction-list__empty')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.interaction-list__empty')).not.toBeNull();
   });
 
   it('disables the Previous button on the first page', () => {

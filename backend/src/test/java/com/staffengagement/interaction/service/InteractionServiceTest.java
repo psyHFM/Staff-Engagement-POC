@@ -17,6 +17,7 @@ import com.staffengagement.shared.kernel.EmployeeId;
 import com.staffengagement.shared.kernel.InteractionId;
 import com.staffengagement.shared.kernel.InteractionType;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -230,8 +231,16 @@ class InteractionServiceTest {
 
     @Test
     void updateChangesTypeAndNoteForAdminWithoutTouchingAuditFields() {
-        // Given — an existing interaction with subject=1, facilitator=2
+        // Given — an existing interaction with subject=1, facilitator=2;
+        // backdate createdAt/updatedAt by 1 hour so the assertion that
+        // updatedAt strictly advances can kill a "don't touch updatedAt"
+        // mutant (the fixture's setUpdatedAt(Instant.now()) would
+        // otherwise make the saved and original values effectively
+        // indistinguishable to a `<` comparison).
         Interaction existing = interaction(10L, InteractionType.CHECK_IN, 1L, 2L, "old note");
+        Instant anHourAgo = Instant.now().minus(1, ChronoUnit.HOURS);
+        existing.setCreatedAt(anHourAgo);
+        existing.setUpdatedAt(anHourAgo);
         Instant originalCreatedAt = existing.getCreatedAt();
         Instant originalUpdatedAt = existing.getUpdatedAt();
         when(repository.findById(10L)).thenReturn(Optional.of(existing));
@@ -242,7 +251,7 @@ class InteractionServiceTest {
                 new InteractionId(10L), InteractionType.MENTORING, "new note",
                 new EmployeeId(99L), true);
 
-        // Then — type and note change, subject/facilitator/createdAt stay, updatedAt advances
+        // Then — type and note change, subject/facilitator/createdAt stay, updatedAt strictly advances
         ArgumentCaptor<Interaction> captor = ArgumentCaptor.forClass(Interaction.class);
         verify(repository).save(captor.capture());
         Interaction saved = captor.getValue();
@@ -251,12 +260,53 @@ class InteractionServiceTest {
         assertThat(saved.getSubjectId()).isEqualTo(1L);
         assertThat(saved.getFacilitatorId()).isEqualTo(2L);
         assertThat(saved.getCreatedAt()).isEqualTo(originalCreatedAt);
-        assertThat(saved.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt);
+        assertThat(saved.getUpdatedAt()).isAfter(originalUpdatedAt);
 
         assertThat(result.type()).isEqualTo(InteractionType.MENTORING);
         assertThat(result.note()).isEqualTo("new note");
         assertThat(result.subject()).isEqualTo(new EmployeeId(1L));
         assertThat(result.facilitator()).isEqualTo(new EmployeeId(2L));
+    }
+
+    @Test
+    void updateAcceptsNullNoteAndEmptyNoteAsFieldValues() {
+        // Given — the service does not validate the note; both null and ""
+        // are stored as-is. A mutation that rejects null/empty notes would
+        // not survive these two specs.
+        Interaction existing = interaction(11L, InteractionType.CHECK_IN, 1L, 2L, "old");
+        when(repository.findById(11L)).thenReturn(Optional.of(existing));
+        when(repository.save(any(Interaction.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // When / Then — null note
+        InteractionSummary nullResult = service.update(
+                new InteractionId(11L), InteractionType.MENTORING, null,
+                new EmployeeId(99L), true);
+        assertThat(nullResult.note()).isNull();
+
+        // When / Then — empty note
+        InteractionSummary emptyResult = service.update(
+                new InteractionId(11L), InteractionType.MENTORING, "",
+                new EmployeeId(99L), true);
+        assertThat(emptyResult.note()).isEmpty();
+    }
+
+    @Test
+    void updateAlwaysOverwritesBothTypeAndNoteEvenWhenCallerLeavesOneAlone() {
+        // Given — caller passes the same type as the row already has but a new note
+        Interaction existing = interaction(12L, InteractionType.CHECK_IN, 1L, 2L, "old note");
+        when(repository.findById(12L)).thenReturn(Optional.of(existing));
+        when(repository.save(any(Interaction.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // When — admin updates with the same type but a new note
+        InteractionSummary result = service.update(
+                new InteractionId(12L), InteractionType.CHECK_IN, "new note",
+                new EmployeeId(99L), true);
+
+        // Then — note is overwritten; the production code does not
+        // gate setType/setNote on a null/change check, so a mutant that
+        // conditionalises setNote on a change would not survive.
+        assertThat(result.note()).isEqualTo("new note");
+        assertThat(result.type()).isEqualTo(InteractionType.CHECK_IN);
     }
 
     @Test
