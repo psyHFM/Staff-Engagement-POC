@@ -10,7 +10,7 @@ import { defineConfig, devices } from '@playwright/test';
  * Pre-requisite: `docker compose up -d --build` must be running.
  */
 export default defineConfig({
-  testDir: './tests',
+  testDir: './',
   fullyParallel: false,
   workers: 1,
   retries: 0,
