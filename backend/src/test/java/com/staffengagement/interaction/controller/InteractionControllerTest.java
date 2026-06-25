@@ -16,6 +16,7 @@ import com.staffengagement.shared.api.PageRequest;
 import com.staffengagement.shared.api.Paged;
 import com.staffengagement.shared.kernel.InteractionId;
 import com.staffengagement.shared.kernel.InteractionType;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,8 @@ class InteractionControllerTest {
     void createReturns201WithCreatedSummaryAndForwardsBody() {
         // Given — the service persists and returns the created summary
         InteractionSummary created = new InteractionSummary(
-                new InteractionId(42L), InteractionType.CHECK_IN, new EmployeeId(1L), new EmployeeId(2L), "note");
+                new InteractionId(42L), InteractionType.CHECK_IN, new EmployeeId(1L), new EmployeeId(2L), "note",
+                Instant.parse("2026-06-25T10:00:00Z"));
         when(interactionService.create(any(), any(), any(), any())).thenReturn(created);
 
         // When
@@ -72,7 +74,8 @@ class InteractionControllerTest {
     void listBySubjectReturnsPagedResultAndBindsSubjectOffsetAndLimit() {
         // Given — the service returns a page of one interaction
         InteractionSummary summary = new InteractionSummary(
-                new InteractionId(7L), InteractionType.MENTORING, new EmployeeId(1L), new EmployeeId(2L), "n");
+                new InteractionId(7L), InteractionType.MENTORING, new EmployeeId(1L), new EmployeeId(2L), "n",
+                Instant.parse("2026-06-25T10:00:00Z"));
         Paged<InteractionSummary> page = new Paged<>(List.of(summary), 0, 20, 1L);
         when(interactionService.findPageBySubject(any(), any(), any())).thenReturn(page);
 
@@ -148,7 +151,8 @@ class InteractionControllerTest {
     void getByIdReturnsSummaryWhenPresent() {
         // Given
         InteractionSummary summary = new InteractionSummary(
-                new InteractionId(5L), InteractionType.CATCH_UP, new EmployeeId(1L), new EmployeeId(2L), "x");
+                new InteractionId(5L), InteractionType.CATCH_UP, new EmployeeId(1L), new EmployeeId(2L), "x",
+                Instant.parse("2026-06-25T10:00:00Z"));
         when(interactionService.findById(new InteractionId(5L))).thenReturn(Optional.of(summary));
 
         // When

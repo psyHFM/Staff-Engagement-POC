@@ -45,7 +45,7 @@ class SkillsServiceTest {
     }
 
     private static EmployeeSummary employee(Long id, String name) {
-        return new EmployeeSummary(new EmployeeId(id), name, id + "@staff.eng", EmployeeRole.EMPLOYEE);
+        return new EmployeeSummary(new EmployeeId(id), name, id + "@staff.eng", EmployeeRole.EMPLOYEE, null, null, null);
     }
 
     private static SkillStrength skill(Long employeeId, String employeeName, String skill, int years, int projectCount) {
@@ -53,11 +53,11 @@ class SkillsServiceTest {
     }
 
     private static PortfolioSummary portfolio(SkillStrength... skills) {
-        return new PortfolioSummary(skills[0].employeeId(), List.of(skills));
+        return new PortfolioSummary(skills[0].employeeId(), List.of(skills), List.of(), List.of(), List.of());
     }
 
     private static PortfolioSummary emptyPortfolio(EmployeeId employeeId) {
-        return new PortfolioSummary(employeeId, List.of());
+        return new PortfolioSummary(employeeId, List.of(), List.of(), List.of(), List.of());
     }
 
     private void givenPortfolio(EmployeeId id, PortfolioSummary summary) {
@@ -400,7 +400,7 @@ class SkillsServiceTest {
         given(employeeContract.allEmployees()).willReturn(List.of(emp));
         givenPortfolio(emp.id(), new PortfolioSummary(emp.id(), List.of(
                 skill(1L, "Jane", "Angular", 5, 2),
-                new SkillStrength(emp.id(), "Jane", null, 3, 4))));
+                new SkillStrength(emp.id(), "Jane", null, 3, 4)), List.of(), List.of(), List.of()));
 
         // When
         Paged<SkillStrength> result = service.search("Angular", 0, 0, 20, null);
@@ -417,9 +417,9 @@ class SkillsServiceTest {
         EmployeeSummary b = employee(2L, "B");
         given(employeeContract.allEmployees()).willReturn(List.of(a, b));
         givenPortfolio(a.id(), new PortfolioSummary(a.id(), List.of(
-                new SkillStrength(a.id(), null, "Java", 5, 3))));
+                new SkillStrength(a.id(), null, "Java", 5, 3)), List.of(), List.of(), List.of()));
         givenPortfolio(b.id(), new PortfolioSummary(b.id(), List.of(
-                skill(2L, "Bob", "Java", 5, 3))));
+                skill(2L, "Bob", "Java", 5, 3)), List.of(), List.of(), List.of()));
 
         // When
         Paged<SkillStrength> result = service.search("Java", 0, 0, 20, null);
@@ -453,7 +453,7 @@ class SkillsServiceTest {
         givenPortfolio(emp.id(), new PortfolioSummary(emp.id(), List.of(
                 skill(1L, "Jane", "Angular", 4, 2),
                 skill(1L, "Jane", "React", 2, 5),
-                skill(1L, "Jane", "Angular", 1, 1))));
+                skill(1L, "Jane", "Angular", 1, 1)), List.of(), List.of(), List.of()));
 
         // When
         Paged<SkillStrength> result = service.search("Angular", 0, 0, 20, null);

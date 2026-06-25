@@ -139,6 +139,7 @@
 						<param>com.staffengagement.shared.*</param>
 						<param>com.staffengagement.task.*</param>
 						<param>com.staffengagement.employee.*</param>
+						<param>com.staffengagement.profile.*</param>
 					</targetClasses>
 					<!-- Exclude Spring Data JPA repository interfaces: declarative
 					     infrastructure untestable under the unit-only / integration-disabled
