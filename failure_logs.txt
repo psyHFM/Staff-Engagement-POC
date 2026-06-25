@@ -1,0 +1,554 @@
+E2E — Playwright smoke	Wait for stack health	﻿2026-06-25T10:43:25.8316353Z ##[group]Run for i in {1..60}; do
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8316922Z ^[[36;1mfor i in {1..60}; do^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8317778Z ^[[36;1m  backend_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/v1/health || true)^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8318932Z ^[[36;1m  frontend_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:4200 || true)^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8319918Z ^[[36;1m  if [ "$backend_status" != "000" ] && [ "$frontend_status" = "200" ]; then^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8320830Z ^[[36;1m    echo "Stack ready (backend=$backend_status, frontend=$frontend_status)"^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8321836Z ^[[36;1m    exit 0^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8322222Z ^[[36;1m  fi^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8322959Z ^[[36;1m  echo "Waiting for stack... ($i) backend=$backend_status frontend=$frontend_status"^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8323703Z ^[[36;1m  sleep 5^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8324120Z ^[[36;1mdone^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8324506Z ^[[36;1mecho "Stack did not become healthy"^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8325002Z ^[[36;1mdocker compose logs^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8325482Z ^[[36;1mexit 1^[[0m
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8370242Z shell: /usr/bin/bash -e {0}
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8370694Z ##[endgroup]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:25.8687900Z Waiting for stack... (1) backend=000 frontend=000
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:30.8869864Z Waiting for stack... (2) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:35.9008041Z Waiting for stack... (3) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:40.9144855Z Waiting for stack... (4) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:45.9283897Z Waiting for stack... (5) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:50.9424377Z Waiting for stack... (6) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:43:55.9565337Z Waiting for stack... (7) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:00.9707086Z Waiting for stack... (8) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:05.9848764Z Waiting for stack... (9) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:10.9992905Z Waiting for stack... (10) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:16.0130631Z Waiting for stack... (11) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:21.0266101Z Waiting for stack... (12) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:26.0402929Z Waiting for stack... (13) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:31.0547390Z Waiting for stack... (14) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:36.0690500Z Waiting for stack... (15) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:41.0830450Z Waiting for stack... (16) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:46.0972117Z Waiting for stack... (17) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:51.1108504Z Waiting for stack... (18) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:44:56.1248834Z Waiting for stack... (19) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:01.1387875Z Waiting for stack... (20) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:06.1526586Z Waiting for stack... (21) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:11.1663625Z Waiting for stack... (22) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:16.1798401Z Waiting for stack... (23) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:21.1937637Z Waiting for stack... (24) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:26.2074382Z Waiting for stack... (25) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:31.2211673Z Waiting for stack... (26) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:36.2344492Z Waiting for stack... (27) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:41.2477362Z Waiting for stack... (28) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:46.2610489Z Waiting for stack... (29) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:51.2743178Z Waiting for stack... (30) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:45:56.2899385Z Waiting for stack... (31) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:01.3048220Z Waiting for stack... (32) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:06.3185045Z Waiting for stack... (33) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:11.3326972Z Waiting for stack... (34) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:16.3467247Z Waiting for stack... (35) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:21.3599948Z Waiting for stack... (36) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:26.3736080Z Waiting for stack... (37) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:31.3872017Z Waiting for stack... (38) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:36.4004345Z Waiting for stack... (39) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:41.4142952Z Waiting for stack... (40) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:46.4282336Z Waiting for stack... (41) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:51.4420153Z Waiting for stack... (42) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:46:56.4558378Z Waiting for stack... (43) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:01.4693743Z Waiting for stack... (44) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:06.4830012Z Waiting for stack... (45) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:11.4969963Z Waiting for stack... (46) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:16.5108682Z Waiting for stack... (47) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:21.5244883Z Waiting for stack... (48) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:26.5381001Z Waiting for stack... (49) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:31.5584931Z Waiting for stack... (50) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:36.5724125Z Waiting for stack... (51) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:41.5861779Z Waiting for stack... (52) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:46.5999341Z Waiting for stack... (53) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:51.6141072Z Waiting for stack... (54) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:47:56.6275244Z Waiting for stack... (55) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:01.6412363Z Waiting for stack... (56) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:06.6554341Z Waiting for stack... (57) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:11.6691677Z Waiting for stack... (58) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:16.6829482Z Waiting for stack... (59) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:21.6966878Z Waiting for stack... (60) backend=000 frontend=200
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.6980715Z Stack did not become healthy
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7939662Z postgres-1  | The files belonging to this database system will be owned by user "postgres".
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7947662Z postgres-1  | This user must also own the server process.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7948573Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7949709Z postgres-1  | The database cluster will be initialized with locale "en_US.utf8".
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7951124Z postgres-1  | The default database encoding has accordingly been set to "UTF8".
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7952996Z postgres-1  | The default text search configuration will be set to "english".
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7954194Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7954966Z postgres-1  | Data page checksums are disabled.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7955643Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7956388Z postgres-1  | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7958010Z postgres-1  | creating subdirectories ... ok
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7959087Z postgres-1  | selecting dynamic shared memory implementation ... posix
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7960263Z postgres-1  | selecting default "max_connections" ... 100
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7961626Z postgres-1  | selecting default "shared_buffers" ... 128MB
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7962585Z postgres-1  | selecting default time zone ... UTC
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7963407Z postgres-1  | creating configuration files ... ok
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7964213Z postgres-1  | running bootstrap script ... ok
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7964966Z postgres-1  | sh: locale: not found
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7965998Z postgres-1  | 2026-06-25 10:43:20.448 UTC [36] WARNING:  no usable system locales were found
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7967137Z postgres-1  | performing post-bootstrap initialization ... ok
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7968306Z postgres-1  | initdb: warning: enabling "trust" authentication for local connections
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7970099Z postgres-1  | initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7971568Z postgres-1  | syncing data to disk ... ok
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7972206Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7972982Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7973767Z postgres-1  | Success. You can now start the database server using:
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7974513Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7975298Z postgres-1  |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7976057Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7977613Z postgres-1  | waiting for server to start....2026-06-25 10:43:20.992 UTC [42] LOG:  starting PostgreSQL 17.10 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7979540Z postgres-1  | 2026-06-25 10:43:20.992 UTC [42] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7981144Z postgres-1  | 2026-06-25 10:43:20.998 UTC [45] LOG:  database system was shut down at 2026-06-25 10:43:20 UTC
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7982800Z postgres-1  | 2026-06-25 10:43:21.002 UTC [42] LOG:  database system is ready to accept connections
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7984787Z postgres-1  |  done
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7985561Z postgres-1  | server started
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7998584Z postgres-1  | CREATE DATABASE
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7999046Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.7999383Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8000215Z postgres-1  | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8000956Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8002205Z postgres-1  | waiting for server to shut down....2026-06-25 10:43:21.140 UTC [42] LOG:  received fast shutdown request
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8003431Z postgres-1  | 2026-06-25 10:43:21.141 UTC [42] LOG:  aborting any active transactions
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8004840Z postgres-1  | 2026-06-25 10:43:21.144 UTC [42] LOG:  background worker "logical replication launcher" (PID 48) exited with exit code 1
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8006027Z postgres-1  | 2026-06-25 10:43:21.144 UTC [43] LOG:  shutting down
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8006892Z postgres-1  | 2026-06-25 10:43:21.145 UTC [43] LOG:  checkpoint starting: shutdown immediate
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8008411Z postgres-1  | 2026-06-25 10:43:21.160 UTC [43] LOG:  checkpoint complete: wrote 926 buffers (5.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.012 s, sync=0.002 s, total=0.016 s; sync files=301, longest=0.001 s, average=0.001 s; distance=4266 kB, estimate=4266 kB; lsn=0/191C7E8, redo lsn=0/191C7E8
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8009662Z postgres-1  | 2026-06-25 10:43:21.167 UTC [42] LOG:  database system is shut down
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8010063Z postgres-1  |  done
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8010306Z postgres-1  | server stopped
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8010549Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8010924Z postgres-1  | PostgreSQL init process complete; ready for start up.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8011278Z postgres-1  | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8012437Z postgres-1  | 2026-06-25 10:43:21.260 UTC [1] LOG:  starting PostgreSQL 17.10 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8013288Z postgres-1  | 2026-06-25 10:43:21.260 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8013996Z postgres-1  | 2026-06-25 10:43:21.260 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8014731Z postgres-1  | 2026-06-25 10:43:21.261 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8015505Z postgres-1  | 2026-06-25 10:43:21.263 UTC [58] LOG:  database system was shut down at 2026-06-25 10:43:21 UTC
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8016197Z postgres-1  | 2026-06-25 10:43:21.267 UTC [1] LOG:  database system is ready to accept connections
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8016987Z postgres-1  | 2026-06-25 10:43:29.592 UTC [69] ERROR:  relation "public.databasechangeloglock" does not exist at character 22
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8017822Z postgres-1  | 2026-06-25 10:43:29.592 UTC [69] STATEMENT:  SELECT COUNT(*) FROM public.databasechangeloglock
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8018547Z postgres-1  | 2026-06-25 10:43:29.919 UTC [69] ERROR:  relation "task" does not exist at character 13
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8020340Z postgres-1  | 2026-06-25 10:43:29.919 UTC [69] STATEMENT:  INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng'
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8022262Z postgres-1  | 2026-06-25 10:48:21.363 UTC [56] LOG:  checkpoint starting: time
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8023004Z frontend-1  | /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8023823Z frontend-1  | /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8024592Z frontend-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8025388Z frontend-1  | 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8026251Z frontend-1  | 10-listen-on-ipv6-by-default.sh: info: /etc/nginx/conf.d/default.conf differs from the packaged version
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8027035Z frontend-1  | /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8027756Z frontend-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8028490Z frontend-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8029145Z frontend-1  | /docker-entrypoint.sh: Configuration complete; ready for start up
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8029794Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: using the "epoll" event method
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8030312Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: nginx/1.27.5
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8030852Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: built by gcc 14.2.0 (Alpine 14.2.0) 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8031668Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: OS: Linux 6.17.0-1018-azure
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8032384Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 65536:65536
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8032781Z backend-1   | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8033070Z backend-1   |   .   ____          _            __ _ _
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8034780Z backend-1   |  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8035187Z backend-1   | ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8035569Z backend-1   |  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8035947Z backend-1   |   '  |____| .__|_| |_|_| |_\__, | / / / /
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8036314Z backend-1   |  =========|_|==============|___/=/_/_/_/
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8036606Z backend-1   | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8036928Z backend-1   |  :: Spring Boot ::               (v3.5.15)
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8037526Z backend-1   | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8038796Z backend-1   | 2026-06-25T10:43:26.814Z  INFO 1 --- [StaffEngagement] [           main] c.s.StaffEngagementApplication           : Starting StaffEngagementApplication v0.0.1-SNAPSHOT using Java 21.0.11 with PID 1 (/app/app.jar started by staffeng in /app)
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8040526Z backend-1   | 2026-06-25T10:43:26.816Z  INFO 1 --- [StaffEngagement] [           main] c.s.StaffEngagementApplication           : No active profile set, falling back to 1 default profile: "default"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8042446Z backend-1   | 2026-06-25T10:43:27.749Z  INFO 1 --- [StaffEngagement] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8044039Z backend-1   | 2026-06-25T10:43:27.824Z  INFO 1 --- [StaffEngagement] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 66 ms. Found 8 JPA repository interfaces.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8045601Z backend-1   | 2026-06-25T10:43:28.469Z  INFO 1 --- [StaffEngagement] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8046868Z backend-1   | 2026-06-25T10:43:28.486Z  INFO 1 --- [StaffEngagement] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8048317Z backend-1   | 2026-06-25T10:43:28.486Z  INFO 1 --- [StaffEngagement] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.55]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8049691Z backend-1   | 2026-06-25T10:43:28.516Z  INFO 1 --- [StaffEngagement] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8051072Z backend-1   | 2026-06-25T10:43:28.517Z  INFO 1 --- [StaffEngagement] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1620 ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8052914Z backend-1   | 2026-06-25T10:43:28.716Z  INFO 1 --- [StaffEngagement] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8054291Z backend-1   | 2026-06-25T10:43:28.944Z  INFO 1 --- [StaffEngagement] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@99a8de3
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8067063Z backend-1   | 2026-06-25T10:43:28.946Z  INFO 1 --- [StaffEngagement] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8068969Z backend-1   | 2026-06-25T10:43:29.094Z  INFO 1 --- [StaffEngagement] [           main] liquibase.database                       : Set default schema name to public
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8070276Z backend-1   | 2026-06-25T10:43:29.461Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Creating database history table with name: public.databasechangelog
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8071906Z backend-1   | 2026-06-25T10:43:29.516Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Reading from public.databasechangelog
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8073199Z backend-1   | 2026-06-25T10:43:29.526Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Reading resource: db/changelog/modules/employee/employee-001-initial.yaml
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8074596Z backend-1   | 2026-06-25T10:43:29.542Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Reading resource: db/changelog/modules/interaction/interaction-001-initial.yaml
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8075992Z backend-1   | 2026-06-25T10:43:29.547Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Reading resource: db/changelog/modules/portfolio/portfolio-001-initial.yaml
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8077325Z backend-1   | 2026-06-25T10:43:29.564Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Reading resource: db/changelog/modules/seed/seed-001-initial.yaml
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8078761Z backend-1   | 2026-06-25T10:43:29.575Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8079885Z backend-1   | 2026-06-25T10:43:29.575Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8080999Z backend-1   | 2026-06-25T10:43:29.575Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8082405Z backend-1   | 2026-06-25T10:43:29.575Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8083496Z backend-1   | 2026-06-25T10:43:29.575Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8084578Z backend-1   | 2026-06-25T10:43:29.576Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8085661Z backend-1   | 2026-06-25T10:43:29.576Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8086940Z backend-1   | 2026-06-25T10:43:29.577Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8088017Z backend-1   | 2026-06-25T10:43:29.577Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8089098Z backend-1   | 2026-06-25T10:43:29.577Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8090171Z backend-1   | 2026-06-25T10:43:29.577Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8091248Z backend-1   | 2026-06-25T10:43:29.577Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8092606Z backend-1   | 2026-06-25T10:43:29.577Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8093684Z backend-1   | 2026-06-25T10:43:29.577Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8094767Z backend-1   | 2026-06-25T10:43:29.578Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8095841Z backend-1   | 2026-06-25T10:43:29.578Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8096927Z backend-1   | 2026-06-25T10:43:29.578Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8098011Z backend-1   | 2026-06-25T10:43:29.578Z  WARN 1 --- [StaffEngagement] [           main] amlChangeLogParser$CustomSafeConstructor : duplicate keys found : sql
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8099242Z backend-1   | 2026-06-25T10:43:29.583Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Reading resource: db/changelog/modules/task/001-create-task-table.yaml
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8100376Z backend-1   | 2026-06-25T10:43:29.601Z  INFO 1 --- [StaffEngagement] [           main] liquibase.snapshot                       : Creating snapshot
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8101705Z backend-1   | 2026-06-25T10:43:29.708Z  INFO 1 --- [StaffEngagement] [           main] liquibase.lockservice                    : Successfully acquired change log lock
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8102969Z backend-1   | 2026-06-25T10:43:29.709Z  INFO 1 --- [StaffEngagement] [           main] liquibase.command                        : Using deploymentId: 2384208694
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8104064Z backend-1   | 2026-06-25T10:43:29.711Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Reading from public.databasechangelog
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8105324Z backend-1   | 2026-06-25T10:43:29.762Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/baseline.yaml::phase-0-baseline-001::phase0
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8106535Z backend-1   | 2026-06-25T10:43:29.765Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Tag 'phase-0-baseline' applied to database
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8107882Z backend-1   | 2026-06-25T10:43:29.766Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/baseline.yaml::phase-0-baseline-001::phase0 ran successfully in 3ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8109409Z backend-1   | 2026-06-25T10:43:29.773Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/employee/employee-001-initial.yaml::employee-001::phase1
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8110648Z backend-1   | 2026-06-25T10:43:29.786Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Table employee created
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8112507Z backend-1   | 2026-06-25T10:43:29.786Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/employee/employee-001-initial.yaml::employee-001::phase1 ran successfully in 13ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8114163Z backend-1   | 2026-06-25T10:43:29.790Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/employee/employee-001-initial.yaml::employee-002-seed-admin::phase1
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8115488Z backend-1   | 2026-06-25T10:43:29.793Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : New row inserted into employee
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8116952Z backend-1   | 2026-06-25T10:43:29.793Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/employee/employee-001-initial.yaml::employee-002-seed-admin::phase1 ran successfully in 3ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8118635Z backend-1   | 2026-06-25T10:43:29.797Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/interaction/interaction-001-initial.yaml::interaction-001::phase2
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8119917Z backend-1   | 2026-06-25T10:43:29.804Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Table interaction created
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8121600Z backend-1   | 2026-06-25T10:43:29.805Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/interaction/interaction-001-initial.yaml::interaction-001::phase2 ran successfully in 8ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8123322Z backend-1   | 2026-06-25T10:43:29.809Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-001::phase4
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8124579Z backend-1   | 2026-06-25T10:43:29.815Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Table portfolio created
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8125997Z backend-1   | 2026-06-25T10:43:29.816Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-001::phase4 ran successfully in 6ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8127648Z backend-1   | 2026-06-25T10:43:29.819Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-002-skills::phase4
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8129090Z backend-1   | 2026-06-25T10:43:29.828Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Table portfolio_skill created
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8130563Z backend-1   | 2026-06-25T10:43:29.829Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-002-skills::phase4 ran successfully in 10ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8132425Z backend-1   | 2026-06-25T10:43:29.832Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-003-education::phase4
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8133741Z backend-1   | 2026-06-25T10:43:29.840Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Table portfolio_education created
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8134510Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: start worker processes
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8135040Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: start worker process 29
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8135545Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: start worker process 30
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8136163Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: start worker process 31
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8136649Z frontend-1  | 2026/06/25 10:43:25 [notice] 1#1: start worker process 32
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8137253Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:43:30 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8137921Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:43:35 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8139277Z backend-1   | 2026-06-25T10:43:29.843Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-003-education::phase4 ran successfully in 9ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8140997Z backend-1   | 2026-06-25T10:43:29.846Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-004-projects::phase4
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8142681Z backend-1   | 2026-06-25T10:43:29.855Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Table portfolio_project created
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8144174Z backend-1   | 2026-06-25T10:43:29.855Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-004-projects::phase4 ran successfully in 9ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8145855Z backend-1   | 2026-06-25T10:43:29.863Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-005-links::phase4
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8147152Z backend-1   | 2026-06-25T10:43:29.870Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Table portfolio_link created
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8148606Z backend-1   | 2026-06-25T10:43:29.871Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/portfolio/portfolio-001-initial.yaml::portfolio-005-links::phase4 ran successfully in 8ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8150243Z backend-1   | 2026-06-25T10:43:29.874Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/seed/seed-001-initial.yaml::seed-000-cleanup-v7::seed-tool
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8151598Z backend-1   | 2026-06-25T10:43:29.885Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Custom SQL executed
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8152997Z backend-1   | 2026-06-25T10:43:29.885Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/seed/seed-001-initial.yaml::seed-000-cleanup-v7::seed-tool ran successfully in 11ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8154745Z backend-1   | 2026-06-25T10:43:29.889Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/seed/seed-001-initial.yaml::seed-001-employees-v7::seed-tool
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8156008Z backend-1   | 2026-06-25T10:43:29.891Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : New row inserted into employee
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8157072Z backend-1   | 2026-06-25T10:43:29.893Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : New row inserted into employee
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8158121Z backend-1   | 2026-06-25T10:43:29.894Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : New row inserted into employee
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8159174Z backend-1   | 2026-06-25T10:43:29.895Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : New row inserted into employee
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8160592Z backend-1   | 2026-06-25T10:43:29.895Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/seed/seed-001-initial.yaml::seed-001-employees-v7::seed-tool ran successfully in 5ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8162442Z backend-1   | 2026-06-25T10:43:29.897Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/seed/seed-001-initial.yaml::seed-002-portfolios-v7::seed-tool
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8163670Z backend-1   | 2026-06-25T10:43:29.900Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Custom SQL executed
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8165074Z backend-1   | 2026-06-25T10:43:29.900Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/seed/seed-001-initial.yaml::seed-002-portfolios-v7::seed-tool ran successfully in 3ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8166666Z backend-1   | 2026-06-25T10:43:29.902Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/seed/seed-001-initial.yaml::seed-003-skills-v7::seed-tool
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8167881Z backend-1   | 2026-06-25T10:43:29.906Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Custom SQL executed
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8169264Z backend-1   | 2026-06-25T10:43:29.907Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/seed/seed-001-initial.yaml::seed-003-skills-v7::seed-tool ran successfully in 5ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8170875Z backend-1   | 2026-06-25T10:43:29.909Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/seed/seed-001-initial.yaml::seed-004-interactions-v7::seed-tool
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8172258Z backend-1   | 2026-06-25T10:43:29.913Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : Custom SQL executed
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8173678Z backend-1   | 2026-06-25T10:43:29.914Z  INFO 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/seed/seed-001-initial.yaml::seed-004-interactions-v7::seed-tool ran successfully in 5ms
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8175277Z backend-1   | 2026-06-25T10:43:29.916Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : Running Changeset: db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8176864Z backend-1   | 2026-06-25T10:43:29.919Z ERROR 1 --- [StaffEngagement] [           main] liquibase.changelog                      : ChangeSet db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool encountered an exception.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8177961Z backend-1   | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8178435Z backend-1   | liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8180215Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8182360Z backend-1   | 	at liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback.doInStatement(JdbcExecutor.java:497) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8183447Z backend-1   | 	at liquibase.executor.jvm.JdbcExecutor.execute(JdbcExecutor.java:83) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8184372Z backend-1   | 	at liquibase.executor.jvm.JdbcExecutor.execute(JdbcExecutor.java:185) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8185330Z backend-1   | 	at liquibase.executor.AbstractExecutor.execute(AbstractExecutor.java:141) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8186398Z backend-1   | 	at liquibase.database.AbstractJdbcDatabase.executeStatements(AbstractJdbcDatabase.java:1189) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8187556Z backend-1   | 	at liquibase.changelog.ChangeSet.execute(ChangeSet.java:790) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8188581Z backend-1   | 	at liquibase.changelog.visitor.UpdateVisitor.executeAcceptedChange(UpdateVisitor.java:126) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8189635Z backend-1   | 	at liquibase.changelog.visitor.UpdateVisitor.visit(UpdateVisitor.java:70) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8190629Z backend-1   | 	at liquibase.changelog.ChangeLogIterator.lambda$run$0(ChangeLogIterator.java:133) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8191626Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8192323Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8192995Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8193651Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8194503Z backend-1   | 	at liquibase.changelog.ChangeLogIterator.lambda$run$1(ChangeLogIterator.java:122) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8195356Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8196028Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8196670Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8197314Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8197952Z backend-1   | 	at liquibase.Scope.child(Scope.java:267) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8198593Z backend-1   | 	at liquibase.Scope.child(Scope.java:271) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8199409Z backend-1   | 	at liquibase.changelog.ChangeLogIterator.run(ChangeLogIterator.java:91) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8200502Z backend-1   | 	at liquibase.command.core.AbstractUpdateCommandStep.lambda$run$0(AbstractUpdateCommandStep.java:114) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8201564Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8202250Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8202902Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8203673Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8204592Z backend-1   | 	at liquibase.command.core.AbstractUpdateCommandStep.run(AbstractUpdateCommandStep.java:112) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8205644Z backend-1   | 	at liquibase.command.core.UpdateCommandStep.run(UpdateCommandStep.java:100) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8206609Z backend-1   | 	at liquibase.command.CommandScope.lambda$execute$6(CommandScope.java:253) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8207391Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8208032Z backend-1   | 	at liquibase.Scope.child(Scope.java:186) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8208810Z backend-1   | 	at liquibase.command.CommandScope.execute(CommandScope.java:241) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8209660Z backend-1   | 	at liquibase.Liquibase.lambda$update$0(Liquibase.java:216) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8210428Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8211111Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8212048Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8212699Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8213437Z backend-1   | 	at liquibase.Liquibase.runInScope(Liquibase.java:1333) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8214203Z backend-1   | 	at liquibase.Liquibase.update(Liquibase.java:205) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8214931Z backend-1   | 	at liquibase.Liquibase.update(Liquibase.java:188) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8215867Z backend-1   | 	at liquibase.integration.spring.SpringLiquibase.performUpdate(SpringLiquibase.java:326) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8217045Z backend-1   | 	at liquibase.integration.spring.SpringLiquibase.lambda$afterPropertiesSet$0(SpringLiquibase.java:278) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8217979Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8218660Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8219313Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8219952Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8220886Z backend-1   | 	at liquibase.integration.spring.SpringLiquibase.afterPropertiesSet(SpringLiquibase.java:271) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8222679Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1871) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8224370Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1820) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8226013Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:607) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8227624Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8229088Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8230675Z backend-1   | 	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8232213Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8233483Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8234747Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8236004Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:207) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8237445Z backend-1   | 	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:974) ~[spring-context-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8238966Z backend-1   | 	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:628) ~[spring-context-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8240567Z backend-1   | 	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8241983Z backend-1   | 	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8243079Z backend-1   | 	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8244129Z backend-1   | 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8245139Z backend-1   | 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1361) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8246140Z backend-1   | 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1350) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8247144Z backend-1   | 	at com.staffengagement.StaffEngagementApplication.main(StaffEngagementApplication.java:10) ~[!/:0.0.1-SNAPSHOT]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8248085Z backend-1   | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[na:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8248808Z backend-1   | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[na:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8249595Z backend-1   | 	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106) ~[app.jar:0.0.1-SNAPSHOT]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8250497Z backend-1   | 	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64) ~[app.jar:0.0.1-SNAPSHOT]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8251568Z backend-1   | 	at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:40) ~[app.jar:0.0.1-SNAPSHOT]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8252408Z backend-1   | Caused by: org.postgresql.util.PSQLException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8252891Z backend-1   |   Position: 13
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8253663Z backend-1   | 	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8254792Z backend-1   | 	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8255839Z backend-1   | 	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8256829Z backend-1   | 	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8257745Z backend-1   | 	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8258802Z backend-1   | 	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:359) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8259772Z backend-1   | 	at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:344) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8260739Z backend-1   | 	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:320) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8261991Z backend-1   | 	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:315) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8262930Z backend-1   | 	at com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:95) ~[HikariCP-6.3.3.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8263876Z backend-1   | 	at com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java) ~[HikariCP-6.3.3.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8264974Z backend-1   | 	at liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback.doInStatement(JdbcExecutor.java:491) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8265713Z backend-1   | 	... 70 common frames omitted
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8265993Z backend-1   | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8266627Z backend-1   | 2026-06-25T10:43:29.928Z  INFO 1 --- [StaffEngagement] [           main] liquibase.util                           : UPDATE SUMMARY
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8267767Z backend-1   | 2026-06-25T10:43:29.928Z  INFO 1 --- [StaffEngagement] [           main] liquibase.util                           : Run:                         14
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8268789Z backend-1   | 2026-06-25T10:43:29.929Z  INFO 1 --- [StaffEngagement] [           main] liquibase.util                           : Previously run:               0
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8269803Z backend-1   | 2026-06-25T10:43:29.929Z  INFO 1 --- [StaffEngagement] [           main] liquibase.util                           : Filtered out:                 0
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8270824Z backend-1   | 2026-06-25T10:43:29.929Z  INFO 1 --- [StaffEngagement] [           main] liquibase.util                           : -------------------------------
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8271970Z backend-1   | 2026-06-25T10:43:29.929Z  INFO 1 --- [StaffEngagement] [           main] liquibase.util                           : Total change sets:           16
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8272978Z backend-1   | 2026-06-25T10:43:29.929Z  INFO 1 --- [StaffEngagement] [           main] liquibase.util                           : Update summary generated
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8274041Z backend-1   | 2026-06-25T10:43:29.932Z  INFO 1 --- [StaffEngagement] [           main] liquibase.command                        : Update command encountered an exception.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8275145Z backend-1   | 2026-06-25T10:43:29.934Z  INFO 1 --- [StaffEngagement] [           main] liquibase.lockservice                    : Successfully released change log lock
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8276194Z backend-1   | 2026-06-25T10:43:29.935Z  INFO 1 --- [StaffEngagement] [           main] liquibase.command                        : Logging exception.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8277206Z backend-1   | 2026-06-25T10:43:29.935Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : ERROR: Exception Details
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8278267Z backend-1   | 2026-06-25T10:43:29.935Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : ERROR: Exception Primary Class:  PSQLException
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8279485Z backend-1   | 2026-06-25T10:43:29.935Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : ERROR: Exception Primary Reason:  ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8280184Z backend-1   |   Position: 13
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8280944Z backend-1   | 2026-06-25T10:43:29.935Z  INFO 1 --- [StaffEngagement] [           main] liquibase.ui                             : ERROR: Exception Primary Source:  PostgreSQL 17.10
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8282134Z backend-1   | 2026-06-25T10:43:29.936Z  INFO 1 --- [StaffEngagement] [           main] liquibase.command                        : Command execution complete
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8287048Z backend-1   | 2026-06-25T10:43:30.679Z  WARN 1 --- [StaffEngagement] [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Failed to initialize dependency 'liquibase' of LoadTimeWeaverAware bean 'entityManagerFactory': Error creating bean with name 'liquibase' defined in class path resource [org/springframework/boot/autoconfigure/liquibase/LiquibaseAutoConfiguration$LiquibaseConfiguration.class]: liquibase.exception.CommandExecutionException: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool:
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8290903Z backend-1   |      Reason: liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8292848Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8294739Z backend-1   | 2026-06-25T10:43:30.679Z  INFO 1 --- [StaffEngagement] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8295895Z backend-1   | 2026-06-25T10:43:30.685Z  INFO 1 --- [StaffEngagement] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8296782Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:43:40 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8297688Z backend-1   | 2026-06-25T10:43:30.688Z  INFO 1 --- [StaffEngagement] [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8298534Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:43:45 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8299183Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:43:50 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8299821Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:43:55 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8300456Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:00 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8301095Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:05 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8302078Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:10 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8302732Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:16 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8303372Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:21 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8304011Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:26 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8304645Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:31 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8305281Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:36 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8305914Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:41 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8306548Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:46 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8307327Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:51 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8307961Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:44:56 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8308597Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:01 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8309238Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:06 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8309876Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:11 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8310510Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:16 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8311150Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:21 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8311931Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:26 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8312574Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:31 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8313213Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:36 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8313847Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:41 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8314603Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:46 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8315239Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:51 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8315870Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:45:56 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8316503Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:01 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8317134Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:06 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8317773Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:11 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8318404Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:16 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8319044Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:21 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8319680Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:26 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8320313Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:31 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8320940Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:36 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8321722Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:41 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8322362Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:46 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8322987Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:51 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8323618Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:46:56 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8324250Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:01 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8324878Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:06 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8325513Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:11 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8326145Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:16 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8326777Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:21 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8327543Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:26 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8328174Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:31 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8328808Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:36 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8329600Z backend-1   | 2026-06-25T10:43:30.707Z  INFO 1 --- [StaffEngagement] [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8330365Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:41 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8331003Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:46 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8331526Z backend-1   | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8332196Z backend-1   | Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8333257Z backend-1   | 2026-06-25T10:43:30.723Z ERROR 1 --- [StaffEngagement] [           main] o.s.boot.SpringApplication               : Application run failed
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8333835Z backend-1   | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8337392Z backend-1   | org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Failed to initialize dependency 'liquibase' of LoadTimeWeaverAware bean 'entityManagerFactory': Error creating bean with name 'liquibase' defined in class path resource [org/springframework/boot/autoconfigure/liquibase/LiquibaseAutoConfiguration$LiquibaseConfiguration.class]: liquibase.exception.CommandExecutionException: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool:
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8340716Z backend-1   |      Reason: liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8342613Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8344434Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:328) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8345715Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:207) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8347170Z backend-1   | 	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:974) ~[spring-context-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8348657Z backend-1   | 	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:628) ~[spring-context-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8350133Z backend-1   | 	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8351530Z backend-1   | 	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8352616Z backend-1   | 	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8353669Z backend-1   | 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8354670Z backend-1   | 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1361) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8355799Z backend-1   | 	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1350) ~[spring-boot-3.5.15.jar!/:3.5.15]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8356803Z backend-1   | 	at com.staffengagement.StaffEngagementApplication.main(StaffEngagementApplication.java:10) ~[!/:0.0.1-SNAPSHOT]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8357727Z backend-1   | 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source) ~[na:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8358459Z backend-1   | 	at java.base/java.lang.reflect.Method.invoke(Unknown Source) ~[na:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8359243Z backend-1   | 	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:106) ~[app.jar:0.0.1-SNAPSHOT]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8360150Z backend-1   | 	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64) ~[app.jar:0.0.1-SNAPSHOT]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8361070Z backend-1   | 	at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:40) ~[app.jar:0.0.1-SNAPSHOT]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8363941Z backend-1   | Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'liquibase' defined in class path resource [org/springframework/boot/autoconfigure/liquibase/LiquibaseAutoConfiguration$LiquibaseConfiguration.class]: liquibase.exception.CommandExecutionException: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool:
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8366329Z backend-1   |      Reason: liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8368116Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8370137Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1824) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8371902Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:607) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8373523Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8374987Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8376409Z backend-1   | 	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8377783Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8379056Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8380312Z backend-1   | 	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:315) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8381072Z backend-1   | 	... 15 common frames omitted
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8382758Z backend-1   | Caused by: liquibase.exception.LiquibaseException: liquibase.exception.CommandExecutionException: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool:
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8384480Z backend-1   |      Reason: liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8386260Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8388010Z backend-1   | 	at liquibase.integration.spring.SpringLiquibase.afterPropertiesSet(SpringLiquibase.java:288) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8389466Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1871) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8391152Z backend-1   | 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1820) ~[spring-beans-6.2.19.jar!/:6.2.19]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8392199Z backend-1   | 	... 22 common frames omitted
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8393580Z backend-1   | Caused by: liquibase.exception.CommandExecutionException: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool:
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8395179Z backend-1   |      Reason: liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8396956Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8398582Z backend-1   | 	at liquibase.command.CommandScope.lambda$execute$6(CommandScope.java:300) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8399364Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8400021Z backend-1   | 	at liquibase.Scope.child(Scope.java:186) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8400700Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:51 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8401465Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:47:56 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8402118Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:48:01 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8402758Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:48:06 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8403397Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:48:11 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8404035Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:48:16 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8404669Z frontend-1  | 172.18.0.1 - - [25/Jun/2026:10:48:21 +0000] "GET / HTTP/1.1" 200 850 "-" "curl/8.5.0" "-"
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8405449Z backend-1   | 	at liquibase.command.CommandScope.execute(CommandScope.java:241) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8406294Z backend-1   | 	at liquibase.Liquibase.lambda$update$0(Liquibase.java:216) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8407052Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8407734Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8408380Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8409144Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8409864Z backend-1   | 	at liquibase.Liquibase.runInScope(Liquibase.java:1333) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8410613Z backend-1   | 	at liquibase.Liquibase.update(Liquibase.java:205) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8411458Z backend-1   | 	at liquibase.Liquibase.update(Liquibase.java:188) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8412421Z backend-1   | 	at liquibase.integration.spring.SpringLiquibase.performUpdate(SpringLiquibase.java:326) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8413585Z backend-1   | 	at liquibase.integration.spring.SpringLiquibase.lambda$afterPropertiesSet$0(SpringLiquibase.java:278) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8414519Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8415198Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8415846Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8416498Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8417425Z backend-1   | 	at liquibase.integration.spring.SpringLiquibase.afterPropertiesSet(SpringLiquibase.java:271) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8418249Z backend-1   | 	... 24 common frames omitted
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8419394Z backend-1   | Caused by: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool:
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8420608Z backend-1   |      Reason: liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8422509Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8424145Z backend-1   | 	at liquibase.changelog.ChangeLogIterator.run(ChangeLogIterator.java:155) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8425249Z backend-1   | 	at liquibase.command.core.AbstractUpdateCommandStep.lambda$run$0(AbstractUpdateCommandStep.java:114) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8426182Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8426859Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8427507Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8428156Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8429078Z backend-1   | 	at liquibase.command.core.AbstractUpdateCommandStep.run(AbstractUpdateCommandStep.java:112) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8430132Z backend-1   | 	at liquibase.command.core.UpdateCommandStep.run(UpdateCommandStep.java:100) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8431090Z backend-1   | 	at liquibase.command.CommandScope.lambda$execute$6(CommandScope.java:253) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8431807Z backend-1   | 	... 42 common frames omitted
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8432760Z backend-1   | Caused by: liquibase.exception.MigrationFailedException: Migration failed for changeset db/changelog/modules/seed/seed-001-initial.yaml::seed-005-tasks-v7::seed-tool:
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8433819Z backend-1   |      Reason: liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8435604Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8437305Z backend-1   | 	at liquibase.changelog.ChangeSet.execute(ChangeSet.java:840) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8438305Z backend-1   | 	at liquibase.changelog.visitor.UpdateVisitor.executeAcceptedChange(UpdateVisitor.java:126) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8439384Z backend-1   | 	at liquibase.changelog.visitor.UpdateVisitor.visit(UpdateVisitor.java:70) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8440378Z backend-1   | 	at liquibase.changelog.ChangeLogIterator.lambda$run$0(ChangeLogIterator.java:133) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8441227Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8442028Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8442673Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8443312Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8444276Z backend-1   | 	at liquibase.changelog.ChangeLogIterator.lambda$run$1(ChangeLogIterator.java:122) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8445127Z backend-1   | 	at liquibase.Scope.lambda$child$0(Scope.java:201) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8445796Z backend-1   | 	at liquibase.Scope.child(Scope.java:210) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8446436Z backend-1   | 	at liquibase.Scope.child(Scope.java:200) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8447078Z backend-1   | 	at liquibase.Scope.child(Scope.java:179) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8447731Z backend-1   | 	at liquibase.Scope.child(Scope.java:267) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8448414Z backend-1   | 	at liquibase.Scope.child(Scope.java:271) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8449235Z backend-1   | 	at liquibase.changelog.ChangeLogIterator.run(ChangeLogIterator.java:91) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8449857Z backend-1   | 	... 50 common frames omitted
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8450442Z backend-1   | Caused by: liquibase.exception.DatabaseException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8452353Z backend-1   |   Position: 13 [Failed SQL: (0) INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng']
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8454126Z backend-1   | 	at liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback.doInStatement(JdbcExecutor.java:497) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8455171Z backend-1   | 	at liquibase.executor.jvm.JdbcExecutor.execute(JdbcExecutor.java:83) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8456091Z backend-1   | 	at liquibase.executor.jvm.JdbcExecutor.execute(JdbcExecutor.java:185) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8457036Z backend-1   | 	at liquibase.executor.AbstractExecutor.execute(AbstractExecutor.java:141) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8458104Z backend-1   | 	at liquibase.database.AbstractJdbcDatabase.executeStatements(AbstractJdbcDatabase.java:1189) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8459090Z backend-1   | 	at liquibase.changelog.ChangeSet.execute(ChangeSet.java:790) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8459652Z backend-1   | 	... 65 common frames omitted
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8460213Z backend-1   | Caused by: org.postgresql.util.PSQLException: ERROR: relation "task" does not exist
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8460824Z backend-1   |   Position: 13
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8461709Z backend-1   | 	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2904) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8462842Z backend-1   | 	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2589) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8463900Z backend-1   | 	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:431) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8464894Z backend-1   | 	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:534) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8465814Z backend-1   | 	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:437) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8466752Z backend-1   | 	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:359) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8467728Z backend-1   | 	at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:344) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8468692Z backend-1   | 	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:320) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8469740Z backend-1   | 	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:315) ~[postgresql-42.7.11.jar!/:42.7.11]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8470627Z backend-1   | 	at com.zaxxer.hikari.pool.ProxyStatement.execute(ProxyStatement.java:95) ~[HikariCP-6.3.3.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8471681Z backend-1   | 	at com.zaxxer.hikari.pool.HikariProxyStatement.execute(HikariProxyStatement.java) ~[HikariCP-6.3.3.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8472795Z backend-1   | 	at liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback.doInStatement(JdbcExecutor.java:491) ~[liquibase-core-4.31.1.jar!/:na]
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8473519Z backend-1   | 	... 70 common frames omitted
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8473792Z backend-1   | 
+E2E — Playwright smoke	Wait for stack health	2026-06-25T10:48:26.8483393Z ##[error]Process completed with exit code 1.

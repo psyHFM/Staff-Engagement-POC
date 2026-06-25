@@ -1,0 +1,182 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "Staff Engagement" [ref=e5] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e6]: 
+      - text: Staff Engagement
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Employees" [ref=e9] [cursor=pointer]:
+        - /url: /employees
+      - link "Interactions" [ref=e10] [cursor=pointer]:
+        - /url: /interactions
+      - link "Tasks" [ref=e11] [cursor=pointer]:
+        - /url: /tasks
+      - link "Portfolio" [ref=e12] [cursor=pointer]:
+        - /url: /portfolio
+      - link "Skills" [ref=e13] [cursor=pointer]:
+        - /url: /skills
+    - generic [ref=e14]:
+      - generic [ref=e30]: admin@staff.eng
+      - button "Sign out" [ref=e31] [cursor=pointer]
+  - main [ref=e16]:
+    - generic [ref=e156]:
+      - generic [ref=e157]:
+        - heading "Employees" [level=1] [ref=e158]:
+          - generic [ref=e159]: 
+          - text: Employees
+        - link "← Dashboard" [ref=e160] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e161]:
+        - heading "Your profile" [level=2] [ref=e162]
+        - article [ref=e164]:
+          - heading "Admin User" [level=2] [ref=e166]
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - term [ref=e169]: Email
+              - definition [ref=e170]: admin@staff.eng
+            - generic [ref=e171]:
+              - term [ref=e172]: Role
+              - definition [ref=e173]: admin
+          - generic [ref=e174]:
+            - heading "Edit profile" [level=3] [ref=e175]
+            - generic [ref=e176]:
+              - generic [ref=e177]: Full name
+              - textbox "Full name Full name" [ref=e249]: Admin User
+            - generic [ref=e179]:
+              - generic [ref=e180]: Job title
+              - textbox "Job title Job title" [ref=e250]
+            - generic [ref=e182]:
+              - generic [ref=e183]: Department
+              - textbox "Department Department" [ref=e251]
+            - generic [ref=e185]:
+              - generic [ref=e186]: Level
+              - combobox "Level Level" [ref=e252]:
+                - option "—" [selected]
+                - option "Junior"
+                - option "Intermediate"
+                - option "Senior"
+            - generic [ref=e188]:
+              - generic [ref=e189]: Role
+              - combobox "Role Role" [ref=e253]:
+                - option "Employee"
+                - option "Admin" [selected]
+            - button "Save" [ref=e191] [cursor=pointer]:
+              - generic [ref=e192]: 
+              - text: Save
+      - generic [ref=e193]:
+        - heading "Employee directory" [level=2] [ref=e194]
+        - article [ref=e196]:
+          - heading "Employee directory" [level=2] [ref=e197]
+          - generic [ref=e198]:
+            - text: Sort
+            - combobox "Sort" [ref=e199]:
+              - option "Newest first" [selected]
+              - option "Oldest first"
+              - option "Name A–Z"
+              - option "Email A–Z"
+              - option "Department A–Z"
+              - option "Level A–Z"
+          - list [ref=e200]:
+            - listitem [ref=e201]:
+              - button "Alice Manager alice@staff.eng admin Engineering Manager Platform senior" [ref=e202] [cursor=pointer]:
+                - generic [ref=e203]: Alice Manager
+                - generic [ref=e204]: alice@staff.eng
+                - generic [ref=e205]: admin
+                - generic [ref=e206]: Engineering Manager
+                - generic [ref=e207]: Platform
+                - generic [ref=e208]: senior
+              - link "Profile" [ref=e209] [cursor=pointer]:
+                - /url: /employees/47/profile
+            - listitem [ref=e210]:
+              - button "Bob Developer bob@staff.eng employee Senior Frontend Engineer Platform senior" [active] [ref=e211] [cursor=pointer]:
+                - generic [ref=e212]: Bob Developer
+                - generic [ref=e213]: bob@staff.eng
+                - generic [ref=e214]: employee
+                - generic [ref=e215]: Senior Frontend Engineer
+                - generic [ref=e216]: Platform
+                - generic [ref=e217]: senior
+              - link "Profile" [ref=e218] [cursor=pointer]:
+                - /url: /employees/48/profile
+            - listitem [ref=e219]:
+              - button "Charlie Coder charlie@staff.eng employee Software Engineer Platform junior" [ref=e220] [cursor=pointer]:
+                - generic [ref=e221]: Charlie Coder
+                - generic [ref=e222]: charlie@staff.eng
+                - generic [ref=e223]: employee
+                - generic [ref=e224]: Software Engineer
+                - generic [ref=e225]: Platform
+                - generic [ref=e226]: junior
+              - link "Profile" [ref=e227] [cursor=pointer]:
+                - /url: /employees/49/profile
+            - listitem [ref=e228]:
+              - button "Diana Expert diana@staff.eng employee Staff Engineer Platform senior" [ref=e229] [cursor=pointer]:
+                - generic [ref=e230]: Diana Expert
+                - generic [ref=e231]: diana@staff.eng
+                - generic [ref=e232]: employee
+                - generic [ref=e233]: Staff Engineer
+                - generic [ref=e234]: Platform
+                - generic [ref=e235]: senior
+              - link "Profile" [ref=e236] [cursor=pointer]:
+                - /url: /employees/50/profile
+            - listitem [ref=e237]:
+              - button "Admin User admin@staff.eng admin" [ref=e238] [cursor=pointer]:
+                - generic [ref=e239]: Admin User
+                - generic [ref=e240]: admin@staff.eng
+                - generic [ref=e241]: admin
+              - link "Profile" [ref=e242] [cursor=pointer]:
+                - /url: /employees/1/profile
+          - generic [ref=e243]:
+            - button "Previous" [disabled] [ref=e244]:
+              - generic [ref=e245]: 
+              - text: Previous
+            - generic [ref=e246]: 1 – 5 of 5
+            - button "Next" [disabled] [ref=e247]:
+              - text: Next
+              - generic [ref=e248]: 
+        - article [ref=e256]:
+          - generic [ref=e257]:
+            - heading "Bob Developer" [level=2] [ref=e258]
+            - button "← Back to directory" [ref=e259] [cursor=pointer]
+          - generic [ref=e260]:
+            - generic [ref=e261]:
+              - term [ref=e262]: Email
+              - definition [ref=e263]: bob@staff.eng
+            - generic [ref=e264]:
+              - term [ref=e265]: Role
+              - definition [ref=e266]: employee
+            - generic [ref=e267]:
+              - term [ref=e268]: Job title
+              - definition [ref=e269]: Senior Frontend Engineer
+            - generic [ref=e270]:
+              - term [ref=e271]: Department
+              - definition [ref=e272]: Platform
+            - generic [ref=e273]:
+              - term [ref=e274]: Level
+              - definition [ref=e275]: senior
+          - generic [ref=e276]:
+            - heading "Edit profile" [level=3] [ref=e277]
+            - generic [ref=e278]:
+              - generic [ref=e279]: Full name
+              - textbox [ref=e280]: Bob Developer
+            - generic [ref=e281]:
+              - generic [ref=e282]: Job title
+              - textbox [ref=e283]: Senior Frontend Engineer
+            - generic [ref=e284]:
+              - generic [ref=e285]: Department
+              - textbox [ref=e286]: Platform
+            - generic [ref=e287]:
+              - generic [ref=e288]: Level
+              - combobox [ref=e289]:
+                - option "—"
+                - option "Junior"
+                - option "Intermediate"
+                - option "Senior" [selected]
+            - generic [ref=e290]:
+              - generic [ref=e291]: Role
+              - combobox [ref=e292]:
+                - option "Employee" [selected]
+                - option "Admin"
+            - button "Save" [ref=e293] [cursor=pointer]:
+              - generic [ref=e294]: 
+              - text: Save
