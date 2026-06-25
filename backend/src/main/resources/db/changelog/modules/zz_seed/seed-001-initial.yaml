@@ -1,0 +1,111 @@
+databaseChangeLog:
+  # Seed comprehensive test data for POC validation.
+  # Version 7: Using runAlways for cleanup and re-seeding to ensure consistency.
+
+  - changeSet:
+      id: seed-000-cleanup-v7
+      author: seed-tool
+      changes:
+        - sql:
+            sql: DELETE FROM portfolio_skill;
+            sql: DELETE FROM portfolio_education;
+            sql: DELETE FROM portfolio_project;
+            sql: DELETE FROM portfolio_link;
+            sql: DELETE FROM portfolio;
+            sql: DELETE FROM task;
+            sql: DELETE FROM interaction;
+            sql: DELETE FROM employee WHERE email IN ('alice@staff.eng', 'bob@staff.eng', 'charlie@staff.eng', 'diana@staff.eng');
+      runAlways: true
+
+  - changeSet:
+      id: seed-001-employees-v7
+      author: seed-tool
+      changes:
+        - insert:
+            tableName: employee
+            columns:
+              - column: { name: full_name, value: "Alice Manager" }
+              - column: { name: email, value: "alice@staff.eng" }
+              - column: { name: role, value: "ADMIN" }
+              - column: { name: job_title, value: "Engineering Manager" }
+              - column: { name: department, value: "Platform" }
+              - column: { name: level, value: "SENIOR" }
+              - column: { name: created_at, valueComputed: "now()" }
+              - column: { name: updated_at, valueComputed: "now()" }
+        - insert:
+            tableName: employee
+            columns:
+              - column: { name: full_name, value: "Bob Developer" }
+              - column: { name: email, value: "bob@staff.eng" }
+              - column: { name: role, value: "EMPLOYEE" }
+              - column: { name: job_title, value: "Senior Frontend Engineer" }
+              - column: { name: department, value: "Platform" }
+              - column: { name: level, value: "SENIOR" }
+              - column: { name: created_at, valueComputed: "now()" }
+              - column: { name: updated_at, valueComputed: "now()" }
+        - insert:
+            tableName: employee
+            columns:
+              - column: { name: full_name, value: "Charlie Coder" }
+              - column: { name: email, value: "charlie@staff.eng" }
+              - column: { name: role, value: "EMPLOYEE" }
+              - column: { name: job_title, value: "Software Engineer" }
+              - column: { name: department, value: "Platform" }
+              - column: { name: level, value: "JUNIOR" }
+              - column: { name: created_at, valueComputed: "now()" }
+              - column: { name: updated_at, valueComputed: "now()" }
+        - insert:
+            tableName: employee
+            columns:
+              - column: { name: full_name, value: "Diana Expert" }
+              - column: { name: email, value: "diana@staff.eng" }
+              - column: { name: role, value: "EMPLOYEE" }
+              - column: { name: job_title, value: "Staff Engineer" }
+              - column: { name: department, value: "Platform" }
+              - column: { name: level, value: "SENIOR" }
+              - column: { name: created_at, valueComputed: "now()" }
+              - column: { name: updated_at, valueComputed: "now()" }
+      runAlways: true
+
+  - changeSet:
+      id: seed-002-portfolios-v7
+      author: seed-tool
+      changes:
+        - sql:
+            sql: INSERT INTO portfolio (employee_id, created_at, updated_at) SELECT id, now(), now() FROM employee WHERE email = 'alice@staff.eng';
+            sql: INSERT INTO portfolio (employee_id, created_at, updated_at) SELECT id, now(), now() FROM employee WHERE email = 'bob@staff.eng';
+            sql: INSERT INTO portfolio (employee_id, created_at, updated_at) SELECT id, now(), now() FROM employee WHERE email = 'charlie@staff.eng';
+            sql: INSERT INTO portfolio (employee_id, created_at, updated_at) SELECT id, now(), now() FROM employee WHERE email = 'diana@staff.eng';
+      runAlways: true
+
+  - changeSet:
+      id: seed-003-skills-v7
+      author: seed-tool
+      changes:
+        - sql:
+            sql: INSERT INTO portfolio_skill (portfolio_id, skill, years, project_count) SELECT id, 'Angular', 5, 10 FROM portfolio WHERE employee_id = (SELECT id FROM employee WHERE email = 'bob@staff.eng');
+            sql: INSERT INTO portfolio_skill (portfolio_id, skill, years, project_count) SELECT id, 'Java', 3, 4 FROM portfolio WHERE employee_id = (SELECT id FROM employee WHERE email = 'bob@staff.eng');
+            sql: INSERT INTO portfolio_skill (portfolio_id, skill, years, project_count) SELECT id, 'Angular', 2, 2 FROM portfolio WHERE employee_id = (SELECT id FROM employee WHERE email = 'charlie@staff.eng');
+            sql: INSERT INTO portfolio_skill (portfolio_id, skill, years, project_count) SELECT id, 'React', 4, 6 FROM portfolio WHERE employee_id = (SELECT id FROM employee WHERE email = 'charlie@staff.eng');
+            sql: INSERT INTO portfolio_skill (portfolio_id, skill, years, project_count) SELECT id, 'Angular', 8, 20 FROM portfolio WHERE employee_id = (SELECT id FROM employee WHERE email = 'diana@staff.eng');
+            sql: INSERT INTO portfolio_skill (portfolio_id, skill, years, project_count) SELECT id, 'Java', 10, 15 FROM portfolio WHERE employee_id = (SELECT id FROM employee WHERE email = 'diana@staff.eng');
+      runAlways: true
+
+  - changeSet:
+      id: seed-004-interactions-v7
+      author: seed-tool
+      changes:
+        - sql:
+            sql: INSERT INTO interaction (type, subject_id, facilitator_id, note, created_at, updated_at) SELECT 'mentoring', id, (SELECT id FROM employee WHERE email = 'bob@staff.eng'), 'Discussed Angular Signal patterns and state management.', now(), now() FROM employee WHERE email = 'charlie@staff.eng';
+            sql: INSERT INTO interaction (type, subject_id, facilitator_id, note, created_at, updated_at) SELECT 'catch-up', id, (SELECT id FROM employee WHERE email = 'charlie@staff.eng'), 'Quick sync on current task progress.', now(), now() FROM employee WHERE email = 'diana@staff.eng';
+      runAlways: true
+
+  - changeSet:
+      id: seed-005-tasks-v7
+      author: seed-tool
+      changes:
+        - sql:
+            sql: INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Discussed Angular Signal patterns and state management.' LIMIT 1), 'Read more about Angular Signals', false, now() FROM employee WHERE email = 'charlie@staff.eng';
+            sql: INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, NULL, 'Update local dev laev environment', false, now() FROM employee WHERE email = 'charlie@staff.eng';
+            sql: INSERT INTO task (subject_id, source_interaction_id, description, completed, created_at) SELECT id, (SELECT id FROM interaction WHERE note = 'Quick sync on current task progress.' LIMIT 1), 'Complete the unit test suite for interaction module', false, now() FROM employee WHERE email = 'diana@staff.eng';
+      runAlways: true
