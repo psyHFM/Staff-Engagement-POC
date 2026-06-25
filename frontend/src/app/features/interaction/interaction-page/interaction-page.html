@@ -24,7 +24,11 @@
 
   @if (state.created()) {
     <div class="interaction-page__success" role="status">
-      Interaction logged successfully.
+      @if (editing()) {
+        Interaction updated successfully.
+      } @else {
+        Interaction logged successfully.
+      }
       <button type="button" (click)="state.clearTransient()">Dismiss</button>
     </div>
   }
@@ -36,6 +40,17 @@
 
     <app-interaction-list [history]="state.history()"
                           [loading]="state.isLoading()"
-                          (pageRequested)="state.loadHistory($event.offset, $event.limit)"></app-interaction-list>
+                          (pageRequested)="state.loadHistory($event.offset, $event.limit)"
+                          (rowEdit)="onRowEdit($event)"
+                          (createTask)="onRowCreateTask($event)"></app-interaction-list>
   </div>
+
+  <app-edit-interaction [editing]="editing()"
+                         (closed)="onEditClosed()"
+                         (saved)="onEditSaved()"></app-edit-interaction>
+
+  @if (creatingTaskFor(); as source) {
+    <app-task-create-form [interactionId]="source.id.value.toString()"
+                          (formClosed)="onTaskFormClosed()"></app-task-create-form>
+  }
 </section>

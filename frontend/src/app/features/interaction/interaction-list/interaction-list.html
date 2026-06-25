@@ -26,10 +26,31 @@
             <span class="interaction-list__facilitator">
               Facilitator: {{ interaction.facilitator.value }}
             </span>
+            <span class="interaction-list__date" aria-label="created at">
+              {{ interaction.createdAt | date:'medium' }}
+            </span>
           </div>
           @if (interaction.note) {
             <p class="interaction-list__note">{{ interaction.note }}</p>
           }
+          <div class="interaction-list__actions">
+            <button
+              type="button"
+              class="interaction-list__action-btn"
+              [attr.aria-label]="'Edit interaction ' + interaction.id.value"
+              (click)="onEdit(interaction)">
+              <i class="pi pi-pencil" aria-hidden="true"></i>
+              Edit
+            </button>
+            <button
+              type="button"
+              class="interaction-list__action-btn interaction-list__action-btn--secondary"
+              [attr.aria-label]="'Create task from interaction ' + interaction.id.value"
+              (click)="onCreateTask(interaction)">
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Create task
+            </button>
+          </div>
         </li>
       }
     </ul>

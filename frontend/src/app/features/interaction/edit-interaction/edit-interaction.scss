@@ -1,0 +1,129 @@
+.edit-interaction__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.edit-interaction__panel {
+  background: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.edit-interaction__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #111827;
+  }
+}
+
+.edit-interaction__close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+
+  &:hover {
+    color: #111827;
+  }
+}
+
+.edit-interaction__hint {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 1rem;
+  padding: 0.625rem 0.75rem;
+  background-color: #f9fafb;
+  border: 1px solid #f3f4f6;
+  border-radius: 0.375rem;
+}
+
+.edit-interaction__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.edit-interaction__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  select,
+  textarea {
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.9375rem;
+    font-family: inherit;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+}
+
+.edit-interaction__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  margin-top: 0.5rem;
+}
+
+.edit-interaction__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &--secondary {
+    background-color: #ffffff;
+    color: #374151;
+    border-color: #d1d5db;
+
+    &:hover {
+      background-color: #f9fafb;
+    }
+  }
+
+  &--primary {
+    background-color: #2563eb;
+    color: #ffffff;
+
+    &:hover:not(:disabled) {
+      background-color: #1d4ed8;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}

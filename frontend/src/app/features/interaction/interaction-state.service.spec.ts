@@ -50,7 +50,7 @@ describe('InteractionStateService', () => {
     );
 
   beforeEach(() => {
-    apiClientSpy = { get: jest.fn(), post: jest.fn() };
+    apiClientSpy = { get: jest.fn(), post: jest.fn(), patch: jest.fn() };
     authStateMock = { currentUser: signal(null) };
 
     TestBed.configureTestingModule({
@@ -218,5 +218,96 @@ describe('InteractionStateService', () => {
     // Then
     expect(service.created()).toBeNull();
     expect(service.error()).toBeNull();
+  });
+
+  // ---- ATSE1-28 — PATCH /api/v1/interactions/{id} -----------------
+
+  it('updateInteraction PATCHes /interactions/{id} with type+note and refreshes history', () => {
+    // Given
+    const updated = interaction({ id: { value: 5 }, type: 'mentoring', note: 'updated note' });
+    apiClientSpy.patch.mockReturnValue(of(updated));
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+
+    // When
+    service.updateInteraction({ value: 5 }, 'mentoring', 'updated note').subscribe();
+
+    // Then — PATCH was called with the correct body shape
+    expect(apiClientSpy.patch).toHaveBeenCalledWith('interactions/5', { type: 'mentoring', note: 'updated note' });
+    // And history was refreshed
+    expect(apiClientSpy.get).toHaveBeenCalled();
+    // And the success signal is set so the page can toast
+    expect(service.created()).toEqual(updated);
+  });
+
+  it('updateInteraction surfaces a 404 (existence-opaque) as an API error', () => {
+    // Given
+    apiClientSpy.patch.mockReturnValue(throwError(() => apiError(404)));
+
+    // When
+    service.updateInteraction({ value: 999 }, 'check-in', 'note').subscribe({ error: () => {} });
+
+    // Then — error surfaces via the state.error signal
+    expect(service.error()).toEqual(apiError(404));
+    expect(service.isLoading()).toBe(false);
+  });
+
+  it('updateInteraction does not refresh history when the call fails', () => {
+    // Given
+    apiClientSpy.patch.mockReturnValue(throwError(() => apiError(403)));
+    apiClientSpy.get.mockClear();
+
+    // When
+    service.updateInteraction({ value: 5 }, 'check-in', 'note').subscribe({ error: () => {} });
+
+    // Then
+    expect(apiClientSpy.get).not.toHaveBeenCalled();
+  });
+
+  // ---- ATSE1-28 — verifyEditableLocally pre-flight ----------------
+
+  it('verifyEditableLocally returns false when no history has been loaded', () => {
+    // Then — no history yet
+    expect(service.verifyEditableLocally({ value: 5 }, employee(2), false)).toBe(false);
+  });
+
+  it('verifyEditableLocally returns false when the interaction is not in the cached page', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+    service.loadHistory();
+
+    // When / Then — id=999 is not in the seeded page
+    expect(service.verifyEditableLocally({ value: 999 }, employee(2), false)).toBe(false);
+  });
+
+  it('verifyEditableLocally returns true for the original facilitator', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+    service.loadHistory();
+
+    // When / Then — facilitator=2, actor=2 → editable
+    expect(service.verifyEditableLocally({ value: 1 }, employee(2), false)).toBe(true);
+  });
+
+  it('verifyEditableLocally returns true for any admin regardless of facilitator', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+    service.loadHistory();
+
+    // When / Then — admin flag bypasses the facilitator check
+    expect(service.verifyEditableLocally({ value: 1 }, employee(99), true)).toBe(true);
+  });
+
+  it('verifyEditableLocally returns false for a non-admin non-facilitator actor', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+    service.loadHistory();
+
+    // When / Then — actor=3, facilitator=2, not admin → false
+    expect(service.verifyEditableLocally({ value: 1 }, employee(3), false)).toBe(false);
   });
 });
