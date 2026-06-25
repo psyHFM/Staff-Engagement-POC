@@ -29,7 +29,6 @@ import { YourDetailsStateService } from './your-details-state.service';
   selector: 'app-your-details-page',
   imports: [RouterLink, EmployeeCreateForm, EmployeeDetail],
   templateUrl: './your-details-page.html',
-  styleUrl: './your-details-page.scss',
   providers: [YourDetailsStateService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
