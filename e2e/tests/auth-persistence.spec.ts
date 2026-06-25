@@ -7,8 +7,10 @@ import { adminCredentials, login } from '../fixtures/auth';
  *
  * Verifies that the JWT issued at login survives a full page reload so the
  * user is not bounced back to /login. The token is stored under
- * `staff-engagement.auth.jwt` in localStorage (see auth-storage.ts and
- * frontend-state.yaml -> persistence.carve_outs).
+ * `staff-engagement:token` in sessionStorage (see auth-storage.ts and
+ * frontend-state.yaml -> persistence.carve_outs). sessionStorage is cleared
+ * automatically when the tab closes, so this smoke also implicitly verifies
+ * the persistence is scoped to the tab.
  */
 test.describe('Auth session persistence (ATSE1-25)', () => {
   test('login survives a full page reload', async ({ page }) => {
@@ -18,7 +20,7 @@ test.describe('Auth session persistence (ATSE1-25)', () => {
 
     // Sanity check — the token IS persisted under the documented key
     const stored = await page.evaluate(() =>
-      window.localStorage.getItem('staff-engagement.auth.jwt')
+      window.sessionStorage.getItem('staff-engagement:token')
     );
     expect(stored).toBeTruthy();
 
@@ -39,7 +41,7 @@ test.describe('Auth session persistence (ATSE1-25)', () => {
 
     // Then — the persisted token is removed
     const stored = await page.evaluate(() =>
-      window.localStorage.getItem('staff-engagement.auth.jwt')
+      window.sessionStorage.getItem('staff-engagement:token')
     );
     expect(stored).toBeNull();
     await expect(page).toHaveURL(/\/login/);

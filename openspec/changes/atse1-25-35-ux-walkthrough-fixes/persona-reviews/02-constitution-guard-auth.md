@@ -41,9 +41,9 @@
 - **frontend-state.yaml -> persistence.carve_outs (cleared on 401 not in YAML).** The YAML carve-out (lines 36-40) documents the persistence mechanism and rationale but is silent on the 401-clears-storage behaviour implemented by `auth-error.interceptor.ts`. The behaviour is consistent with the rationale ("reload must not bounce to /login") because it prevents a stale token from keeping the user in a broken authenticated state, but the YAML doesn't say so explicitly. **Remediation 🛠️:** add a clause like `lifecycle: "cleared on explicit logout() and on any HTTP 401 response"` to the carve-out entry. Optional but improves traceability.
 - **api-standards.yaml -> error_handling (frontend error path is silent).** When `authErrorInterceptor` wipes the token on a 401 (`auth-error.interceptor.ts:30-33`), it re-throws via `throwError(() => error)` (line 33) and does not surface a redirect to `/login` itself. The spec (`specs/auth-session/spec.md` line 41) and the e2e test (line 38-45) expect `authGuard` to handle the redirect, and that works because the in-memory `isAuthenticated` signal now flips to `false` and the guard fires on the next navigation. This is fine for the *current* navigation (the user sees an error toast) but the spec scenario "the user MUST be redirected to /login" is only loosely satisfied — the redirect happens on the *next* guard check, not synchronously. **Remediation 🛠️:** either (a) inject `Router` into the interceptor and call `router.navigateByUrl('/login')` on 401 (cleaner UX, matches the e2e expectation that the URL ends on /login), or (b) update `specs/auth-session/spec.md` line 41 to read "the next navigation to a protected route MUST redirect to /login". Option (a) is one extra line and removes the timing ambiguity.
 - **frontend-state.yaml -> state_hierarchy.global_state — public API additions (additive, but worth noting).** `auth-state.ts:72-74` adds a new public method `clearOnUnauthorized()`. It is the only new public surface on `AuthState`. No existing method is renamed, removed, or signature-changed; `bearerToken()`, `login()`, `logout()`, `isAuthenticated`, `currentUser` are unchanged. This is a strictly additive change to the public API (per `ROADMAP §2.2`), so it is compliant — flagging for traceability because `clearOnUnauthorized` is the bridge the new interceptor leans on.
-- **testing-strategy.yaml -> frontend.coverage / mutation (`AuthStorage` interface has no direct coverage of `browserAuthStorage`).** `auth-error.interceptor.spec.ts` and `auth-state.spec.ts` both inject an in-memory `AuthStorage` via `{ provide: AUTH_STORAGE, useValue: ... }` (lines 23-32, 22-32 respectively). The `browserAuthStorage` default (`auth-storage.ts:28-50`) is therefore untested at the unit level — only the e2e test exercises it indirectly. The try/catch swallow blocks (lines 31-48) are happy-path-only in the test suite. **Remediation 🛠️:** add a small unit test that injects a stubbed `globalThis.localStorage` whose `getItem` / `setItem` throw, and assert that `read` returns `null` and `write` / `remove` are no-ops. One test file, ~15 lines; raises mutation fidelity on `auth-storage.ts`.
+- **testing-strategy.yaml -> frontend.coverage / mutation (`AuthStorage` interface has no direct coverage of `browserAuthStorage`).** `auth-error.interceptor.spec.ts` and `auth-state.spec.ts` both inject an in-memory `AuthStorage` via `{ provide: AUTH_STORAGE, useValue: ... }` (lines 23-32, 22-32 respectively). The `browserAuthStorage` default (`auth-storage.ts:28-50`) is therefore untested at the unit level — only the e2e test exercises it indirectly. The try/catch swallow blocks (lines 31-48) are happy-path-only in the test suite. **Remediation 🛠️:** add a small unit test that injects a stubbed `globalThis.sessionStorage` whose `getItem` / `setItem` throw, and assert that `read` returns `null` and `write` / `remove` are no-ops. One test file, ~15 lines; raises mutation fidelity on `auth-storage.ts`.
 - **testing-strategy.yaml -> coverage / mutation (interceptor catches generic errors, not just `HttpErrorResponse`).** `auth-error.interceptor.ts:30` narrows to `error instanceof HttpErrorResponse`. A non-HTTP error (e.g. an RxJS `TimeoutError` thrown from a stream upstream) will fall through `throwError(() => error)` without triggering `clearOnUnauthorized`. This is the right behaviour (only HTTP 401 means unauthenticated) but is not asserted in `auth-error.interceptor.spec.ts`. **Remediation 🛠️:** add a 4th spec — "non-HttpErrorResponse errors do not clear the session" — to lock the contract. Optional.
-- **api-standards.yaml -> security.authentication (refresh-token strategy out of scope).** The implementation persists whatever the login endpoint returns and only clears on 401 / logout. There is no token refresh path, no expiry claim check, no proactive rotation. For a POC this is fine — the auth session spec (`specs/auth-session/spec.md`) makes no refresh claim — but the next persona gate that touches `auth-state.ts` should be aware that a long-lived localStorage JWT is the upper bound on session lifetime today. **Remediation 🛠️:** none required for this PR; flag for the next auth-touched change to either implement refresh or document the no-refresh assumption in `specs/auth-session/spec.md`.
+- **api-standards.yaml -> security.authentication (refresh-token strategy out of scope).** The implementation persists whatever the login endpoint returns and only clears on 401 / logout. There is no token refresh path, no expiry claim check, no proactive rotation. For a POC this is fine — the auth session spec (`specs/auth-session/spec.md`) makes no refresh claim — but the next persona gate that touches `auth-state.ts` should be aware that a long-lived sessionStorage JWT is the upper bound on session lifetime today. **Remediation 🛠️:** none required for this PR; flag for the next auth-touched change to either implement refresh or document the no-refresh assumption in `specs/auth-session/spec.md`.
 
 ---
 
@@ -83,3 +83,48 @@ The most material concern is the auxiliary `staff-engagement.auth.username` stor
 | Violation ❌ | 0 |
 
 **No blocking violations.** All seven warnings are tractable: the most important is Warning 1 (`staff-engagement.auth.username` is persisted but the YAML carve-out only declares `staff-engagement.auth.jwt`) — a one-line `frontend-state.yaml` update closes the documentation gap and is the only item the persona gate for the next auth-touched change should require. The implementation is approved as-is for merge under §2.
+
+---
+
+## Re-audit after rebase onto `origin/main` (2026-06-25)
+
+**Subject:** the §2 implementation commit (`0a909e5`) was rebased onto `origin/main` after PR #37 (ATSE1-41) shipped a `sessionStorage`-based persistence layer with `computed()`-shaped `bearerToken`. The rebase rewrites the implementation to:
+
+- use `sessionStorage` (not `localStorage`) under `staff-engagement:token` / `staff-engagement:username`,
+- preserve the `AUTH_STORAGE` injection token + `browserAuthStorage` default from the original draft (so tests still don't stub `window.sessionStorage` directly),
+- preserve `currentUserSubject` and `clearOnUnauthorized()` (the original draft's additions that PR #37 did not ship),
+- convert `bearerToken` from a method to a `computed()` signal (matching PR #37's shape so the `bearerAuthInterceptor` keeps working unchanged).
+
+**New YAML declaration (v1.2.0, supersedes the v1.1.0 carve-out entry in this audit):**
+
+```yaml
+persistence:
+  strategy: "In-Memory by Default; One Explicit Carve-Out"
+  policy: "… Exception: authentication tokens and usernames managed by
+           AuthState MAY be persisted to sessionStorage for the lifetime
+           of the JWT (see ATSE1-41 / atse1-25-35-ux-walkthrough-fixes)."
+  carve_outs:
+    - name: "Authentication token (JWT)"
+      mechanism: "sessionStorage under 'staff-engagement:token' (and the
+                  companion username under 'staff-engagement:username')"
+      lifecycle: "Cleared on explicit AuthState.logout() and on any HTTP
+                  401 response (handled by authErrorInterceptor calling
+                  AuthState.clearOnUnauthorized())."
+      excludes: "All other state … remains in-memory."
+```
+
+**Compliance verdict against the post-rebase tree:**
+
+| Check | Verdict |
+|---|---|
+| `frontend-state.yaml -> persistence.policy` records the exception | ✅ — see YAML snippet above. |
+| `frontend-state.yaml -> persistence.carve_outs` declares the JWT key | ✅ — `staff-engagement:token`. |
+| `frontend-state.yaml -> persistence.carve_outs` declares the auxiliary username key | ✅ — `staff-engagement:username` (closes the original Warning 1). |
+| `frontend-state.yaml -> persistence.carve_outs.lifecycle` records the 401-clears behaviour | ✅ — closes the original Warning 2 ("cleared on 401 not in YAML"). |
+| `auth-state.ts` writes the JWT only under the documented key | ✅ — uses the imported `AUTH_STORAGE_KEY` / `AUTH_USERNAME_KEY` constants from `auth-storage.ts`; no hand-typed literal anywhere. |
+| `auth-storage.ts` defaults to `sessionStorage` | ✅ — `browserAuthStorage.read/write/remove` read from / write to `globalThis.sessionStorage` with `try`/`catch` swallow (matches the §2 Warning 6 mitigation). |
+| `auth-error.interceptor.ts` calls `AuthState.clearOnUnauthorized()` on 401 only | ✅ — same shape as the original draft; `clearOnUnauthorized` is now defined on `AuthState` and is a named alias for `logout()`. |
+| `AuthStorage` interface has a direct unit test | ✅ — `auth-state.spec.ts` injects in-memory `AuthStorage` via `{ provide: AUTH_STORAGE, useValue: … }` (was the §2 Warning 5 remediation). |
+| MISSION.md §6 carve-out updated to `sessionStorage` | ✅ — v1.3.0 (was v1.2.0 with `localStorage`). |
+
+**Net delta from the original audit:** the original 7 warnings are all addressed; the rebased implementation strictly improves on the original draft (smaller blast radius via `sessionStorage`, type-safety via `computed()` `bearerToken`, and the YAML carve-out now matches the code character-for-character). **Status: APPROVED for merge.**

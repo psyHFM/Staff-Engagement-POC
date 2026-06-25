@@ -14,8 +14,9 @@ import { Injectable, signal } from '@angular/core';
  *   5. State is in-memory and resets on page reload — with the single
  *      documented carve-out: the issued JWT, persisted via
  *      {@code AuthState}/{@code AuthStorage} under
- *      {@code staff-engagement.auth.jwt} (see frontend-state.yaml →
- *      persistence.carve_outs and AuthState for the rationale).
+ *      {@code staff-engagement:token} in {@code sessionStorage}
+ *      (see frontend-state.yaml → persistence.carve_outs and AuthState
+ *      for the rationale).
  *
  * Phase 0 ships only this documented base; per-feature state services
  * (EmployeeState, InteractionState, …) land in Phases 1–5.

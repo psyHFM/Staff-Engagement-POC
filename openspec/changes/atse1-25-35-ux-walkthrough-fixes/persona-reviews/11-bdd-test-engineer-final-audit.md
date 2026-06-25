@@ -131,7 +131,7 @@ ESLint clean across `src/` (Angular template bound types, no `any` leaks, no
     exercised through `auth-state.spec.ts` and `auth-error.interceptor.spec.ts`
     via stubbed `AuthStorage` injections (this is the standard JSDOM
     pattern — the `browserAuthStorage` default is too tightly coupled to
-    `globalThis.localStorage` to test directly).
+    `globalThis.sessionStorage` to test directly).
 - **No forbidden anti-patterns**: zero `@Disabled`, zero `@Ignore`, zero
   `@Order`, zero `Thread.sleep`, zero `new Random()` in any new test file.
 - **Pure Jest/Jasmine frontend test runner**: 27 suites, all green; no
@@ -166,7 +166,7 @@ ESLint clean across `src/` (Angular template bound types, no `any` leaks, no
   W1.
 - **W3 — `auth-storage.ts` has no dedicated spec.** The `browserAuthStorage`
   default implementation (the `try { ... } catch { return null }` swallowing
-  branches around `globalThis.localStorage.getItem/setItem/removeItem`) is
+  branches around `globalThis.sessionStorage.getItem/setItem/removeItem`) is
   not directly covered. It **is** exercised through `auth-state.spec.ts`
   via `provideHttpClient()` + real `AuthState` invocation in JSDOM (which
   routes through the default provider) and the `auth-state` happy/sad-path

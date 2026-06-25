@@ -8,12 +8,12 @@
 
 ## 2. Auth session persistence (ATSE1-25)
 
-- [x] 2.1 Modify `frontend/src/app/shared/auth/auth-state.ts` — write the JWT to `localStorage` under `staff-engagement.auth.jwt` in `login()`; clear it in `logout()`; re-hydrate the token signal in the constructor
-- [x] 2.2 Update the doc comment on `auth-state.ts:11-13` (no longer "no persistence") and on `state.service.ts:14`
-- [x] 2.3 Add a 401-clears-storage handler in the `bearerAuthInterceptor` (or a sibling interceptor) that removes the storage entry and routes to `/login`
-- [x] 2.4 Update `frontend/src/app/shared/auth/auth-state.spec.ts` with BDD specs: token round-trips on login, logout clears storage, cold-start hydrates from storage, 401 clears storage
-- [x] 2.5 Add `e2e/tests/auth-persistence.spec.ts` Playwright smoke (login → reload → still on /dashboard)
-- [x] 2.6 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`; record findings in `persona-reviews/02-*` (0 violations across all three — see 02-constitution-guard-auth.md, 02-angular-state-architect-auth.md, 02-bdd-test-engineer-auth.md)
+- [x] 2.1 Modify `frontend/src/app/shared/auth/auth-state.ts` — write the JWT to `sessionStorage` under `staff-engagement:token` in `login()`; clear it in `logout()`; re-hydrate the token signal in the constructor. Storage access goes through the injected `AUTH_STORAGE` token (`auth-storage.ts`), not directly via `window.sessionStorage`. **Supersedes the original `localStorage` draft — see design.md D1 "Decision history".**
+- [x] 2.2 Update the doc comment on `auth-state.ts:11-13` (no longer "no persistence") and on `state.service.ts:14` to reference the `AuthStorage`/`sessionStorage` mechanism and the new key
+- [x] 2.3 Add a sibling `authErrorInterceptor` that calls `AuthState.clearOnUnauthorized()` on any 401 response; the new method is a named alias of `logout()` so the interceptor's intent is readable at the call site
+- [x] 2.4 Update `frontend/src/app/shared/auth/auth-state.spec.ts` with BDD specs: token round-trips on login, logout clears storage, cold-start hydrates from storage, 401 clears storage. Use `{ provide: AUTH_STORAGE, useValue: inMemoryStorage }` so the suite is storage-backend-agnostic. Add `currentUserSubject` specs (null when no token, decodes well-formed JWT, null when malformed).
+- [x] 2.5 Add `e2e/tests/auth-persistence.spec.ts` Playwright smoke (login → reload → still on /dashboard; logout clears the documented key from `sessionStorage`)
+- [x] 2.6 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`; record findings in `persona-reviews/02-*` (0 violations across all three — see 02-constitution-guard-auth.md, 02-angular-state-architect-auth.md, 02-bdd-test-engineer-auth.md). **Note:** the original audit evaluated the `localStorage` draft; the persona review files include a "Re-audit after rebase" section that confirms the `sessionStorage` decision is compliant.
 
 ## 3. Employees directory + Your-details split (ATSE1-27, ATSE1-32)
 

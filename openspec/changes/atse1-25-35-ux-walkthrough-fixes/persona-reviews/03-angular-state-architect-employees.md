@@ -101,7 +101,7 @@ The shell reads `auth.isAuthenticated()` and `auth.currentUser()` only; it does 
 ### Cold-start on `/profile`
 
 ```
-localStorage ─read→ AuthStorage
+sessionStorage ─read→ AuthStorage
         └→ AuthState.token (signal field-init)
               └→ AuthState.currentUserSubject = computed(() => decodeSubject(token()))
                     └→ YourDetailsStateService.loadCurrent()

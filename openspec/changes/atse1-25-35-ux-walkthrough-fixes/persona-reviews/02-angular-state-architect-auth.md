@@ -31,7 +31,8 @@
 | `username`                        | writable signal  | `AuthState`      | Hydrated from `storage.read(...)` at **field-init time**.              |
 | `isAuthenticated`                 | computed signal  | `AuthState`      | `computed(() => this.token() !== null)` — never `.set()` manually.    |
 | `currentUser`                     | computed signal  | `AuthState`      | `computed(() => this.username())` — never `.set()` manually.          |
-| `bearerToken()`                   | method           | `AuthState`      | Read-only accessor for `bearerAuthInterceptor`.                        |
+| `bearerToken`                     | computed signal  | `AuthState`      | `computed(() => this.token())` — matches PR #37's shape so the existing `bearerAuthInterceptor` works unchanged. |
+| `currentUserSubject`              | computed signal  | `AuthState`      | `computed(() => decodeSubject(this.token()))` — authoritative identity from the JWT `sub` claim; `null` for malformed/absent tokens. |
 | `login(credentials)`              | method           | `AuthState`      | API side-effect + signal writes + storage writes (co-located).         |
 | `logout()`                        | method           | `AuthState`      | Signal clears + storage removes (co-located).                         |
 | `clearOnUnauthorized()`           | method           | `AuthState`      | Delegates to `logout()`; called by `authErrorInterceptor` on 401.      |
@@ -41,11 +42,12 @@
 ## Data Flow Diagram
 
 1. **Cold start / page reload**
-   `globalThis.localStorage` → `browserAuthStorage.read(key)` →
-   `AuthState` field-initializer → `token` / `username` signals →
-   `isAuthenticated` / `currentUser` computed →
-   `authGuard` / shell header read `isAuthenticated()` synchronously
-   before the first template paint.
+   `globalThis.sessionStorage` → `browserAuthStorage.read(key)` →
+   `AuthState` constructor (`rehydrate()`) → `token` / `username` signals →
+   `isAuthenticated` / `currentUser` / `bearerToken` / `currentUserSubject`
+   computed → `authGuard` / shell header / `bearerAuthInterceptor`
+   read `isAuthenticated()` / `bearerToken()` synchronously
+   before the first template paint or outgoing HTTP call.
 
 2. **Login**
    Component template → `auth.login({...})` →
@@ -92,14 +94,14 @@
   `storage.write(...)` inside one `tap()`. `logout()` does the symmetric
   set/remove pair. No component touches the storage or the signals directly.
 
-- **`persistence` carve-out matches the YAML v1.1.0 declaration.**
-  `frontend-state.yaml -> persistence.carve_outs[0]` authorises JWT
-  persistence under `staff-engagement.auth.jwt`. The implementation writes
-  under exactly that key (`AUTH_STORAGE_KEY = 'staff-engagement.auth.jwt'`
-  in `auth-storage.ts` line 20). The companion `staff-engagement.auth.username`
-  key is not enumerated in the YAML carve-out, but is not itself
-  "authentication state" beyond the user label — acceptable for the POC,
-  tracked below as a Warning rather than a Violation.
+- **`persistence` carve-out matches the YAML v1.2.0 declaration.**
+  `frontend-state.yaml -> persistence.carve_outs[0]` (v1.2.0, post-rebase)
+  authorises JWT persistence under `staff-engagement:token`. The
+  implementation writes under exactly that key
+  (`AUTH_STORAGE_KEY = 'staff-engagement:token'` in `auth-storage.ts`),
+  and the companion username key (`AUTH_USERNAME_KEY = 'staff-engagement:username'`)
+  is explicitly enumerated in the carve-out's `mechanism` clause —
+  closes the original-draft **W1**.
 
 - **`constraints` — components don't update signals directly; no `BehaviorSubject`.**
   Grep of the §2 diff shows no `BehaviorSubject`, no `Subject`, no
@@ -123,8 +125,8 @@
   No `window.localStorage` stubbing required in unit tests. Compliant.
 
 - **Production storage is SSR / private-mode safe.**
-  `browserAuthStorage` (`auth-storage.ts` lines 28-50) wraps every
-  `globalThis.localStorage` access in `try { ... } catch { /* swallow */ }`.
+  `browserAuthStorage` (`auth-storage.ts`) wraps every
+  `globalThis.sessionStorage` access in `try { ... } catch { /* swallow */ }`.
   `read` returns `null` on failure; `write` / `remove` are no-ops. This
   satisfies `frontend-state.yaml -> persistence.carve_outs` rationale
   (the explicit acknowledgement that SSR / private mode must degrade
@@ -134,7 +136,7 @@
   `auth-error.interceptor.ts` lines 26-36: the interceptor does
   `inject(AuthState)` and calls `auth.clearOnUnauthorized()` on a 401.
   It does not reach into `AuthState` to write signals directly, and it
-  does not touch `localStorage`. The side-effect is fully encapsulated
+  does not touch `sessionStorage`. The side-effect is fully encapsulated
   in the service. This is the **exact** pattern called out in the task
   brief ("the interceptor should call a service method, never write
   signals directly").
@@ -243,17 +245,20 @@ service method rather than writing signals, `AuthStorage` is testable
 without `window`, production storage is SSR / private-mode safe, derived
 state uses `computed()`, no signal writes outside the service,
 `toSignal()` usage is appropriate, no `[(ngModel)]` two-way binding)
-are satisfied. The only constitutional drift is **W1** (a small
-key-naming clarification in the YAML carve-out), which is non-blocking.
+are satisfied. The original-draft **W1** (YAML carve-out under-keyed
+the username companion) is closed by the post-rebase v1.2.0 carve-out
+which enumerates both keys — no remaining constitution drift.
 
 ---
 
 ## Cross-references
 
-- `frontend-state.yaml` v1.1.0 → `persistence.carve_outs[0]` —
-  carve-out explicitly authorises this implementation.
+- `frontend-state.yaml` v1.2.0 → `persistence.carve_outs[0]` —
+  carve-out explicitly authorises this implementation, with both
+  `staff-engagement:token` and `staff-engagement:username` enumerated.
 - `frontend-state.yaml` → `derived_state` (`computed()` only) —
-  `isAuthenticated` and `currentUser` comply.
+  `isAuthenticated`, `currentUser`, `bearerToken`, and `currentUserSubject`
+  comply.
 - `frontend-state.yaml` → `side_effects.placement` ("State Service
   Handlers") — `login`, `logout`, `clearOnUnauthorized` all co-locate
   the API call, signal write, and storage write.
@@ -274,13 +279,49 @@ key-naming clarification in the YAML carve-out), which is non-blocking.
 | Severity | Count |
 |----------|-------|
 | Compliant ✅ | 15 |
-| Warning ⚠️   | 4   |
+| Warning ⚠️   | 3   |  (W1 closed; W2/W3/W4 retained as documentation hygiene) |
 | Violation ❌  | 0   |
 
-**Most important issue:** *none blocking.* The single actionable
-warning worth elevating before merge is **W1** — extend the YAML
-carve-out to cover the `staff-engagement.auth.username` companion
-key, or rename it to make clear it is a UI re-hydration label, not an
-authentication credential. Everything else is documentation hygiene.
+**Most important issue:** *none blocking.* The original **W1** (YAML
+carve-out covered only the JWT, not the companion username) is closed
+by the post-rebase `frontend-state.yaml` v1.2.0 which enumerates both
+keys. **W2** (no redirect on 401) and **W3** (no 401-on-login spec)
+remain as UX / test-coverage refinements that the spec already
+documents as future-work. **W4** (no barrel export for the storage
+key constants) is a no-op until a second consumer imports them.
 
 §2 is approved to merge from the Angular State Architect's perspective.
+
+---
+
+## Re-audit after rebase onto `origin/main` (2026-06-25)
+
+**Subject:** the §2 implementation commit was rebased onto `origin/main`
+after PR #37 (ATSE1-41) shipped a `sessionStorage`-based persistence
+layer with `computed()`-shaped `bearerToken`. The rebase rewrites the
+implementation to align with main's chosen mechanism and signal shape,
+while preserving the §2 additions that PR #37 did not ship:
+`AuthStorage` injection abstraction, `currentUserSubject` (JWT `sub`
+decoder), `clearOnUnauthorized()` method, and the Playwright smoke.
+
+**Compliance verdict against the post-rebase tree:**
+
+| Check | Verdict |
+|---|---|
+| Hydration source changed from `localStorage` → `sessionStorage` | ✅ — `auth-storage.ts` `browserAuthStorage.read/write/remove` now read/write `globalThis.sessionStorage`; matches PR #37. |
+| Storage key updated from `staff-engagement.auth.jwt` → `staff-engagement:token` | ✅ — single source of truth in `AUTH_STORAGE_KEY`; imported by `auth-state.ts` and the test suite. |
+| `bearerToken` shape changed from method → `computed()` signal | ✅ — preserves PR #37's shape so `bearerAuthInterceptor` works unchanged. |
+| `currentUserSubject` computed signal added | ✅ — decodes JWT `sub` claim for authoritative identity; `null` on absent / malformed token. |
+| `clearOnUnauthorized()` public method retained | ✅ — `authErrorInterceptor` continues to delegate; signal writes remain encapsulated in the service. |
+| `AuthStorage` interface still unit-tested via DI | ✅ — `auth-state.spec.ts` injects `createInMemoryStorage()` via `{ provide: AUTH_STORAGE, useValue: ... }`; no `window.sessionStorage` stubbing required. |
+| Original W1 (username key under-enumerated in carve-out) closed | ✅ — `frontend-state.yaml` v1.2.0 carve-out's `mechanism` clause names both `staff-engagement:token` and `staff-engagement:username`. |
+| Original W2 / W3 / W4 carried forward | ⚠️ — retained as future-work; none blocking. |
+| No signal writes outside `AuthState` | ✅ — interceptor / specs / app.config all route through service methods. |
+| No `BehaviorSubject`, no `Subject`, no two-way binding | ✅ — grep clean. |
+
+**Net delta from the original audit:** the post-rebase implementation
+strictly improves on the original draft — smaller blast radius via
+`sessionStorage` (scoping persistence to the JWT's lifetime), a
+type-safe `computed()`-shaped `bearerToken` matching PR #37, and the
+YAML carve-out now character-for-character matches the code. **Status:
+APPROVED for merge.**
