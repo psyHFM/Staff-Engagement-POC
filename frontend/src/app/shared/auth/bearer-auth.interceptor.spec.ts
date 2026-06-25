@@ -18,6 +18,7 @@ describe('bearerAuthInterceptor', () => {
   let auth: AuthState;
 
   beforeEach(() => {
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         AuthState,
@@ -30,7 +31,10 @@ describe('bearerAuthInterceptor', () => {
     auth = TestBed.inject(AuthState);
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    httpMock.verify();
+    sessionStorage.clear();
+  });
 
   it('adds Authorization header when a token is present', () => {
     // Given — an authenticated session
