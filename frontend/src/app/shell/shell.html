@@ -6,6 +6,11 @@
 
   <nav class="shell__nav">
     <a routerLink="/dashboard" routerLinkActive="shell__nav-link--active">Dashboard</a>
+    <a routerLink="/employees" routerLinkActive="shell__nav-link--active">Employees</a>
+    <a routerLink="/interactions" routerLinkActive="shell__nav-link--active">Interactions</a>
+    <a routerLink="/tasks" routerLinkActive="shell__nav-link--active">Tasks</a>
+    <a routerLink="/portfolio" routerLinkActive="shell__nav-link--active">Portfolio</a>
+    <a routerLink="/skills" routerLinkActive="shell__nav-link--active">Skills</a>
   </nav>
 
   <div class="shell__auth">
@@ -15,8 +20,8 @@
     } @else {
       <a routerLink="/login" class="shell__login">Sign in</a>
     }
-  </div>
-</header>
+  </div
+></header>
 
 <main class="shell__main">
   <router-outlet />

@@ -19,6 +19,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'employees',
+    loadComponent: () => import('./features/employee/employee').then((m) => m.Employee),
+    canActivate: [authGuard]
+  },
+  {
     path: 'tasks',
     loadComponent: () => import('./features/task/task').then((m) => m.Task),
     canActivate: [authGuard]
@@ -32,10 +37,10 @@ export const routes: Routes = [
     path: 'interactions',
     loadComponent: () => import('./features/interaction/interaction-page/interaction-page').then((m) => m.InteractionPage),
     canActivate: [authGuard]
+  },
+  {
+    path: 'skills',
+    loadComponent: () => import('./features/skills/skills').then((m) => m.Skills),
+    canActivate: [authGuard]
   }
-  // Phase 1: employees
-  // Phase 2: interactions
-  // Phase 3: tasks
-  // Phase 4: portfolio
-  // Phase 5: skills
 ];
