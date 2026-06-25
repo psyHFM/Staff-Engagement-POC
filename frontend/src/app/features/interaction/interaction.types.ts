@@ -35,6 +35,7 @@ export interface InteractionSummary {
   readonly subject: EmployeeId;
   readonly facilitator: EmployeeId;
   readonly note: string;
+  readonly createdAt: string;
 }
 
 /** Offset-paginated response — matches the backend {@code Paged<T>} record. */

@@ -42,6 +42,13 @@
               <span class="employee-list__meta">{{ employee.level }}</span>
             }
           </button>
+          <a
+            class="employee-list__profile"
+            [routerLink]="['/employees', employee.id.value, 'profile']"
+            (click)="$event.stopPropagation()"
+          >
+            Profile
+          </a>
         </li>
       }
     </ul>
