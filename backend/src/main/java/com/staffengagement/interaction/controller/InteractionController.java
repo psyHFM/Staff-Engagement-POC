@@ -1,6 +1,7 @@
 package com.staffengagement.interaction.controller;
 
 import com.staffengagement.interaction.controller.dto.CreateInteractionRequest;
+import com.staffengagement.interaction.controller.dto.UpdateInteractionRequest;
 import com.staffengagement.interaction.service.InteractionNotFoundException;
 import com.staffengagement.interaction.service.InteractionService;
 import com.staffengagement.shared.api.InteractionSummary;
@@ -12,7 +13,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -66,6 +70,36 @@ public class InteractionController {
     public InteractionSummary getById(@PathVariable Long id) {
         return interactionService.findById(new InteractionId(id))
                 .orElseThrow(() -> new InteractionNotFoundException(id));
+    }
+
+    /**
+     * Edit an existing interaction's {@code type} and {@code note} (ATSE1-28).
+     *
+     * <p>Subject and facilitator are immutable: the audit trail records what
+     * happened, not what the latest edit says happened. Only admins and the
+     * original facilitator may edit; the service collapses the 403 (non-owner
+     * non-admin) into 404 to prevent existence leakage.
+     *
+     * <p>RBAC is ADMIN-only at the controller boundary to match the rest of
+     * the module; the facilitator-edit affordance is enforced inside the
+     * service and surfaces to the UI via {@code InteractionContract.verifyEditable}.
+     */
+    @PatchMapping("/interactions/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<InteractionSummary> update(@PathVariable Long id,
+                                                      @RequestBody UpdateInteractionRequest body,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        // The Phase 0 principal is a username; for the POC we map the username
+        // to a best-effort employee id the same way the create endpoint does.
+        // Admins bypass the ownership check (isAdmin=true). The service
+        // resolves ownership and surfaces 404 for "not yours" to prevent
+        // existence leakage.
+        boolean isAdmin = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        EmployeeId actor = new EmployeeId(Long.parseLong(userDetails.getUsername()));
+        InteractionSummary updated = interactionService.update(
+                new InteractionId(id), body.type(), body.note(), actor, isAdmin);
+        return ResponseEntity.ok(updated);
     }
 
     /**
