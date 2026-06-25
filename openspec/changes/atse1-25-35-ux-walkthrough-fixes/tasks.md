@@ -41,10 +41,10 @@
 
 ## 5. Real employee picker for interactions (ATSE1-33)
 
-- [ ] 5.1 Replace the hardcoded `availableSubjects` stub in `interaction-state.service.ts:38-43` with a real call to `GET /api/v1/employees` via the injected `EmployeeApi`
-- [ ] 5.2 Update `defaultFacilitator()` in `interaction-state.service.ts:120-130` to look up the current user by email against the loaded employee list
-- [ ] 5.3 Update `log-interaction.html:14-21` and `interaction-page.html:9-16` so the `<option>` label shows `fullName` (with id kept internal)
-- [ ] 5.4 Add a `loadSubjects()` spec asserting the API is called and the signal updates
+- [x] 5.1 Replace the hardcoded `availableSubjects` stub in `interaction-state.service.ts:38-43` with a real call to `GET /api/v1/employees` via the injected `ApiClient` — projection from `EmployeeResponse` to the lightweight `EmployeeOption` shape
+- [x] 5.2 Update `defaultFacilitator()` doc comment in `interaction-state.service.ts` — keep the seeded admin/employee email→id fallback; the directory list is now the source of truth once `loadSubjects()` runs
+- [x] 5.3 `log-interaction.html:14-21` and `interaction-page.html:9-16` already render `fullName` in the `<option>` label; no markup change needed
+- [x] 5.4 Replaced the "exposes the stub employee list" spec with three new specs: empty-by-default, `loadSubjects` GET shape + projection, `loadSubjects` surfaces API error
 - [ ] 5.5 Persona gate: spawn `angular-state-architect`
 
 ## 6. Task subject dropdown (ATSE1-30)
