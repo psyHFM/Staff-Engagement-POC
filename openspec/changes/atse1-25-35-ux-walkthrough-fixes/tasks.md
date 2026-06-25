@@ -1,0 +1,113 @@
+## 1. OpenSpec proposal + carry-in
+
+- [x] 1.1 Create feature branch `feature/ATSE1-25-35-ux-walkthrough-fixes` from `origin/main`
+- [x] 1.2 Commit the carry-in (prompts/hendrik-muller.md, .claude/plans/atse1-skills-persona-reviews, .playwright-mcp, failure_logs.txt, notes)
+- [x] 1.3 Run `/openspec-propose atse1-25-35-ux-walkthrough-fixes`; write proposal.md, design.md, tasks.md, and 10 specs/*/spec.md files
+- [ ] 1.4 Append a coordination-points entry to `.claude/constitution/ROADMAP.md` for this UX-walkthrough-fixes cluster (also covers the auth-persistence carve-out and the additive `InteractionContract.verifyEditable` / `TaskContract.taskWithItems` extensions)
+- [ ] 1.5 Spawn `constitution-guard` persona to audit the proposal/design/tasks/specs; record findings in `persona-reviews/01-constitution-guard-proposal.md`
+
+## 2. Auth session persistence (ATSE1-25)
+
+- [ ] 2.1 Modify `frontend/src/app/shared/auth/auth-state.ts` — write the JWT to `localStorage` under `staff-engagement.auth.jwt` in `login()`; clear it in `logout()`; re-hydrate the token signal in the constructor
+- [ ] 2.2 Update the doc comment on `auth-state.ts:11-13` (no longer "no persistence") and on `state.service.ts:14`
+- [ ] 2.3 Add a 401-clears-storage handler in the `bearerAuthInterceptor` (or a sibling interceptor) that removes the storage entry and routes to `/login`
+- [ ] 2.4 Update `frontend/src/app/shared/auth/auth-state.spec.ts` with BDD specs: token round-trips on login, logout clears storage, cold-start hydrates from storage, 401 clears storage
+- [ ] 2.5 Add `e2e/tests/auth-persistence.spec.ts` Playwright smoke (login → reload → still on /dashboard)
+- [ ] 2.6 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`; record findings in `persona-reviews/02-*`
+
+## 3. Employees directory + Your-details split (ATSE1-27, ATSE1-32)
+
+- [ ] 3.1 Delete the "Your profile" section from `frontend/src/app/features/employee/employee.html:28-49`
+- [ ] 3.2 Strip `ownProfile`, `onCreated`, `onUpdateOwn`, and the `EmployeeCreateForm` + `EmployeeDetail` imports from `frontend/src/app/features/employee/employee.ts:5-6, 40-47, 72-84`
+- [ ] 3.3 Slim `frontend/src/app/features/employee/employee.spec.ts` (drop the deleted-component specs)
+- [ ] 3.4 Add a `currentUserId()` derived signal on `AuthState` (parses the JWT subject claim)
+- [ ] 3.5 Add `{ path: 'profile', loadComponent: …, canActivate: [authGuard] }` to `app.routes.ts` that resolves the current user id and mounts the existing `ProfilePage`
+- [ ] 3.6 Turn `<span class="shell__user">` in `frontend/src/app/shell/shell.html:18` into an `<a routerLink="/profile">`
+- [ ] 3.7 Update `frontend/src/app/shell/shell.spec.ts` to assert the new link
+- [ ] 3.8 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`
+
+## 4. Interaction row edit + create-task-from-interaction (ATSE1-28, ATSE1-29)
+
+- [ ] 4.1 Add `@Output() rowEdit` and `@Output() createTask` to `frontend/src/app/features/interaction/interaction-list/interaction-list.ts:26`
+- [ ] 4.2 Add Edit and "Create task" buttons inside the `@for` block at `interaction-list.html:20-34`
+- [ ] 4.3 Wire the new outputs in `frontend/src/app/features/interaction/interaction-page/interaction-page.{ts,html}`; mount the existing `TaskCreateForm` with `interactionId` input
+- [ ] 4.4 Refactor `frontend/src/app/features/task/task-create-form.ts` to accept an optional `interactionId` input (carry it in the request body)
+- [ ] 4.5 Add `PATCH /api/v1/interactions/{id}` to `backend/src/main/java/com/staffengagement/interaction/controller/InteractionController.java` annotated `hasAnyRole('ADMIN','USER')`
+- [ ] 4.6 Add `update(id, type, note)` to `backend/.../interaction/service/InteractionService.java` with admin-any / non-admin-own RBAC (404 on non-own for non-admin)
+- [ ] 4.7 No JPA / Liquibase change for interaction; the existing `type` and `note` columns are reused
+- [ ] 4.8 BDD specs: `InteractionServiceTest.update*` (4 cases), `InteractionControllerTest.update*` (4 cases); `interaction-list.spec.ts` for the new outputs
+- [ ] 4.9 Persona gate: spawn `constitution-guard`, `constitutional-backend-developer`, `angular-state-architect`, `bdd-test-engineer`
+
+## 5. Real employee picker for interactions (ATSE1-33)
+
+- [ ] 5.1 Replace the hardcoded `availableSubjects` stub in `interaction-state.service.ts:38-43` with a real call to `GET /api/v1/employees` via the injected `EmployeeApi`
+- [ ] 5.2 Update `defaultFacilitator()` in `interaction-state.service.ts:120-130` to look up the current user by email against the loaded employee list
+- [ ] 5.3 Update `log-interaction.html:14-21` and `interaction-page.html:9-16` so the `<option>` label shows `fullName` (with id kept internal)
+- [ ] 5.4 Add a `loadSubjects()` spec asserting the API is called and the signal updates
+- [ ] 5.5 Persona gate: spawn `angular-state-architect`
+
+## 6. Task subject dropdown (ATSE1-30)
+
+- [ ] 6.1 Create `frontend/src/app/shared/forms/employee-picker/` with selector `app-employee-picker`, signal input `value: number | null`, output `valueChange: EventEmitter<number | null>`; **must be signal-only, no `[(ngModel)]` two-way binding inside the picker** (per `frontend-state.yaml -> primary_mechanism` and the constitution-guard audit V2)
+- [ ] 6.2 The picker loads via the existing `EmployeeApi`; typeahead filter for >50 entries; default selection = current user's employee id
+- [ ] 6.3 Replace the free-text `<input id="subjectId">` in `task-create-form.ts:30-33` with `<app-employee-picker [(ngModel)]="request.subjectId">`
+- [ ] 6.4 Add `employee-picker.spec.ts` (standalone component specs)
+- [ ] 6.5 Update `task-create-form.spec.ts` to assert the picker mounts and the request carries a numeric `subjectId`
+- [ ] 6.6 Persona gate: spawn `angular-state-architect`, `bdd-test-engineer`
+
+## 7. Task create bug — security + schema (ATSE1-31)
+
+- [ ] 7.1 Change every `@PreAuthorize("hasRole('USER')")` in `backend/src/main/java/com/staffengagement/task/web/TaskController.java:47,85,92,98` to `hasAnyRole('USER','ADMIN')`
+- [ ] 7.2 Add a `title` column (VARCHAR(255) NOT NULL DEFAULT '') to `backend/src/main/java/com/staffengagement/task/domain/Task.java`
+- [ ] 7.3 Add `db/changelog/modules/task/002-add-task-title.yaml` (id `task-002-add-task-title`, additive, master.yaml untouched)
+- [ ] 7.4 Add `String title` to the `TaskRequest` record in `TaskController.java:106`; require it via Bean Validation
+- [ ] 7.5 Fix `TaskService.toSummary` at lines 54-63 to map `title` and `description` separately (no more duplicate mapping)
+- [ ] 7.6 Add a backfill Liquibase step (or seed update) that sets a default `title` for existing seeded rows (truncate `description` to 64 chars)
+- [ ] 7.7 New `TaskControllerSecurityTest` (BDD) — `ROLE_ADMIN → 200` on `POST /api/v1/tasks`; `ROLE_USER → 200`; missing role → 401/403
+- [ ] 7.8 New `TaskServiceMappingTest` (BDD) — title and description are mapped to distinct fields
+- [ ] 7.9 Persona gate: spawn `constitution-guard`, `constitutional-backend-developer`, `modular-monolith-architect`, `bdd-test-engineer`
+
+## 8. Task subtasks (ATSE1-34)
+
+- [ ] 8.1 Create `backend/src/main/java/com/staffengagement/task/domain/TaskItem.java` (id, taskId, ordinal, title, completed, createdAt)
+- [ ] 8.2 Add `db/changelog/modules/task/003-create-task-item-table.yaml` (sibling-table + same-module FK; master.yaml untouched)
+- [ ] 8.3 Create `backend/src/main/java/com/staffengagement/task/repository/TaskItemRepository.java`
+- [ ] 8.4 Add `addItem`, `updateItem`, `deleteItem`, `reorderItem` methods to `TaskService`; expose `items` on `TaskSummary` (additive field on `shared/api/TaskSummary.java`)
+- [ ] 8.5 Add endpoints to `TaskController`:
+  `POST /api/v1/tasks/{id}/items`,
+  `PATCH /api/v1/tasks/{taskId}/items/{itemId}`,
+  `DELETE /api/v1/tasks/{taskId}/items/{itemId}`,
+  `PUT /api/v1/tasks/{taskId}/items/reorder`
+  All annotated `hasAnyRole('USER','ADMIN')` (same RBAC as parent task)
+- [ ] 8.6 Implement `isComplete(task)` rule (all items completed OR `allowPartialComplete`)
+- [ ] 8.7 Add BDD specs for the new endpoints (controller + service)
+- [ ] 8.8 Frontend: add `TaskItem` to `task.model.ts`; render subtasks under each task in `task.ts`; new `task-item-list` and `task-item-form` components with BDD specs
+- [ ] 8.9 Persona gate: spawn `constitutional-backend-developer`, `modular-monolith-architect`, `bdd-test-engineer`
+
+## 9. Portfolio add-row bug (ATSE1-35)
+
+- [ ] 9.1 Refactor `frontend/src/app/features/portfolio/portfolio.ts:41-46, 148-160, 195` to read form values from the template reference (`#skillForm.value`, etc.) and call `resetForm()` after success
+- [ ] 9.2 Apply the same fix to `addEducation`, `addProject`, `addLink`
+- [ ] 9.3 Disable the submit button while the request is in-flight (prevents rapid double-click duplicates)
+- [ ] 9.4 Update `portfolio.spec.ts` and `portfolio-state.service.spec.ts` to cover "second add appends a new row" and "double-click does not duplicate"
+- [ ] 9.5 Persona gate: spawn `angular-state-architect`, `bdd-test-engineer`
+
+## 10. OpenSpec reconciliation (ATSE1-26)
+
+- [ ] 10.1 Tick off the items in `openspec/changes/phase-6-rounded-profile/tasks.md` that landed in PR #33 / #34 (§1-§6, §10.1-10.2, plus §7-§9 for the frontend)
+- [ ] 10.2 Add a "Verified by merged PRs #33 + #34" header note to `phase-6-rounded-profile/tasks.md`
+- [ ] 10.3 Copy `openspec/changes/phase-6-rounded-profile/` to `openspec/changes/archive/2026-06-25-phase-6-rounded-profile/`
+- [ ] 10.4 Delete the active `phase-6-rounded-profile/` directory
+- [ ] 10.5 Persona gate: spawn `constitution-guard` to confirm the archive matches the codebase truth
+
+## 11. Final verification + PR
+
+- [ ] 11.1 Run `mvn clean test` in `backend/` (all BDD specs green)
+- [ ] 11.2 Run `mvn jacoco:report` (coverage >= 80%) and PITest (mutation >= 80%) where available
+- [ ] 11.3 Run `npm test` in `frontend/` (Jest specs green) and `npm run coverage` (Istanbul >= 80%)
+- [ ] 11.4 Run `npx stryker run` (Stryker >= 80%)
+- [ ] 11.5 Run `npm run lint`
+- [ ] 11.6 Run `npx playwright test e2e/tests/` against `docker compose up -d`; new `auth-persistence.spec.ts` must pass
+- [ ] 11.7 Spawn the final `constitution-guard` + `bdd-test-engineer` audits on the full branch diff
+- [ ] 11.8 Push the branch; open the PR with per-ticket checklist + "closes #ATSE1-25" … "closes #ATSE1-35" footers
+- [ ] 11.9 Transition all 11 Jira tickets to Done via `mcp__plugin_atlassian_atlassian__transitionJiraIssue`
