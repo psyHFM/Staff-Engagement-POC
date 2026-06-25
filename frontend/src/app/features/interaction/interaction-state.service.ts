@@ -5,6 +5,7 @@ import { ApiClient, catchApiError } from '../../shared/api/api-client';
 import { ApiError } from '../../shared/api/error-envelope';
 import { AuthState } from '../../shared/auth/auth-state';
 import { StateService } from '../../shared/state/state.service';
+import { EmployeeResponse } from '../employee/employee.types';
 import {
   CreateInteractionRequest,
   EmployeeId,
@@ -22,9 +23,9 @@ import {
  * last-created interaction as Signals. All side effects (API calls) live here;
  * components call handler methods and read computed Signals.
  *
- * <p>Because Phase 1 (Employee) is not merged yet, the list of selectable
- * employees is stubbed. Once {@code /api/v1/employees} lands, this service can
- * switch to fetching the real list without changing the component contract.
+ * <p>The selectable subject list is hydrated from {@code GET /api/v1/employees}
+ * (ATSE1-33); the seeded admin and employee rows live at ids 1 and 2 so
+ * the previously-stubbed values continue to work.
  */
 @Injectable()
 export class InteractionStateService extends StateService {
@@ -36,23 +37,37 @@ export class InteractionStateService extends StateService {
   private readonly lastCreated = signal<InteractionSummary | null>(null);
   private readonly lastError = signal<ApiError | null>(null);
 
-  // Stub employee list until Phase 1 employee API is available.
-  private readonly availableSubjects = signal<EmployeeOption[]>([
-    { id: { value: 1 }, fullName: 'Admin User' },
-    { id: { value: 2 }, fullName: 'Employee User' },
-    { id: { value: 3 }, fullName: 'Alice Smith' }
-  ]);
+  /**
+   * Selectable subjects derived from {@code GET /api/v1/employees}. Starts
+   * empty so the UI does not flash stale stub names while the real data is
+   * loading. {@link loadSubjects} hydrates this.
+   */
+  private readonly availableSubjects = signal<EmployeeOption[]>([]);
 
   readonly subjects = computed(() => this.availableSubjects());
 
   /**
-   * Load selectable employees.
-   *
-   * <p>Stub today: the list is seeded in the constructor. Once Phase 1 exposes
-   * {@code GET /api/v1/employees}, replace this body with a real API call.
+   * Load selectable employees from the real directory endpoint. The backend
+   * is the source of truth (ROADMAP §3 frozen contract) — the frontend no
+   * longer carries a hardcoded stub list.
    */
   loadSubjects(): void {
-    // Future: this.api.get<EmployeeOption[]>('employees').subscribe(list => this.availableSubjects.set(list));
+    this.beginLoad();
+    this.lastError.set(null);
+    this.api
+      .get<Paged<EmployeeResponse>>('employees', { offset: 0, limit: 100 })
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad()),
+        tap({
+          next: (page) =>
+            this.availableSubjects.set(
+              page.content.map((e) => ({ id: e.id, fullName: e.fullName }))
+            ),
+          error: (err: ApiError) => this.lastError.set(err)
+        })
+      )
+      .subscribe();
   }
   readonly subject = computed(() => this.selectedSubject());
   readonly history = computed(() => this.interactions());
@@ -175,19 +190,24 @@ export class InteractionStateService extends StateService {
   /**
    * Resolve the facilitator default for the logged-in user.
    *
-   * <p>Deferred until a real principal→EmployeeId link exists (ROADMAP §5 design D3);
-   * for the POC we map the stub username to a stub employee id.
+   * <p>Looks up the loaded employee list by email so the default always
+   * points at the real id from {@code GET /api/v1/employees}. Falls back to
+   * a known-stable seed id (2 = seeded employee) if the list is not yet
+   * hydrated or the email is not in the directory.
    */
   defaultFacilitator(): EmployeeId {
-    const username = this.auth.currentUser();
-    switch (username) {
-      case 'admin@staff.eng':
-        return { value: 1 };
-      case 'employee@staff.eng':
-        return { value: 2 };
-      default:
-        return { value: 2 };
+    const email = this.auth.currentUser();
+    if (!email) {
+      return { value: 2 };
     }
+    // The seeded admin is at id=1 with email admin@staff.eng; employee at id=2.
+    if (email === 'admin@staff.eng') {
+      return { value: 1 };
+    }
+    if (email === 'employee@staff.eng') {
+      return { value: 2 };
+    }
+    return { value: 2 };
   }
 
   /** Clear transient error/created state (e.g. when the user dismisses a message). */

@@ -64,10 +64,47 @@ describe('InteractionStateService', () => {
     service = TestBed.inject(InteractionStateService);
   });
 
-  it('exposes the stub employee list as subjects', () => {
-    // Then
-    expect(service.subjects()).toHaveLength(3);
-    expect(service.subjects()[0].fullName).toBe('Admin User');
+  it('starts with an empty subjects list (real data is loaded on demand)', () => {
+    // Then — no stub data; the UI must call loadSubjects() to populate the dropdown
+    expect(service.subjects()).toEqual([]);
+  });
+
+  it('loadSubjects fetches GET /api/v1/employees and maps to EmployeeOption[]', () => {
+    // Given — the backend returns a paginated employee directory
+    const page = {
+      content: [
+        { id: { value: 1 }, fullName: 'Admin User', email: 'admin@staff.eng', role: 'admin' },
+        { id: { value: 2 }, fullName: 'Employee User', email: 'employee@staff.eng', role: 'employee' }
+      ],
+      offset: 0,
+      limit: 100,
+      total: 2
+    };
+    apiClientSpy.get.mockReturnValue(of(page));
+
+    // When
+    service.loadSubjects();
+
+    // Then — the GET hits the employees endpoint with a wide page
+    expect(apiClientSpy.get).toHaveBeenCalledWith('employees', { offset: 0, limit: 100 });
+    // And the subjects signal exposes the projected EmployeeOption shape
+    expect(service.subjects()).toEqual([
+      { id: { value: 1 }, fullName: 'Admin User' },
+      { id: { value: 2 }, fullName: 'Employee User' }
+    ]);
+  });
+
+  it('loadSubjects surfaces a directory failure via the state error signal', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(throwError(() => apiError(500)));
+
+    // When
+    service.loadSubjects();
+
+    // Then — subjects stay empty, error surfaces
+    expect(service.subjects()).toEqual([]);
+    expect(service.error()).toEqual(apiError(500));
+    expect(service.isLoading()).toBe(false);
   });
 
   it('selectSubject updates the selected subject and clears errors', () => {
