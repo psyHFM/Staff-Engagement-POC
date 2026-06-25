@@ -1,0 +1,120 @@
+.employee-list {
+  &__title {
+    margin: 0 0 0.5rem;
+  }
+
+  &__sort {
+    margin-bottom: 1rem;
+
+    label {
+      margin-right: 0.5rem;
+      font-weight: 600;
+    }
+
+    select {
+      padding: 0.25rem 0.5rem;
+    }
+  }
+
+  &__loading,
+  &__empty {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--surface-600, #6b7280);
+
+    .pi {
+      margin-right: 0.5rem;
+    }
+  }
+
+  &__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  &__select {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.25rem 1rem;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    background: var(--surface-card, #fff);
+    border: 1px solid var(--surface-border, #e5e7eb);
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--primary-color, #3b82f6);
+    }
+  }
+
+  &__name {
+    grid-column: 1;
+    font-weight: 600;
+  }
+
+  &__email {
+    grid-column: 1;
+    color: var(--surface-600, #6b7280);
+    font-size: 0.875rem;
+  }
+
+  &__badge {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    text-transform: capitalize;
+
+    &--admin {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    &--employee {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+  }
+
+  &__meta {
+    grid-column: 1;
+    font-size: 0.8rem;
+    color: var(--surface-500, #9ca3af);
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  &__page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--surface-border, #e5e7eb);
+    border-radius: 4px;
+    background: var(--surface-card, #fff);
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__page-info {
+    font-size: 0.875rem;
+  }
+}

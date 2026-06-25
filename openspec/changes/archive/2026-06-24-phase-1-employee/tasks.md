@@ -54,24 +54,53 @@ Scope: shared-kernel coordination PR only — `shared/kernel/EmployeeRole`, `sha
 - [x] 5.1 BDD unit tests (JUnit5 + Mockito) for `EmployeeService`: create (email-bound, forced EMPLOYEE, 409 dup), update (owner ok, admin ok incl. role, 403 other, 403 non-admin role change, 400 email change), findByEmail, list (default/sort/limit), findById/exists — **done in Group 3** (testing-first; 21 tests in `EmployeeServiceTest`)
 - [x] 5.2 BDD unit tests for `EmployeeController` (mock the service): status codes, envelope shape, RBAC enforcement incl. role-change rules
 - [x] 5.3 Confirm ArchUnit green: employee module follows `controller/→service/→repository`, imports `shared/api` only
-- [ ] 5.4 `./mvnw test` green; PITest mutation report (soft); JaCoCo ≥80%
+- [x] 5.4 `./mvnw test` green; PITest mutation report (soft); JaCoCo ≥80%
+
+### 5.4 Quality-gate verdict (2026-06-24, branch `chore/phase-1-employee-finalize`, Java 21.0.10)
+
+- **`./mvnw test`:** BUILD SUCCESS — 204 tests, 0 failures / 0 errors / 0 skipped (incl. ArchUnit).
+- **JaCoCo (employee package, line+branch):** LINE **100.0%**, BRANCH **83.7%** — both ≥80% ✅.
+- **PITest (employee, mutation score):** 70 mutations, 67 killed → **96%** ✅ (test strength 96%, 0 no-coverage).
+- **Build-config hygiene (`backend/pom.xml`):** Spring Data JPA repository interfaces excluded from both JaCoCo (`<excludes> com/staffengagement/**/repository/**`) and PITest (`<excludedClasses> com.staffengagement.*.repository.*`). Rationale: derived query methods are declarative infrastructure, untestable under the constitution's unit-only / integration-disabled rule (`testing-strategy.yaml`); their synthetic bytecode branches/mutations are noise, not a test-quality signal. Excluding them makes both metrics measure testable business logic. `com.staffengagement.employee.*` also added to PITest `targetClasses` (was absent — a gap from PR #22).
+- **PITest survivors (3 — edge-case follow-ups, not blockers):**
+  - `EmployeeService.java:151` `list()` — `ConditionalsBoundaryMutator` (offset/limit boundary conditional; the test exercises the same boundary as the code).
+  - `EmployeeService.java:192` `parseSort()` — `ConditionalsBoundaryMutator` (sort-whitelist boundary).
+  - `EmployeeController.java:104` `callerOf` lambda — `BooleanTrueReturnValsMutator` (boolean return not asserted).
+- **Verdict: Compliant ✅** — all soft gates met (≥80% line, branch, mutation). Three low-risk survivors documented for optional hardening.
 
 ## 6. Frontend employee feature (splice branch)
 
-- [ ] 6.1 Create `features/employee/EmployeeStateService` (Signals, in-memory) wrapping `ApiClient` for the four endpoints
-- [ ] 6.2 Create `EmployeeList` component (paginated directory, visible to all authenticated; sort controls)
-- [ ] 6.3 Create `EmployeeDetail` component; gate edit + role control by RBAC (admin edits any + role; non-admin edits own only, no role control)
-- [ ] 6.4 Create the create form (fields `fullName/jobTitle/department/level` only — no email, no role); wire to `POST`
-- [ ] 6.5 Append exactly one lazy-route line to `routes.ts` (append-per-feature convention)
-- [ ] 6.6 Jest BDD tests for `EmployeeStateService` (HttpTestingController); `npm run lint`, `npm run build`, `npm test` green; Stryker runs locally
+- [x] 6.1 Create `features/employee/EmployeeStateService` (Signals, in-memory) wrapping `ApiClient` for the four endpoints
+- [x] 6.2 Create `EmployeeList` component (paginated directory, visible to all authenticated; sort controls)
+- [x] 6.3 Create `EmployeeDetail` component; gate edit + role control by RBAC (admin edits any + role; non-admin edits own only, no role control)
+- [x] 6.4 Create the create form (fields `fullName/jobTitle/department/level` only — no email, no role); wire to `POST`
+- [x] 6.5 Append exactly one lazy-route line to `routes.ts` (append-per-feature convention)
+- [x] 6.6 Jest BDD tests for `EmployeeStateService` (HttpTestingController); `npm run lint`, `npm run build`, `npm test` green; Stryker runs locally
 
 ## 7. End-to-end verification (splice branch)
 
-- [ ] 7.1 `docker compose build && docker compose up` — all three services healthy
-- [ ] 7.2 Verify the role flow: admin login → `ROLE_ADMIN` (from seeded record); employee login (no record yet) → `ROLE_EMPLOYEE` → self-creates → still EMPLOYEE; admin PUTs employee@ `role=ADMIN` → employee's next login yields `ROLE_ADMIN`; non-admin role change → 403; 404/400/409/403 envelopes; nginx proxies `/api/v1/employees/*`
-- [ ] 7.3 Frontend: list loads, create form has no email/role, edit + role control gated by RBAC
+- [x] 7.1 `docker compose build && docker compose up` — all three services healthy
+- [x] 7.2 Verify the role flow: admin login → `ROLE_ADMIN` (from seeded record); employee login (no record yet) → `ROLE_EMPLOYEE` → self-creates → still EMPLOYEE; admin PUTs employee@ `role=ADMIN` → employee's next login yields `ROLE_ADMIN`; non-admin role change → 403; 404/400/409/403 envelopes; nginx proxies `/api/v1/employees/*`
+- [x] 7.3 Frontend: list loads, create form has no email/role, edit + role control gated by RBAC
+
+### 7.x End-to-end verification (2026-06-24, branch `feature/employee-frontend`, Docker 28.1.1)
+
+All three containers up (`docker compose ps`): `postgres` healthy, `backend` serving (8080), `frontend` via nginx (4200). Verified via `curl` against the running stack:
+
+- **7.1** `docker compose build` (exit 0) + `docker compose up -d` → all services Running; `postgres` `(healthy)`.
+- **7.2 Role flow + envelopes** (`/api/v1`, decoded JWT `roles` claim):
+  - admin login → `{"roles":["ADMIN"]}` (resolved from the seeded `admin@staff.eng` Employee record) ✅
+  - employee login (no profile yet) → `{"roles":["EMPLOYEE"]}` (StubUserStore fallback) ✅
+  - employee self-create `POST /employees` → `201`, `role:"employee"` (forced, id=2) ✅
+  - non-admin role change `PUT /employees/2 {role:"admin"}` → `403` envelope ✅
+  - owner update without role change → `200` (full-name replace) ✅
+  - admin promotes `PUT /employees/2 {role:"admin"}` → `200`, `role:"admin"` ✅
+  - employee re-login → `{"roles":["ADMIN"]}` (now resolved from the promoted record) ✅
+  - `GET /employees/99999` → `404` envelope; differing-email `PUT` → `400` (`email is immutable`); duplicate-email `POST` → `409` ✅
+  - nginx proxies `localhost:4200/api/v1/employees` → backend → `200` (same-origin) ✅
+- **7.3 Frontend**: SPA fallback serves `index.html` for the `/employees` client route (`<app-root>`); nginx `/api/` reverse-proxy confirmed. The create-form-has-no-email/role and RBAC-gated edit/role affordances are covered by the passing component specs (`employee-create-form.spec`, `employee-detail.spec`, `employee.spec`) + the production build emitting the `employee` lazy chunk. Final visual browser click-through remains a user eyes-on step.
 
 ## 8. OpenSpec finalize
 
-- [ ] 8.1 Track/tick tasks through implementation (this file)
-- [ ] 8.2 After all groups merge, run `openspec-archive-change` (sync the `employee-management` + `backend-foundation` deltas into `openspec/specs/`, then archive)
+- [x] 8.1 Track/tick tasks through implementation (this file)
+- [x] 8.2 After all groups merge, run `openspec-archive-change` (sync the `employee-management` + `backend-foundation` deltas into `openspec/specs/`, then archive)

@@ -7,6 +7,16 @@ testing_strategy:
     integration_testing: "Disabled"
     test_philosophy: "High-fidelity unit testing with mutation analysis to ensure assertion quality."
 
+  e2e_acceptance:
+    scope: "Smoke / vertical-slice verification only"
+    status: "Allowed as a thin, non-blocking acceptance layer"
+    constraints:
+      - "E2E tests must not replace or dilute unit tests + mutation testing."
+      - "E2E tests run against the Docker Compose stack only; no external services."
+      - "E2E tooling and dependencies live outside frontend/package.json (locked) in a dedicated e2e/ workspace."
+      - "E2E CI job is optional/non-blocking while the suite matures."
+    tool: "Playwright"
+
   backend:
     frameworks:
       unit_testing: "JUnit 5"

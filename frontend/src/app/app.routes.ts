@@ -40,7 +40,7 @@ export const routes: Routes = [
   },
   {
     path: 'skills',
-    loadComponent: () => import('./features/skills/skills').then((m) => m.Skills),
+    loadComponent: () => import('./features/skills/skills-page').then((m) => m.SkillsPage),
     canActivate: [authGuard]
   }
 ];

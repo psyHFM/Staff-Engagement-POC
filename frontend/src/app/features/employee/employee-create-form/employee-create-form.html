@@ -1,0 +1,34 @@
+<article class="employee-create-form">
+  <h2 class="employee-create-form__title">Create your profile</h2>
+
+  <form (ngSubmit)="submit()" class="employee-create-form__form">
+    <div class="employee-create-form__field">
+      <label for="fullName">Full name</label>
+      <input id="fullName" name="fullName" [(ngModel)]="fullName" required maxlength="255" />
+    </div>
+
+    <div class="employee-create-form__field">
+      <label for="jobTitle">Job title</label>
+      <input id="jobTitle" name="jobTitle" [(ngModel)]="jobTitle" maxlength="255" />
+    </div>
+
+    <div class="employee-create-form__field">
+      <label for="department">Department</label>
+      <input id="department" name="department" [(ngModel)]="department" maxlength="255" />
+    </div>
+
+    <div class="employee-create-form__field">
+      <label for="level">Level</label>
+      <select id="level" name="level" [(ngModel)]="level">
+        <option [ngValue]="null">—</option>
+        @for (option of levels; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+
+    <button type="submit" class="employee-create-form__submit" [disabled]="!fullName.trim()">
+      <i class="pi pi-plus" aria-hidden="true"></i> Create profile
+    </button>
+  </form>
+</article>

@@ -1,0 +1,85 @@
+<div class="skills-page">
+  <header class="skills-header">
+    <h1>Skills Register</h1>
+    <p class="skills-subtitle">Find who's strong in a skill</p>
+  </header>
+
+  <section class="skills-search">
+    <div class="search-field">
+      <i class="pi pi-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search for a skill, e.g. Angular"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onInput($event)"
+        aria-label="Skill search"
+      />
+      @if (searchTerm()) {
+        <button
+          class="search-clear"
+          (click)="clear()"
+          aria-label="Clear search"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="skills-status" aria-live="polite">
+    @if (state.isLoading()) {
+      <div class="loading-indicator">
+        <i class="pi pi-spin pi-spinner"></i> Searching…
+      </div>
+    }
+
+    @if (state.error(); as error) {
+      <div class="error-banner">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ error.message }}</span>
+      </div>
+    }
+  </section>
+
+  @if (!state.isLoading() && state.results(); as page) {
+    <section class="skills-results">
+      @if (page.total === 0) {
+        <p class="empty-state">
+          No one found with skill "<strong>{{ state.query() }}</strong>".
+        </p>
+      }
+
+      @if (page.total > 0) {
+        <div class="results-summary">
+          Showing {{ page.content.length }} of {{ page.total }} result(s) for
+          "<strong>{{ state.query() }}</strong>"
+        </div>
+      }
+
+      @if (page.content.length > 0) {
+        <ol class="skills-list">
+          @for (strength of page.content; track strength.employeeId.value + '-' + strength.skill; let i = $index) {
+            <li class="skill-card">
+              <span class="skill-rank">{{ page.offset + i + 1 }}</span>
+              <div class="skill-person">
+                <span class="skill-name">{{ strength.employeeName }}</span>
+                <span class="skill-detail">{{ strength.skill }}</span>
+              </div>
+              <div class="skill-metrics">
+                <div class="metric">
+                  <span class="metric-value">{{ strength.years }}</span>
+                  <span class="metric-label">year{{ strength.years === 1 ? '' : 's' }}</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-value">{{ strength.projectCount }}</span>
+                  <span class="metric-label">project{{ strength.projectCount === 1 ? '' : 's' }}</span>
+                </div>
+              </div>
+            </li>
+          }
+        </ol>
+      }
+    </section>
+  }
+</div>
