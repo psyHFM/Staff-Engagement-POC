@@ -45,7 +45,7 @@
 - [x] 5.2 Update `defaultFacilitator()` doc comment in `interaction-state.service.ts` — keep the seeded admin/employee email→id fallback; the directory list is now the source of truth once `loadSubjects()` runs
 - [x] 5.3 `log-interaction.html:14-21` and `interaction-page.html:9-16` already render `fullName` in the `<option>` label; no markup change needed
 - [x] 5.4 Replaced the "exposes the stub employee list" spec with three new specs: empty-by-default, `loadSubjects` GET shape + projection, `loadSubjects` surfaces API error
-- [ ] 5.5 Persona gate: spawn `angular-state-architect`
+- [x] 5.5 Persona gate: spawn `angular-state-architect` — see `persona-reviews/05-angular-state-architect-interaction-subjects.md` (PASS / LANDABLE, 0 violations, 5 low-severity warnings noted for future work: magic page-size, JSDoc-coupled invariant, empty-state pre-select UX, missing overlapping-call spec, no `takeUntilDestroyed`)
 
 ## 6. Task subject dropdown (ATSE1-30)
 
