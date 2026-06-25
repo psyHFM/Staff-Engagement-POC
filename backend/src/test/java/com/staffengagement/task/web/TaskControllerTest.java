@@ -11,6 +11,7 @@ import com.staffengagement.shared.kernel.TaskId;
 import com.staffengagement.task.domain.Task;
 import com.staffengagement.task.repository.TaskRepository;
 import com.staffengagement.task.service.TaskService;
+import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -77,7 +78,8 @@ class TaskControllerTest {
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
                         new InteractionId(42L), InteractionType.CHECK_IN,
-                        new EmployeeId(1L), new EmployeeId(2L), "note")));
+                        new EmployeeId(1L), new EmployeeId(2L), "note",
+                        Instant.parse("2026-06-25T10:00:00Z"))));
         Task persisted = Task.builder()
                 .id(777L)
                 .subjectId(1L)
@@ -144,7 +146,8 @@ class TaskControllerTest {
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
                         new InteractionId(42L), InteractionType.CHECK_IN,
-                        new EmployeeId(1L), new EmployeeId(2L), "note")));
+                        new EmployeeId(1L), new EmployeeId(2L), "note",
+                        Instant.parse("2026-06-25T10:00:00Z"))));
 
         // When / Then
         assertThatThrownBy(() -> controller.create(request))
@@ -158,7 +161,7 @@ class TaskControllerTest {
     void updateCompletion_delegatesToService() {
         // Given
         TaskSummary summary = new TaskSummary(
-                new TaskId(10L), subject, "Read", new InteractionId(42L), true);
+                new TaskId(10L), subject, "Read", new InteractionId(42L), true, "Read");
         given(taskService.toggleCompletion(10L, true)).willReturn(summary);
 
         // When
@@ -176,7 +179,7 @@ class TaskControllerTest {
     void getForEmployee_delegatesToService() {
         // Given
         TaskSummary summary = new TaskSummary(
-                new TaskId(10L), subject, "Read", new InteractionId(42L), false);
+                new TaskId(10L), subject, "Read", new InteractionId(42L), false, "Read design doc");
         given(taskService.tasksForEmployee(subject)).willReturn(List.of(summary));
 
         // When
@@ -195,7 +198,7 @@ class TaskControllerTest {
         UserDetails principal = org.mockito.Mockito.mock(UserDetails.class);
         given(principal.getUsername()).willReturn("7");
         TaskSummary summary = new TaskSummary(
-                new TaskId(11L), new EmployeeId(7L), "Mine", null, true);
+                new TaskId(11L), new EmployeeId(7L), "Mine", null, true, "Mine");
         given(taskService.myTasks(new EmployeeId(7L))).willReturn(List.of(summary));
 
         // When

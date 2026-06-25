@@ -82,7 +82,7 @@ class AuthControllerTest {
     void roleResolvedFromEmployeeRecordWhenContractPresent() {
         // Given — an Employee record exists for the principal's email, carrying ADMIN
         var summary = new EmployeeSummary(new EmployeeId(7L), "Jane Admin",
-                "employee@staff.eng", EmployeeRole.ADMIN);
+                "employee@staff.eng", EmployeeRole.ADMIN, null, null, null);
         EmployeeContract contract = contractReturning(Optional.of(summary));
         var controller = new AuthController(users, provider, providerWith(contract));
         var request = new AuthController.LoginRequest("employee@staff.eng", "staffeng");

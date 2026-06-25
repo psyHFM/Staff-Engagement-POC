@@ -57,7 +57,8 @@ public class TaskService implements TaskContract {
                 task.getSubjectId(),
                 task.getDescription(),
                 task.getSourceInteractionId(),
-                task.isCompleted()
+                task.isCompleted(),
+                task.getDescription()
         );
     }
 }

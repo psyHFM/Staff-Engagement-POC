@@ -88,7 +88,7 @@ class PortfolioServiceTest {
                 .skill("Angular").years(5).projectCount(8).build();
         given(employeeContract.exists(EMPLOYEE)).willReturn(true);
         given(employeeContract.findById(EMPLOYEE)).willReturn(
-                Optional.of(new EmployeeSummary(EMPLOYEE, "Ada Lovelace", "ada@staff.eng", EmployeeRole.EMPLOYEE)));
+                Optional.of(new EmployeeSummary(EMPLOYEE, "Ada Lovelace", "ada@staff.eng", EmployeeRole.EMPLOYEE, "Engineer", "Platform", "senior")));
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio));
         given(skillRepository.findByPortfolioId(10L)).willReturn(List.of(skill));
 
