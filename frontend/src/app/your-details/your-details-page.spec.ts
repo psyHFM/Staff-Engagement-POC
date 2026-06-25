@@ -8,7 +8,7 @@ import { of } from 'rxjs';
 import { YourDetailsPage } from './your-details-page';
 import { YourDetailsStateService } from './your-details-state.service';
 import { AUTH_STORAGE, AuthStorage } from '../shared/auth/auth-storage';
-import { EmployeeResponse, UpdateEmployeeRequest } from '../features/employee/employee.types';
+import { EmployeeResponse, CreateEmployeeRequest, UpdateEmployeeRequest } from '../features/employee/employee.types';
 
 /**
  * The /profile page hosts the current user's self-service create/edit form
@@ -103,13 +103,55 @@ describe('YourDetailsPage (ATSE1-32)', () => {
     expect(create).toBeNull();
   });
 
-  it('calls state.loadCurrent on init', () => {
+  it('calls state.loadCurrent exactly once on init', () => {
     // Given — beforeEach hasn't run detectChanges yet
     // When
     fixture.detectChanges();
 
-    // Then — ngOnInit fires the load
-    expect(stateMock.loadCurrent).toHaveBeenCalled();
+    // Then — ngOnInit fires the load (and the page doesn't double-trigger)
+    expect(stateMock.loadCurrent).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards a create event to state.create with the form payload', () => {
+    // Given — page is in the "no record yet" branch
+    stateMock.notFound.set(true);
+    stateMock.profile.set(null);
+    fixture.detectChanges();
+    const request: CreateEmployeeRequest = {
+      fullName: 'Jane Doe',
+      jobTitle: 'Eng',
+      department: 'Platform',
+      level: 'SENIOR'
+    };
+
+    // When
+    page.onCreated(request);
+
+    // Then — the service receives the form payload (not a void event)
+    expect(stateMock.create).toHaveBeenCalledWith(request);
+  });
+
+  it('renders the loading branch when state.isLoading is true', () => {
+    // Given
+    stateMock.isLoading.set(true);
+    fixture.detectChanges();
+
+    // Then
+    const loading = fixture.nativeElement.querySelector('.your-details-page__loading');
+    expect(loading).toBeTruthy();
+    expect(loading.textContent).toContain('Loading');
+  });
+
+  it('renders the error branch when state.error is set', () => {
+    // Given
+    stateMock.isLoading.set(false);
+    stateMock.error.set({ message: 'Boom', status: 500 });
+    fixture.detectChanges();
+
+    // Then
+    const errorBox = fixture.nativeElement.querySelector('.your-details-page__error');
+    expect(errorBox).toBeTruthy();
+    expect(errorBox.textContent).toContain('Boom');
   });
 
   it('forwards an update event to state.update when a profile is loaded', () => {
