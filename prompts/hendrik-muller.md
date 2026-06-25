@@ -267,3 +267,17 @@ Skills
 - should maybe have a list of skills. maybe like a grid of cards like 5 on a row or something, whatever fits, can be sorted in alphabetcical (a-z or z-a) and most popurlar (one that has trhe most eployees on it so like if 10 emplotees have it listed as a skill i mean, ranked like that). in addtion to the current search functionaliy.
 - clicking on the tile wil display the current skill-card that comes up when you search . it just needs a redisgn int the whole its not qworking right now  check jira and make tickets
 
+### Hendrik Muller — 2026-06-25 17:13:00
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `90,299` in / `120` out · cache read `0` / write `0` · **90,419 total**
+
+help me on a new branch ,open spec propose and apply with personas , tasks 25 to task 35 on jira ,
+
+### Hendrik Muller — 2026-06-25 18:43:28
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `157,102` in / `32` out · cache read `0` / write `0` · **157,134 total**
+
+continue
+
