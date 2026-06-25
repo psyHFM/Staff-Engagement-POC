@@ -1,0 +1,147 @@
+.profile-page {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.profile-page__header {
+  margin-bottom: 1.5rem;
+}
+
+.profile-page__back {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.profile-page__back:hover {
+  text-decoration: underline;
+}
+
+.profile-page__loading,
+.profile-page__error {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.profile-page__loading {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.profile-page__error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.profile-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background: white;
+}
+
+.profile-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.profile-header__name {
+  margin: 0;
+  font-size: 1.5rem;
+  width: 100%;
+}
+
+.profile-header__email {
+  color: #6b7280;
+}
+
+.profile-header__badge {
+  text-transform: capitalize;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.profile-header__badge--employee {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.profile-header__badge--admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.profile-header__meta {
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.profile-section {
+  margin-bottom: 2rem;
+}
+
+.profile-section h3,
+.profile-section h4 {
+  margin: 1.25rem 0 0.75rem;
+}
+
+.profile-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.profile-empty {
+  color: #9ca3af;
+}
+
+.profile-task {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-task__checkbox {
+  accent-color: #3b82f6;
+}
+
+.profile-task__description,
+.profile-project__description,
+.profile-education__qualification,
+.profile-education__years,
+.profile-project__years {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.profile-skill__metric,
+.profile-portfolio-skill__metric {
+  display: inline-block;
+  margin-left: 0.75rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.profile-link a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.profile-link a:hover {
+  text-decoration: underline;
+}

@@ -100,6 +100,28 @@ class ArchUnitTest {
                     .because("the portfolio module talks to other modules only via frozen shared.api contracts and shared.kernel ids, and uses shared.error only via the uniform ErrorEnvelope; it never reaches another module's internals");
 
     /**
+     * Phase 6 profile-module isolation (ROADMAP §3 / backend-architecture.yaml).
+     *
+     * <p>The profile module is pure read orchestration: it consumes the frozen
+     * {@code EmployeeContract}, {@code InteractionContract}, {@code TaskContract}, and
+     * {@code PortfolioContract} and must never reach into another module's
+     * {@code domain}/{@code repository}/{@code service} packages. It owns a module-local
+     * error handler, so it may use the uniform {@code ErrorEnvelope} from
+     * {@code shared.error}; shared.security and shared.health remain off-limits.
+     */
+    @ArchTest
+    static final ArchRule profileModuleMustNotDependOnOtherModulesInternals =
+            noClasses().that().resideInAPackage("com.staffengagement.profile..")
+                    .should().dependOnClassesThat().resideInAnyPackage(
+                            "com.staffengagement.shared.security..",
+                            "com.staffengagement.shared.health..",
+                            "com.staffengagement.employee..",
+                            "com.staffengagement.interaction..",
+                            "com.staffengagement.task..",
+                            "com.staffengagement.skills..")
+                    .because("the profile module talks to other modules only via frozen shared.api contracts and shared.kernel ids, and uses shared.error only via the uniform ErrorEnvelope; it never reaches another module's internals");
+
+    /**
      * Phase 5 skills-module isolation (ROADMAP §3 / backend-architecture.yaml).
      *
      * <p>The skills module is read-only aggregation: it consumes the frozen

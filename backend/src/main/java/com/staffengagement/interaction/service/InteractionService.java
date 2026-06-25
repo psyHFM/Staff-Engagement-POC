@@ -113,6 +113,7 @@ public class InteractionService implements InteractionContract {
                 entity.getType(),
                 new EmployeeId(entity.getSubjectId()),
                 new EmployeeId(entity.getFacilitatorId()),
-                entity.getNote());
+                entity.getNote(),
+                entity.getCreatedAt());
     }
 }

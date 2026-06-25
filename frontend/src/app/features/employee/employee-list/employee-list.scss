@@ -35,6 +35,12 @@
     gap: 0.5rem;
   }
 
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   &__select {
     width: 100%;
     display: grid;
@@ -116,5 +122,19 @@
 
   &__page-info {
     font-size: 0.875rem;
+  }
+
+  &__profile {
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    color: var(--primary-color, #3b82f6);
+    text-decoration: none;
+    border: 1px solid var(--surface-border, #e5e7eb);
+    border-radius: 4px;
+    background: var(--surface-card, #fff);
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

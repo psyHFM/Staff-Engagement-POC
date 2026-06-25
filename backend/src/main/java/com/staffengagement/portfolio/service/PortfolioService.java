@@ -47,23 +47,37 @@ public class PortfolioService implements PortfolioContract {
     /**
      * {@inheritDoc}
      *
-     * <p>Returns the employee's skill entries as {@link SkillStrength} (years +
-     * project count), resolving {@code employeeName} via the frozen
-     * {@link EmployeeContract}. An employee with no portfolio yet yields an empty
-     * skills list (never null).
+     * <p>Returns the employee's full portfolio: skill entries as {@link SkillStrength}
+     * (years + project count), education history, projects, and public links.
+     * {@code employeeName} is resolved via the frozen {@link EmployeeContract}.
+     * An employee with no portfolio yet yields empty collections (never null).
      */
     @Override
     @Transactional(readOnly = true)
     public PortfolioSummary portfolioFor(EmployeeId employeeId) {
-        List<SkillStrength> skills = portfolioRepository.findByEmployeeId(employeeId.value())
+        Long portfolioId = portfolioRepository.findByEmployeeId(employeeId.value())
                 .map(Portfolio::getId)
-                .map(skillRepository::findByPortfolioId)
-                .orElseGet(List::of)
-                .stream()
-                .map(s -> new SkillStrength(employeeId, resolveEmployeeName(employeeId),
+                .orElse(null);
+        if (portfolioId == null) {
+            return emptySummary(employeeId);
+        }
+        String employeeName = resolveEmployeeName(employeeId);
+        List<SkillStrength> skills = skillRepository.findByPortfolioId(portfolioId).stream()
+                .map(s -> new SkillStrength(employeeId, employeeName,
                         s.getSkill(), s.getYears(), s.getProjectCount()))
                 .toList();
-        return new PortfolioSummary(employeeId, skills);
+        List<PortfolioSummary.EducationEntry> education = educationRepository.findByPortfolioId(portfolioId).stream()
+                .map(e -> new PortfolioSummary.EducationEntry(e.getId(), e.getInstitution(), e.getQualification(),
+                        e.getStartYear(), e.getEndYear()))
+                .toList();
+        List<PortfolioSummary.ProjectEntry> projects = projectRepository.findByPortfolioId(portfolioId).stream()
+                .map(p -> new PortfolioSummary.ProjectEntry(p.getId(), p.getName(), p.getDescription(),
+                        p.getStartYear(), p.getEndYear()))
+                .toList();
+        List<PortfolioSummary.LinkEntry> links = linkRepository.findByPortfolioId(portfolioId).stream()
+                .map(l -> new PortfolioSummary.LinkEntry(l.getId(), l.getLabel(), l.getUrl()))
+                .toList();
+        return new PortfolioSummary(employeeId, skills, education, projects, links);
     }
 
     // ---- Module read (full portfolio, for the controller) ----
@@ -376,6 +390,10 @@ public class PortfolioService implements PortfolioContract {
 
     private static PortfolioView emptyView(EmployeeId employeeId) {
         return new PortfolioView(employeeId.value(), List.of(), List.of(), List.of(), List.of());
+    }
+
+    private static PortfolioSummary emptySummary(EmployeeId employeeId) {
+        return new PortfolioSummary(employeeId, List.of(), List.of(), List.of(), List.of());
     }
 
     private static PortfolioView.SkillView toSkillView(PortfolioSkill s) {

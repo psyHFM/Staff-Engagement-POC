@@ -22,7 +22,10 @@ final class EmployeeMapper {
                 new EmployeeId(entity.getId()),
                 entity.getFullName(),
                 entity.getEmail(),
-                entity.getRole());
+                entity.getRole(),
+                entity.getJobTitle(),
+                entity.getDepartment(),
+                entity.getLevel() != null ? entity.getLevel().name().toLowerCase() : null);
     }
 
     static EmployeeResponse toResponse(Employee entity) {

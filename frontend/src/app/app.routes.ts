@@ -42,5 +42,10 @@ export const routes: Routes = [
     path: 'skills',
     loadComponent: () => import('./features/skills/skills-page').then((m) => m.SkillsPage),
     canActivate: [authGuard]
+  },
+  {
+    path: 'employees/:id/profile',
+    loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),
+    canActivate: [authGuard]
   }
 ];
