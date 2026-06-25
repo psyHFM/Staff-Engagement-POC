@@ -1,0 +1,87 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "Staff Engagement" [ref=e5] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e6]: 
+      - text: Staff Engagement
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Employees" [ref=e9] [cursor=pointer]:
+        - /url: /employees
+      - link "Interactions" [ref=e10] [cursor=pointer]:
+        - /url: /interactions
+      - link "Tasks" [ref=e11] [cursor=pointer]:
+        - /url: /tasks
+      - link "Portfolio" [ref=e12] [cursor=pointer]:
+        - /url: /portfolio
+      - link "Skills" [ref=e13] [cursor=pointer]:
+        - /url: /skills
+    - generic [ref=e14]:
+      - generic [ref=e30]: admin@staff.eng
+      - button "Sign out" [ref=e31] [cursor=pointer]
+  - main [ref=e16]:
+    - generic [ref=e33]:
+      - generic [ref=e34]:
+        - heading "Interactions" [level=1] [ref=e35]:
+          - generic [ref=e36]: 
+          - text: Interactions
+        - link "← Dashboard" [ref=e37] [cursor=pointer]:
+          - /url: /dashboard
+      - generic [ref=e38]:
+        - generic [ref=e39]: Employee
+        - combobox "Employee Subject" [ref=e40]:
+          - option "Admin User" [selected]
+          - option "Employee User"
+          - option "Alice Smith"
+      - generic [ref=e41]:
+        - article [ref=e43]:
+          - heading "Log interaction" [level=2] [ref=e44]
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - generic [ref=e47]: Type
+              - combobox "Type" [ref=e48]:
+                - option "Check-in" [selected]
+                - option "Mentoring"
+                - option "Catch-up"
+                - option "Performance"
+                - option "Other"
+            - generic [ref=e49]:
+              - generic [ref=e50]: Subject
+              - combobox [ref=e51]:
+                - option "Admin User" [selected]
+                - option "Employee User"
+                - option "Alice Smith"
+            - generic [ref=e52]:
+              - generic [ref=e53]: Facilitator
+              - combobox "Facilitator" [ref=e54]:
+                - option "Admin User" [selected]
+                - option "Employee User"
+                - option "Alice Smith"
+            - generic [ref=e55]:
+              - generic [ref=e56]: Note
+              - textbox "Note" [ref=e57]
+            - button "Log interaction" [ref=e58] [cursor=pointer]:
+              - generic [ref=e59]: 
+              - text: Log interaction
+        - article [ref=e61]:
+          - heading "Interaction history" [level=2] [ref=e62]
+          - list [ref=e63]:
+            - listitem [ref=e64]:
+              - generic [ref=e65]:
+                - generic [ref=e66]: check-in
+                - generic [ref=e67]: "Facilitator: 1"
+              - paragraph [ref=e68]: Follow-up mentoring session
+            - listitem [ref=e69]:
+              - generic [ref=e70]:
+                - generic [ref=e71]: check-in
+                - generic [ref=e72]: "Facilitator: 1"
+              - paragraph [ref=e73]: Quarterly check-in discussion
+          - generic [ref=e74]:
+            - button "Previous" [disabled] [ref=e75]:
+              - generic [ref=e76]: 
+              - text: Previous
+            - generic [ref=e77]: 1 – 2 of 2
+            - button "Next" [disabled] [ref=e78]:
+              - text: Next
+              - generic [ref=e79]: 
