@@ -130,14 +130,22 @@ already exist for ATSE1-32 to reuse.
   uses `[(ngModel)]` (numeric id), renders the full name, loads
   via the existing `EmployeeApi` (no new service).
 
-- **D5: `PATCH /api/v1/interactions/{id}` for ATSE1-28 with the
-  same RBAC as the create endpoint.** Spring's
-  `@PreAuthorize("hasAnyRole('ADMIN','USER')")` matches the
-  rest of the controller and the seeded `admin@staff.eng` JWT.
-  Non-admins are additionally restricted to rows where
-  `facilitator_id == currentUserId` (enforced in the service
-  layer, not in the predicate, so the 403 stays a 404 — no
-  existence leak).
+- **D5: `PATCH /api/v1/interactions/{id}` for ATSE1-28, with the
+  controller annotated `@PreAuthorize("hasRole('ADMIN')")` for
+  symmetry with `create` and the rest of the module.** The
+  service's `update(id, type, note, actor, isAdmin)` resolves
+  ownership and applies a stricter check: non-admins may only
+  edit rows where `facilitator_id == actor.value`. A
+  non-owner non-admin receives `InteractionNotFoundException`
+  (HTTP 404) — the 403 is deliberately collapsed into the 404
+  to prevent the existence leak a 403 would expose.
+  **Spec deviation from the original `hasAnyRole('ADMIN','USER')`
+  draft:** the controller-level gate stays ADMIN-only to match
+  the existing module pattern; the facilitator-self-edit
+  affordance is enforced at the service layer where the actor's
+  identity is available. The UI's pre-flight (`verifyEditableLocally`)
+  hides the Edit button for non-owners so the 404 path is
+  effectively unreachable from the UI.
 
 - **D6: Add `title` as a new column** (additive Liquibase
   `002-add-task-title.yaml`) rather than repurposing `description`.

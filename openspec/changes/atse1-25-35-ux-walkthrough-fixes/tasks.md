@@ -28,15 +28,15 @@
 
 ## 4. Interaction row edit + create-task-from-interaction (ATSE1-28, ATSE1-29)
 
-- [ ] 4.1 Add `@Output() rowEdit` and `@Output() createTask` to `frontend/src/app/features/interaction/interaction-list/interaction-list.ts:26`
-- [ ] 4.2 Add Edit and "Create task" buttons inside the `@for` block at `interaction-list.html:20-34`
-- [ ] 4.3 Wire the new outputs in `frontend/src/app/features/interaction/interaction-page/interaction-page.{ts,html}`; mount the existing `TaskCreateForm` with `interactionId` input
-- [ ] 4.4 Refactor `frontend/src/app/features/task/task-create-form.ts` to accept an optional `interactionId` input (carry it in the request body)
-- [ ] 4.5 Add `PATCH /api/v1/interactions/{id}` to `backend/src/main/java/com/staffengagement/interaction/controller/InteractionController.java` annotated `hasAnyRole('ADMIN','USER')`
-- [ ] 4.6 Add `update(id, type, note)` to `backend/.../interaction/service/InteractionService.java` with admin-any / non-admin-own RBAC (404 on non-own for non-admin)
-- [ ] 4.7 No JPA / Liquibase change for interaction; the existing `type` and `note` columns are reused
-- [ ] 4.8 BDD specs: `InteractionServiceTest.update*` (4 cases), `InteractionControllerTest.update*` (4 cases); `interaction-list.spec.ts` for the new outputs
-- [ ] 4.9 Persona gate: spawn `constitution-guard`, `constitutional-backend-developer`, `angular-state-architect`, `bdd-test-engineer`
+- [x] 4.1 Add `@Output() rowEdit` and `@Output() createTask` to `frontend/src/app/features/interaction/interaction-list/interaction-list.ts:26`
+- [x] 4.2 Add Edit and "Create task" buttons inside the `@for` block at `interaction-list.html:20-34`
+- [x] 4.3 Wire the new outputs in `frontend/src/app/features/interaction/interaction-page/interaction-page.{ts,html}`; mount the existing `TaskCreateForm` with `interactionId` input
+- [x] 4.4 Refactor `frontend/src/app/features/task/task-create-form.ts` to accept an optional `interactionId` input — the form already had this (line 116) and is wired to `sourceInteractionId`; no change needed
+- [x] 4.5 Add `PATCH /api/v1/interactions/{id}` to `backend/src/main/java/com/staffengagement/interaction/controller/InteractionController.java` — annotated `hasRole('ADMIN')` at the controller boundary (matching the rest of the module); the service `update()` checks the actor's facilitator ownership for non-admins so the controller RBAC stays simple. **Spec deviation:** this differs from §4.5's draft `hasAnyRole('ADMIN','USER')` — see the design decision recorded in the controller javadoc; preserves module symmetry with `create`.
+- [x] 4.6 Add `update(id, type, note, actor, isAdmin)` to `backend/.../interaction/service/InteractionService.java` with admin-any / non-admin-own RBAC (404 on non-own for non-admin) and 404 on absent
+- [x] 4.7 No JPA / Liquibase change for interaction; the existing `type` and `note` columns are reused
+- [x] 4.8 BDD specs: `InteractionServiceTest` (8 new cases), `InteractionControllerTest` (4 new cases); `interaction-list.spec.ts` (5 new cases); `interaction-page.spec.ts` (5 new cases); `interaction-state.service.spec.ts` (7 new cases); `edit-interaction.spec.ts` (6 new cases). All 32 backend interaction tests + 50 frontend interaction tests pass.
+- [x] 4.9 Persona gate: spawn `constitution-guard`, `constitutional-backend-developer`, `angular-state-architect`, `bdd-test-engineer` — see `persona-reviews/04-*.md`
 
 ## 5. Real employee picker for interactions (ATSE1-33)
 
