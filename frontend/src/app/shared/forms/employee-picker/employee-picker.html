@@ -2,14 +2,15 @@
   <span class="employee-picker__label">Subject</span>
   <select
     class="employee-picker__select"
-    [value]="value() ?? ''"
     (change)="onSelectChange($event)"
     [disabled]="isLoading()">
-    <option value="" disabled>
+    <option value="" disabled [selected]="value() === null">
       {{ isLoading() ? 'Loading employees…' : 'Select an employee' }}
     </option>
     @for (employee of options(); track employee.id.value) {
-      <option [value]="employee.id.value">{{ employee.fullName }}</option>
+      <option [value]="employee.id.value" [selected]="value() === employee.id.value">
+        {{ employee.fullName }}
+      </option>
     }
   </select>
   @if (error()) {
