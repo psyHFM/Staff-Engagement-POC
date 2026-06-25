@@ -3,11 +3,13 @@ package com.staffengagement.interaction.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.staffengagement.interaction.controller.dto.CreateInteractionRequest;
+import com.staffengagement.interaction.controller.dto.UpdateInteractionRequest;
 import com.staffengagement.interaction.service.InteractionNotFoundException;
 import com.staffengagement.interaction.service.InteractionService;
 import com.staffengagement.shared.api.InteractionSummary;
@@ -26,6 +28,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 
 /**
  * BDD unit tests for {@link InteractionController}. The service is mocked — no
@@ -170,5 +174,89 @@ class InteractionControllerTest {
         // When / Then — the controller raises the domain exception (mapped to 404 by the error handler)
         assertThatThrownBy(() -> controller.getById(99L))
                 .isInstanceOf(InteractionNotFoundException.class);
+    }
+
+    // ---- ATSE1-28 — PATCH /interactions/{id} --------------------------
+
+    @Test
+    void updateReturns200WithUpdatedSummaryAndForwardsBody() {
+        // Given — the service returns the updated summary
+        InteractionSummary updated = new InteractionSummary(
+                new InteractionId(5L), InteractionType.MENTORING, new EmployeeId(1L), new EmployeeId(2L), "new",
+                Instant.parse("2026-06-25T11:00:00Z"));
+        when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
+        var principal = adminPrincipal();
+
+        // When
+        var response = controller.update(5L, new UpdateInteractionRequest(InteractionType.MENTORING, "new"), principal);
+
+        // Then — 200, body forwarded
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isEqualTo(updated);
+
+        ArgumentCaptor<InteractionId> id = ArgumentCaptor.forClass(InteractionId.class);
+        ArgumentCaptor<InteractionType> type = ArgumentCaptor.forClass(InteractionType.class);
+        ArgumentCaptor<String> note = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<EmployeeId> actor = ArgumentCaptor.forClass(EmployeeId.class);
+        verify(interactionService).update(id.capture(), type.capture(), note.capture(), actor.capture(), eq(true));
+        assertThat(id.getValue()).isEqualTo(new InteractionId(5L));
+        assertThat(type.getValue()).isEqualTo(InteractionType.MENTORING);
+        assertThat(note.getValue()).isEqualTo("new");
+    }
+
+    @Test
+    void updateForwardsNonAdminFlagForEmployeePrincipal() {
+        // Given — a non-admin principal (any role other than ADMIN)
+        InteractionSummary updated = new InteractionSummary(
+                new InteractionId(6L), InteractionType.OTHER, new EmployeeId(1L), new EmployeeId(2L), "n",
+                Instant.parse("2026-06-25T11:00:00Z"));
+        when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
+        var principal = employeePrincipal("2");
+
+        // When
+        controller.update(6L, new UpdateInteractionRequest(InteractionType.OTHER, "n"), principal);
+
+        // Then — isAdmin=false
+        verify(interactionService).update(any(), any(), any(), any(), eq(false));
+    }
+
+    @Test
+    void updateBindsActorIdFromPrincipalUsername() {
+        // Given
+        when(interactionService.update(any(), any(), any(), any(), anyBoolean()))
+                .thenReturn(new InteractionSummary(
+                        new InteractionId(7L), InteractionType.OTHER, new EmployeeId(1L), new EmployeeId(2L), "n",
+                        Instant.parse("2026-06-25T11:00:00Z")));
+        var principal = employeePrincipal("42");
+
+        // When
+        controller.update(7L, new UpdateInteractionRequest(InteractionType.OTHER, "n"), principal);
+
+        // Then — actor is parsed from the principal username
+        ArgumentCaptor<EmployeeId> actor = ArgumentCaptor.forClass(EmployeeId.class);
+        verify(interactionService).update(any(), any(), any(), actor.capture(), anyBoolean());
+        assertThat(actor.getValue()).isEqualTo(new EmployeeId(42L));
+    }
+
+    @Test
+    void updatePropagatesNotFoundAs404DomainException() {
+        // Given — the service raises InteractionNotFoundException (covers both
+        // "truly absent" and "non-owner non-admin" — collapsed to 404 by the service)
+        when(interactionService.update(any(), any(), any(), any(), anyBoolean()))
+                .thenThrow(new InteractionNotFoundException(99L));
+        var principal = adminPrincipal();
+
+        // When / Then
+        assertThatThrownBy(() -> controller.update(99L,
+                new UpdateInteractionRequest(InteractionType.OTHER, "n"), principal))
+                .isInstanceOf(InteractionNotFoundException.class);
+    }
+
+    private static User adminPrincipal() {
+        return new User("1", "n/a", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    }
+
+    private static User employeePrincipal(String username) {
+        return new User(username, "n/a", List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 }

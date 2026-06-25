@@ -226,6 +226,137 @@ class InteractionServiceTest {
         assertThat(result).isEmpty();
     }
 
+    // ---- ATSE1-28 — update(type, note) --------------------------------
+
+    @Test
+    void updateChangesTypeAndNoteForAdminWithoutTouchingAuditFields() {
+        // Given — an existing interaction with subject=1, facilitator=2
+        Interaction existing = interaction(10L, InteractionType.CHECK_IN, 1L, 2L, "old note");
+        Instant originalCreatedAt = existing.getCreatedAt();
+        Instant originalUpdatedAt = existing.getUpdatedAt();
+        when(repository.findById(10L)).thenReturn(Optional.of(existing));
+        when(repository.save(any(Interaction.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // When — admin updates type + note
+        InteractionSummary result = service.update(
+                new InteractionId(10L), InteractionType.MENTORING, "new note",
+                new EmployeeId(99L), true);
+
+        // Then — type and note change, subject/facilitator/createdAt stay, updatedAt advances
+        ArgumentCaptor<Interaction> captor = ArgumentCaptor.forClass(Interaction.class);
+        verify(repository).save(captor.capture());
+        Interaction saved = captor.getValue();
+        assertThat(saved.getType()).isEqualTo(InteractionType.MENTORING);
+        assertThat(saved.getNote()).isEqualTo("new note");
+        assertThat(saved.getSubjectId()).isEqualTo(1L);
+        assertThat(saved.getFacilitatorId()).isEqualTo(2L);
+        assertThat(saved.getCreatedAt()).isEqualTo(originalCreatedAt);
+        assertThat(saved.getUpdatedAt()).isAfterOrEqualTo(originalUpdatedAt);
+
+        assertThat(result.type()).isEqualTo(InteractionType.MENTORING);
+        assertThat(result.note()).isEqualTo("new note");
+        assertThat(result.subject()).isEqualTo(new EmployeeId(1L));
+        assertThat(result.facilitator()).isEqualTo(new EmployeeId(2L));
+    }
+
+    @Test
+    void updateAllowsOriginalFacilitatorAndRejectsOtherActorWith404() {
+        // Given — facilitator=2; actor=3 is neither admin nor the facilitator
+        Interaction existing = interaction(11L, InteractionType.CATCH_UP, 1L, 2L, "n");
+        when(repository.findById(11L)).thenReturn(Optional.of(existing));
+
+        // When / Then — non-admin, non-facilitator gets 404 (no existence leak)
+        assertThatThrownBy(() -> service.update(
+                new InteractionId(11L), InteractionType.OTHER, "x",
+                new EmployeeId(3L), false))
+                .isInstanceOf(InteractionNotFoundException.class);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateReturns404WhenInteractionDoesNotExist() {
+        // Given
+        when(repository.findById(404L)).thenReturn(Optional.empty());
+
+        // When / Then
+        assertThatThrownBy(() -> service.update(
+                new InteractionId(404L), InteractionType.OTHER, "x",
+                new EmployeeId(2L), true))
+                .isInstanceOf(InteractionNotFoundException.class);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateRejectsNullTypeAsValidation400() {
+        // Given — an existing interaction is fetched before the null-type check
+        Interaction existing = interaction(12L, InteractionType.PERFORMANCE, 1L, 2L, "n");
+        when(repository.findById(12L)).thenReturn(Optional.of(existing));
+
+        // When / Then — null type rejects at the validation boundary
+        assertThatThrownBy(() -> service.update(
+                new InteractionId(12L), null, "x",
+                new EmployeeId(2L), true))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(repository, never()).save(any());
+    }
+
+    // ---- ATSE1-28 — verifyEditable contract ---------------------------
+
+    @Test
+    void verifyEditableReturnsIdForAdmin() {
+        // Given
+        Interaction existing = interaction(20L, InteractionType.CHECK_IN, 1L, 2L, "n");
+        when(repository.findById(20L)).thenReturn(Optional.of(existing));
+
+        // When — admin
+        Optional<InteractionId> result = service.verifyEditable(
+                new InteractionId(20L), new EmployeeId(99L), true);
+
+        // Then
+        assertThat(result).contains(new InteractionId(20L));
+    }
+
+    @Test
+    void verifyEditableReturnsIdForOriginalFacilitator() {
+        // Given
+        Interaction existing = interaction(21L, InteractionType.CHECK_IN, 1L, 2L, "n");
+        when(repository.findById(21L)).thenReturn(Optional.of(existing));
+
+        // When — non-admin actor IS the facilitator
+        Optional<InteractionId> result = service.verifyEditable(
+                new InteractionId(21L), new EmployeeId(2L), false);
+
+        // Then
+        assertThat(result).contains(new InteractionId(21L));
+    }
+
+    @Test
+    void verifyEditableReturnsEmptyForNonAdminNonFacilitator() {
+        // Given
+        Interaction existing = interaction(22L, InteractionType.CHECK_IN, 1L, 2L, "n");
+        when(repository.findById(22L)).thenReturn(Optional.of(existing));
+
+        // When — non-admin actor is NOT the facilitator
+        Optional<InteractionId> result = service.verifyEditable(
+                new InteractionId(22L), new EmployeeId(3L), false);
+
+        // Then — existence opaque: same shape as "not found"
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void verifyEditableReturnsEmptyWhenInteractionAbsent() {
+        // Given
+        when(repository.findById(404L)).thenReturn(Optional.empty());
+
+        // When
+        Optional<InteractionId> result = service.verifyEditable(
+                new InteractionId(404L), new EmployeeId(2L), true);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
     private static Interaction interaction(long id, InteractionType type, long subjectId, long facilitatorId, String note) {
         Interaction entity = new Interaction();
         entity.setId(id);
