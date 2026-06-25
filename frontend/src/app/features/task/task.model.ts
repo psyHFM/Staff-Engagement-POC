@@ -1,6 +1,6 @@
 export interface Task {
   id: string;
-  subjectId: string;
+  subjectId: number;
   title: string;
   description: string;
   completed: boolean;
@@ -10,7 +10,7 @@ export interface Task {
 }
 
 export interface CreateTaskRequest {
-  subjectId: string;
+  subjectId: number;
   title: string;
   description: string;
   sourceInteractionId?: string;
