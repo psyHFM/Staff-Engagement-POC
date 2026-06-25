@@ -4,15 +4,15 @@
 - [x] 1.2 Commit the carry-in (prompts/hendrik-muller.md, .claude/plans/atse1-skills-persona-reviews, .playwright-mcp, failure_logs.txt, notes)
 - [x] 1.3 Run `/openspec-propose atse1-25-35-ux-walkthrough-fixes`; write proposal.md, design.md, tasks.md, and 10 specs/*/spec.md files
 - [ ] 1.4 Append a coordination-points entry to `.claude/constitution/ROADMAP.md` for this UX-walkthrough-fixes cluster (also covers the auth-persistence carve-out and the additive `InteractionContract.verifyEditable` / `TaskContract.taskWithItems` extensions)
-- [ ] 1.5 Spawn `constitution-guard` persona to audit the proposal/design/tasks/specs; record findings in `persona-reviews/01-constitution-guard-proposal.md`
+- [x] 1.5 Spawn `constitution-guard` persona to audit the proposal/design/tasks/specs; record findings in `persona-reviews/01-constitution-guard-proposal.md` (5 blocking violations + 8 warnings + 18 compliant items; all 5 blocking fixes committed in `a1917b7`: constitution YAML/MD carve-outs, signal-only EmployeePicker, additive `TaskSummaryWithItems` wrapper, additive `InteractionContract.verifyEditable`)
 
 ## 2. Auth session persistence (ATSE1-25)
 
-- [ ] 2.1 Modify `frontend/src/app/shared/auth/auth-state.ts` — write the JWT to `localStorage` under `staff-engagement.auth.jwt` in `login()`; clear it in `logout()`; re-hydrate the token signal in the constructor
-- [ ] 2.2 Update the doc comment on `auth-state.ts:11-13` (no longer "no persistence") and on `state.service.ts:14`
-- [ ] 2.3 Add a 401-clears-storage handler in the `bearerAuthInterceptor` (or a sibling interceptor) that removes the storage entry and routes to `/login`
-- [ ] 2.4 Update `frontend/src/app/shared/auth/auth-state.spec.ts` with BDD specs: token round-trips on login, logout clears storage, cold-start hydrates from storage, 401 clears storage
-- [ ] 2.5 Add `e2e/tests/auth-persistence.spec.ts` Playwright smoke (login → reload → still on /dashboard)
+- [x] 2.1 Modify `frontend/src/app/shared/auth/auth-state.ts` — write the JWT to `localStorage` under `staff-engagement.auth.jwt` in `login()`; clear it in `logout()`; re-hydrate the token signal in the constructor
+- [x] 2.2 Update the doc comment on `auth-state.ts:11-13` (no longer "no persistence") and on `state.service.ts:14`
+- [x] 2.3 Add a 401-clears-storage handler in the `bearerAuthInterceptor` (or a sibling interceptor) that removes the storage entry and routes to `/login`
+- [x] 2.4 Update `frontend/src/app/shared/auth/auth-state.spec.ts` with BDD specs: token round-trips on login, logout clears storage, cold-start hydrates from storage, 401 clears storage
+- [x] 2.5 Add `e2e/tests/auth-persistence.spec.ts` Playwright smoke (login → reload → still on /dashboard)
 - [ ] 2.6 Persona gate: spawn `constitution-guard`, `angular-state-architect`, `bdd-test-engineer`; record findings in `persona-reviews/02-*`
 
 ## 3. Employees directory + Your-details split (ATSE1-27, ATSE1-32)

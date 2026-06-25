@@ -11,7 +11,11 @@ import { Injectable, signal } from '@angular/core';
  *      the signal inside the service (side effects live here, not in components).
  *   4. Async data flows RxJS → Signal via `toSignal()` when a stream needs to
  *      feed the template.
- *   5. No persistence — state is in-memory and resets on page reload.
+ *   5. State is in-memory and resets on page reload — with the single
+ *      documented carve-out: the issued JWT, persisted via
+ *      {@code AuthState}/{@code AuthStorage} under
+ *      {@code staff-engagement.auth.jwt} (see frontend-state.yaml →
+ *      persistence.carve_outs and AuthState for the rationale).
  *
  * Phase 0 ships only this documented base; per-feature state services
  * (EmployeeState, InteractionState, …) land in Phases 1–5.
