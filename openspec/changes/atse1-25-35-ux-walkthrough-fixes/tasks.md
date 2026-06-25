@@ -37,6 +37,7 @@
 - [x] 4.7 No JPA / Liquibase change for interaction; the existing `type` and `note` columns are reused
 - [x] 4.8 BDD specs: `InteractionServiceTest` (8 new cases), `InteractionControllerTest` (4 new cases); `interaction-list.spec.ts` (5 new cases); `interaction-page.spec.ts` (5 new cases); `interaction-state.service.spec.ts` (7 new cases); `edit-interaction.spec.ts` (6 new cases). All 32 backend interaction tests + 50 frontend interaction tests pass.
 - [x] 4.9 Persona gate: spawn `constitution-guard`, `constitutional-backend-developer`, `angular-state-architect`, `bdd-test-engineer` — see `persona-reviews/04-*.md`
+- [x] 4.10 Address BDD engineer §4 non-blocking warnings: W1/W2/W3 (backend `InteractionServiceTest`: backdated-fixture `isAfter`, `note=null/""`, partial-update), W4 (frontend `interaction-page.spec.ts` loadHistory NOT-called on cancel/save), W6 (frontend `interaction-state.service.spec.ts` `isLoading()` flip-false on update success), W7 (frontend `edit-interaction.spec.ts` submit happy-path), W8 (frontend `edit-interaction.spec.ts` Escape close), F1 (frontend `interaction-list.spec.ts` `not.toBeNull()` empty-state assertion). Backend 34/34 + frontend 53/53 + ng lint clean.
 
 ## 5. Real employee picker for interactions (ATSE1-33)
 
