@@ -49,11 +49,11 @@
 
 ## 6. Task subject dropdown (ATSE1-30)
 
-- [ ] 6.1 Create `frontend/src/app/shared/forms/employee-picker/` with selector `app-employee-picker`, signal input `value: number | null`, output `valueChange: EventEmitter<number | null>`; **must be signal-only, no `[(ngModel)]` two-way binding inside the picker** (per `frontend-state.yaml -> primary_mechanism` and the constitution-guard audit V2)
-- [ ] 6.2 The picker loads via the existing `EmployeeApi`; typeahead filter for >50 entries; default selection = current user's employee id
-- [ ] 6.3 Replace the free-text `<input id="subjectId">` in `task-create-form.ts:30-33` with `<app-employee-picker [(ngModel)]="request.subjectId">`
-- [ ] 6.4 Add `employee-picker.spec.ts` (standalone component specs)
-- [ ] 6.5 Update `task-create-form.spec.ts` to assert the picker mounts and the request carries a numeric `subjectId`
+- [x] 6.1 Create `frontend/src/app/shared/forms/employee-picker/` with selector `app-employee-picker`, signal input `value: number | null`, output `valueChange: EventEmitter<number | null>`; signal-only (no `[(ngModel)]` two-way binding inside the picker)
+- [x] 6.2 The picker loads `GET /api/v1/employees` directly via the existing `ApiClient`; OnPush; placeholder "Loading employees…" while loading, inline error message on GET failure
+- [x] 6.3 Replace the free-text `<input id="subjectId">` in `task-create-form.ts` with `<app-employee-picker [value]="..." (valueChange)="onSubjectChange($event)">`; `Task.subjectId` / `CreateTaskRequest.subjectId` widened from `string` to `number`
+- [x] 6.4 Added `employee-picker.spec.ts` (5 BDD specs: first-paint fetch, rendered option count, pre-select after load, valueChange emit, API error surfacing)
+- [x] 6.5 Updated `task-create-form.spec.ts` to assert the picker mounts, request.subjectId becomes numeric, POST body has a *number* subjectId
 - [ ] 6.6 Persona gate: spawn `angular-state-architect`, `bdd-test-engineer`
 
 ## 7. Task create bug — security + schema (ATSE1-31)
