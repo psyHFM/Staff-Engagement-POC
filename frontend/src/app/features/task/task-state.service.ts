@@ -1,7 +1,12 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, Signal } from '@angular/core';
 import { ApiClient, catchApiError } from '../../shared/api/api-client';
 import { StateService } from '../../shared/state/state.service';
-import { Task, CreateTaskRequest } from './task.model';
+import {
+  Task,
+  CreateTaskRequest,
+  TaskItem,
+  TaskWithItems
+} from './task.model';
 import { finalize } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -10,10 +15,21 @@ export class TaskStateService extends StateService {
 
   // State
   private readonly _tasks = signal<Task[]>([]);
+  // Items are stored in a single map keyed by parent task id so the checklist
+  // can be opened lazily per card without needing a per-task signal. The map
+  // is treated as immutable (replace on every update) so the `computed()`
+  // graph re-runs deterministically.
+  private readonly _itemsByTask = signal<ReadonlyMap<string, readonly TaskItem[]>>(new Map());
 
   // Public Read-only Signals
   readonly tasks = computed(() => this._tasks());
+  readonly itemsByTaskId = computed(() => this._itemsByTask());
   override readonly loading = signal(false);
+
+  /** Returns a `computed()` view of the items for a single task, or `[]` when none loaded. */
+  itemsFor(taskId: string): Signal<readonly TaskItem[]> {
+    return computed(() => this._itemsByTask().get(taskId) ?? []);
+  }
 
   /**
    * Fetch tasks for the authenticated user (GET /api/v1/me/tasks)
@@ -69,7 +85,138 @@ export class TaskStateService extends StateService {
             tasks.map(t => t.id === taskId ? updatedTask : t)
           );
         },
-        error: (err) => console.error('Failed to toggle completion:', err)
+        error: (err) => console.error('Failed to toggle task completion:', err)
       });
+  }
+
+  // --- Task sub-items (ATSE1-34) -------------------------------------------
+
+  /**
+   * Lazy-load the sub-items for a single task via the additive detail endpoint
+   * {@code GET /api/v1/tasks/{id}}, which returns a {@link TaskWithItems}
+   * wrapper. Replaces the entire map entry for the task.
+   */
+  loadTaskItems(taskId: string): void {
+    this.beginLoad();
+    this.api.get<TaskWithItems>(`tasks/${taskId}`)
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad())
+      )
+      .subscribe({
+        next: (wrapped) => {
+          this.upsertItems(taskId, wrapped.items ?? []);
+        },
+        error: (err) => console.error('Failed to load sub-items:', err)
+      });
+  }
+
+  /**
+   * Add a sub-item to a task (POST /api/v1/tasks/{taskId}/items).
+   * On success the returned item is appended to the existing list (or starts
+   * a new one).
+   */
+  addTaskItem(taskId: string, title: string): void {
+    this.beginLoad();
+    this.api.post<TaskItem>(`tasks/${taskId}/items`, { title })
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad())
+      )
+      .subscribe({
+        next: (created) => this.appendItem(taskId, created),
+        error: (err) => console.error('Failed to add sub-item:', err)
+      });
+  }
+
+  /**
+   * Patch a sub-item's title and/or completion flag
+   * (PATCH /api/v1/tasks/{taskId}/items/{itemId}). On success the matching
+   * item is replaced in place (not appended).
+   */
+  patchTaskItem(
+    taskId: string,
+    itemId: string,
+    patch: { title?: string; completed?: boolean }
+  ): void {
+    this.beginLoad();
+    this.api.patch<TaskItem>(`tasks/${taskId}/items/${itemId}`, patch)
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad())
+      )
+      .subscribe({
+        next: (updated) => this.replaceItem(taskId, updated),
+        error: (err) => console.error('Failed to patch sub-item:', err)
+      });
+  }
+
+  /**
+   * Delete a sub-item (DELETE /api/v1/tasks/{taskId}/items/{itemId}).
+   * On success the item is removed from the map entry; the entry is dropped
+   * entirely if the list becomes empty.
+   */
+  removeTaskItem(taskId: string, itemId: string): void {
+    this.beginLoad();
+    this.api.delete<void>(`tasks/${taskId}/items/${itemId}`)
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad())
+      )
+      .subscribe({
+        next: () => this.removeItemById(taskId, itemId),
+        error: (err) => console.error('Failed to remove sub-item:', err)
+      });
+  }
+
+  /**
+   * Reorder sub-items (PUT /api/v1/tasks/{taskId}/items/reorder).
+   * The body is the desired id order. On success the returned list replaces
+   * the map entry. No optimistic local mutation — matches the existing
+   * `toggleCompletion` / `removeSkill` pattern.
+   */
+  reorderTaskItems(taskId: string, orderedIds: string[]): void {
+    this.beginLoad();
+    this.api.put<TaskItem[]>(`tasks/${taskId}/items/reorder`, orderedIds)
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad())
+      )
+      .subscribe({
+        next: (items) => this.upsertItems(taskId, items ?? []),
+        error: (err) => console.error('Failed to reorder sub-items:', err)
+      });
+  }
+
+  // --- private helpers -----------------------------------------------------
+
+  private upsertItems(taskId: string, items: readonly TaskItem[]): void {
+    const next = new Map(this._itemsByTask());
+    // Always keep the entry — even when empty — so the component's lazy-load
+    // guard (`!itemsByTaskId().has(task.id)`) can short-circuit re-fetches on
+    // a collapse/re-expand cycle. The `itemsFor(taskId)` view still returns []
+    // for empty entries.
+    next.set(taskId, [...items]);
+    this._itemsByTask.set(next);
+  }
+
+  private appendItem(taskId: string, item: TaskItem): void {
+    const current = this._itemsByTask().get(taskId) ?? [];
+    this.upsertItems(taskId, [...current, item]);
+  }
+
+  private replaceItem(taskId: string, item: TaskItem): void {
+    const current = this._itemsByTask().get(taskId) ?? [];
+    const next = current.map(existing => (existing.id === item.id ? item : existing));
+    this.upsertItems(taskId, next);
+  }
+
+  private removeItemById(taskId: string, itemId: string): void {
+    const current = this._itemsByTask().get(taskId);
+    if (!current) {
+      return;
+    }
+    const next = current.filter(existing => existing.id !== itemId);
+    this.upsertItems(taskId, next);
   }
 }

@@ -1,8 +1,5 @@
-# task-management Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change phase-3-task. Update Purpose after archive.
-## Requirements
 ### Requirement: Create Standalone Task
 
 The system SHALL allow any authenticated user with role `USER` or
@@ -61,30 +58,7 @@ The system SHALL allow any authenticated user with role `USER` or
 - **THEN** the system returns 400 Bad Request with an error stating
   the source interaction was not found
 
-### Requirement: List Tasks for Employee
-The system SHALL allow users to retrieve all tasks associated with a specific employee.
-
-#### Scenario: Successful retrieval of employee tasks
-- **WHEN** a user sends a GET request to `/api/v1/employees/{id}/tasks` with a valid employee ID
-- **THEN** the system returns a paginated list of all tasks where the subject is that employee
-
-#### Scenario: Employee not found
-- **WHEN** a user sends a GET request to `/api/v1/employees/{id}/tasks` for a non-existent employee ID
-- **THEN** the system returns 404 Not Found
-
-### Requirement: My Tasks View
-The system SHALL provide an endpoint for authenticated users to see all tasks that relate to them, regardless of who created the task.
-
-#### Scenario: Successful retrieval of my tasks
-- **WHEN** an authenticated user sends a GET request to `/api/v1/me/tasks`
-- **THEN** the system identifies the user's EmployeeId from the security context and returns a paginated list of all tasks where the subject is the current user
-
-### Requirement: Complete Task
-The system SHALL allow users to mark a task as completed.
-
-#### Scenario: Successful task completion
-- **WHEN** a user sends a PUT/PATCH request to update a task's `completed` status to `true`
-- **THEN** the system updates the task record and returns 200 OK
+## ADDED Requirements
 
 ### Requirement: TaskSummary exposes title distinctly
 
@@ -146,3 +120,10 @@ every subtask is completed OR when the task has the
 - **THEN** the task's effective `completed` SHALL be set to true
   regardless of the remaining subtask state
 
+## REMOVED Requirements
+
+*None.*
+
+## RENAMED Requirements
+
+*None.*
