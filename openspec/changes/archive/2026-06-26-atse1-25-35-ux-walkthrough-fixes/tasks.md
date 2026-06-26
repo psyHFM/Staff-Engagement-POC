@@ -110,5 +110,5 @@
 - [x] 11.5 Run `npm run lint` — all files pass; `npm run build` AOT clean (catches missing styleUrl per project memory)
 - [ ] 11.6 Run `npx playwright test e2e/tests/` against `docker compose up -d`; new `auth-persistence.spec.ts` must pass
 - [ ] 11.7 Spawn the final `constitution-guard` + `bdd-test-engineer` audits on the full branch diff
-- [ ] 11.8 Push the branch; open the PR with per-ticket checklist + "closes #ATSE1-25" … "closes #ATSE1-35" footers
+- [x] 11.8 Push the branch; open the PR with per-ticket checklist + "closes #ATSE1-25" … "closes #ATSE1-35" footers — PR #38 merged 2026-06-26 07:15 UTC (squash, all 11 tickets closed via footers); PR #40 opened 2026-06-26 as follow-up for §8.8 frontend subtasks UI (closes #ATSE1-34 only, since the other 10 are already closed)
 - [x] 11.9 Transition all 11 Jira tickets to Done via `mcp__plugin_atlassian_atlassian__transitionJiraIssue` — verified 2026-06-26: all 11 tickets (ATSE1-25 … ATSE1-35) are already in "Done" status with resolution "Done"; no transitions needed

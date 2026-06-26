@@ -58,6 +58,8 @@ The system SHALL allow any authenticated user with role `USER` or
 - **THEN** the system returns 400 Bad Request with an error stating
   the source interaction was not found
 
+## ADDED Requirements
+
 ### Requirement: TaskSummary exposes title distinctly
 
 The `TaskSummary` returned by the system MUST expose a `title`
@@ -93,10 +95,11 @@ is unchanged.
 
 ### Requirement: Task subtasks
 
-A task MAY own a list of `TaskItem` records. Each `TaskItem` has
-`id`, `taskId`, `ordinal`, `title`, `completed`, `createdAt`. The
-task's effective completion is true when every subtask is completed
-OR when the task has the `allowPartialComplete` flag set.
+A task MUST be able to own a list of `TaskItem` records. Each
+`TaskItem` has `id`, `taskId`, `ordinal`, `title`, `completed`,
+`createdAt`. The task's effective completion SHALL be true when
+every subtask is completed OR when the task has the
+`allowPartialComplete` flag set.
 
 #### Scenario: All subtasks completed implies task complete
 
@@ -114,7 +117,7 @@ OR when the task has the `allowPartialComplete` flag set.
 
 - **WHEN** a task has `allowPartialComplete = true` and at least
   one subtask is complete
-- **THEN** the task's effective `completed` MAY be set to true
+- **THEN** the task's effective `completed` SHALL be set to true
   regardless of the remaining subtask state
 
 ## REMOVED Requirements
