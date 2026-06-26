@@ -35,9 +35,9 @@ describe('TaskCreateForm', () => {
 
     // Then
     const component = fixture.componentInstance as unknown as {
-      request: { sourceInteractionId?: string };
+      request: { sourceInteractionId?: number };
     };
-    expect(component.request.sourceInteractionId).toBe('42');
+    expect(component.request.sourceInteractionId).toBe(42);
   });
 
   it('leaves sourceInteractionId unset when created standalone', () => {
@@ -48,7 +48,7 @@ describe('TaskCreateForm', () => {
 
     // Then
     const component = fixture.componentInstance as unknown as {
-      request: { title: string; description: string; subjectId: number; sourceInteractionId?: string };
+      request: { title: string; description: string; subjectId: number; sourceInteractionId?: number };
     };
     expect(component.request.sourceInteractionId).toBeUndefined();
     expect(component.request.title).toBe('');
@@ -65,7 +65,7 @@ describe('TaskCreateForm', () => {
 
     // Then
     const component = fixture.componentInstance as unknown as {
-      request: { sourceInteractionId?: string };
+      request: { sourceInteractionId?: number };
     };
     expect(component.request.sourceInteractionId).toBeUndefined();
   });
@@ -144,7 +144,7 @@ describe('TaskCreateForm', () => {
     fixture.detectChanges();
     flushPicker();
     const component = fixture.componentInstance as unknown as {
-      request: { subjectId: number; title: string; description: string; sourceInteractionId?: string };
+      request: { subjectId: number; title: string; description: string; sourceInteractionId?: number };
       formClosed: { emit: (v?: void) => void };
     };
     component.request.subjectId = 7;
@@ -155,9 +155,9 @@ describe('TaskCreateForm', () => {
     // When
     (fixture.componentInstance as unknown as { submit: () => void }).submit();
 
-    // Then — the seeded interaction id is in the POST body as a string
+    // Then — the seeded interaction id is in the POST body as a number
     const post = httpMock.expectOne('/api/v1/tasks');
-    expect(post.request.body.sourceInteractionId).toBe('42');
+    expect(post.request.body.sourceInteractionId).toBe(42);
     post.flush({});
   });
 

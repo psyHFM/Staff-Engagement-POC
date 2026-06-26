@@ -21,36 +21,41 @@ import { Task as TaskModel } from './task.model';
         <i class="pi pi-spin pi-spinner"></i> Loading tasks...
       </div>
 
-      <div class="task-list" *ngIf="!state.loading()">
+      <div class="task-container" *ngIf="!state.loading()">
         <div *ngIf="state.tasks().length === 0" class="empty-state">
           <i class="pi pi-list"></i>
           <p>No tasks assigned to you. Take a break!</p>
         </div>
 
-        <div class="task-grid">
-          <div *ngFor="let task of state.tasks()" class="task-card">
-            <div class="task-card-main">
-              <div class="task-status">
+        <table class="task-table" *ngIf="state.tasks().length > 0">
+          <thead>
+            <tr>
+              <th (click)="state.setSort('title')" class="sortable">
+                Title <i class="pi pi-sort-alt"></i>
+              </th>
+              <th>Description</th>
+              <th (click)="state.setSort('createdAt')" class="sortable">
+                Created <i class="pi pi-sort-alt"></i>
+              </th>
+              <th class="text-center">Done</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of state.tasks()" [class.completed]="task.completed">
+              <td class="font-bold">{{ task.title }}</td>
+              <td>{{ task.description }}</td>
+              <td>{{ task.createdAt | date:'shortDate' }}</td>
+              <td class="text-center">
                 <input
                   type="checkbox"
                   [checked]="task.completed"
                   (change)="toggleTask(task)"
                   class="task-checkbox"
                 />
-                <span class="task-title" [class.completed]="task.completed">
-                  {{ task.title }}
-                </span>
-              </div>
-              <p class="task-desc">{{ task.description }}</p>
-            </div>
-            <div class="task-footer">
-              <span class="task-date">Created: {{ task.createdAt | date:'shortDate' }}</span>
-              <i *ngIf="task.sourceInteractionId"
-                 class="pi pi-link"
-                 title="Created from Interaction"></i>
-            </div>
-          </div>
-        </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <app-task-create-form
@@ -100,56 +105,51 @@ import { Task as TaskModel } from './task.model';
     }
     .empty-state i { font-size: 3rem; }
 
-    .task-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-    .task-card {
-      border: 1px solid #e5e7eb;
-      border-radius: 0.75rem;
-      padding: 1.25rem;
+    .task-table {
+      width: 100%;
+      border-collapse: collapse;
       background: white;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      border-radius: 0.75rem;
+      overflow: hidden;
     }
-    .task-card-main { margin-bottom: 1rem; }
-    .task-status {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.5rem;
+    .task-table th, .task-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .task-table th {
+      background: #f9fafb;
+      color: #4b5563;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .task-table .sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+    .task-table .sortable:hover {
+      background: #f3f4f6;
+    }
+    .task-table tr.completed td {
+      color: #9ca3af;
+    }
+    .task-table tr.completed .font-bold {
+      text-decoration: line-through;
+    }
+    .font-bold {
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .text-center {
+      text-align: center;
     }
     .task-checkbox {
       width: 1.2rem;
       height: 1.2rem;
       cursor: pointer;
-    }
-    .task-title {
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: #1f2937;
-    }
-    .task-title.completed {
-      text-decoration: line-through;
-      color: #9ca3af;
-    }
-    .task-desc {
-      color: #4b5563;
-      font-size: 0.95rem;
-      margin: 0;
-      line-height: 1.5;
-    }
-    .task-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.8rem;
-      color: #9ca3af;
-      border-top: 1px solid #f3f4f6;
-      padding-top: 0.75rem;
     }
   `]
 })
@@ -162,6 +162,6 @@ export class Task implements OnInit {
   }
 
   toggleTask(task: TaskModel) {
-    this.state.toggleCompletion(task.id, !task.completed);
+    this.state.toggleCompletion(task.id.value, !task.completed);
   }
 }

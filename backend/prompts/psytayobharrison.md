@@ -16,3 +16,18 @@ on the employees page, the following should not be there: the employee detail ar
 
 yes
 
+### psyTayobHarrison — 2026-06-26 12:33:20
+
+> **Model:** `gemma4:31b`  
+> **Tokens:** `82,842` in / `789` out · cache read `0` / write `0` · **83,631 total**
+
+status update?
+
+### psyTayobHarrison — 2026-06-26 12:36:10
+
+> **Model:** `gemma4:31b`  
+> **Tokens:** `89,273` in / `412` out · cache read `0` / write `0` · **89,685 total**
+
+Correct the mocks in TaskControllerTest to ensure                     
+  taskService.toSummary() returns a valid TaskSummary.
+

@@ -5,7 +5,7 @@
   tabindex="-1"
   (click)="closeForm()"
   (keydown.escape)="closeForm()">
-  <div class="modal-content">
+  <div class="modal-content" (click)="$event.stopPropagation()">
     <header class="modal-header">
       <h2>{{ interactionId ? 'Create Task from Interaction' : 'Create New Task' }}</h2>
       <button type="button" (click)="closeForm()" class="close-btn" aria-label="Close">&times;</button>
@@ -14,7 +14,7 @@
     <form (ngSubmit)="submit()" #taskForm="ngForm" class="task-form">
       <div class="form-group">
         <label for="title">Title</label>
-        <input id="title" name="title" [(ngModel)]="request.title" required placeholder="Enter task title..." />
+        <input id="title" name="title" [(ngModel)]="request.title" required maxlength="120" placeholder="Enter task title..." />
       </div>
 
       <div class="form-group">

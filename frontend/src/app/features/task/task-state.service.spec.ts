@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { TaskStateService } from './task-state.service';
-import { Task, CreateTaskRequest } from './task.model';
+import { Task, CreateTaskRequest, TaskId, EmployeeId } from './task.model';
 
 describe('TaskStateService', () => {
   let service: TaskStateService;
@@ -22,9 +22,12 @@ describe('TaskStateService', () => {
 
   afterEach(() => httpMock.verify());
 
+  const taskId = (value: number): TaskId => ({ value });
+  const employeeId = (value: number): EmployeeId => ({ value });
+
   const task = (overrides: Partial<Task> = {}): Task => ({
-    id: '1',
-    subjectId: '7',
+    id: taskId(1),
+    subject: employeeId(7),
     title: 'Test task',
     description: 'desc',
     completed: false,
@@ -34,7 +37,7 @@ describe('TaskStateService', () => {
 
   it('loads my tasks from GET /api/v1/me/tasks and exposes them via the tasks signal', () => {
     // Given
-    const tasks = [task({ id: '1', title: 'First' }), task({ id: '2', title: 'Second' })];
+    const tasks = [task({ id: taskId(1), title: 'First' }), task({ id: taskId(2), title: 'Second' })];
     expect(service.tasks()).toEqual([]);
 
     // When
@@ -51,14 +54,14 @@ describe('TaskStateService', () => {
   it('creates a task via POST /api/v1/tasks and appends it to the tasks signal', () => {
     // Given — one existing task already loaded
     service.loadMyTasks();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     expect(service.tasks()).toHaveLength(1);
 
     const request2: CreateTaskRequest = {
-      subjectId: '7',
+      subjectId: 7,
       title: 'Follow up',
       description: 'Send the email',
-      sourceInteractionId: '42'
+      sourceInteractionId: 42
     };
 
     // When
@@ -66,7 +69,7 @@ describe('TaskStateService', () => {
     const post = httpMock.expectOne('/api/v1/tasks');
     expect(post.request.method).toBe('POST');
     expect(post.request.body).toEqual(request2);
-    const created = task({ id: '99', title: 'Follow up' });
+    const created = task({ id: taskId(99), title: 'Follow up' });
     post.flush(created);
 
     // Then
@@ -78,17 +81,17 @@ describe('TaskStateService', () => {
     // Given — two tasks loaded
     service.loadMyTasks();
     httpMock.expectOne('/api/v1/me/tasks').flush([
-      task({ id: '1', completed: false }),
-      task({ id: '2', completed: false })
+      task({ id: taskId(1), completed: false }),
+      task({ id: taskId(2), completed: false })
     ]);
     const other = service.tasks()[1];
 
     // When
-    service.toggleCompletion('1', true);
+    service.toggleCompletion(1, true);
     const put = httpMock.expectOne('/api/v1/tasks/1');
     expect(put.request.method).toBe('PUT');
     expect(put.request.body).toEqual({ completed: true });
-    put.flush(task({ id: '1', completed: true }));
+    put.flush(task({ id: taskId(1), completed: true }));
 
     // Then — the matching task is replaced, the other is left untouched
     expect(service.tasks()[0].completed).toBe(true);
@@ -117,12 +120,12 @@ describe('TaskStateService', () => {
   it('logs and clears loading when toggling completion fails', () => {
     // Given — a task loaded
     service.loadMyTasks();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1', completed: false })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1), completed: false })]);
     const before = service.tasks()[0];
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     // When
-    service.toggleCompletion('1', true);
+    service.toggleCompletion(1, true);
     httpMock.expectOne('/api/v1/tasks/1').flush('boom', {
       status: 500,
       statusText: 'Server Error'
@@ -138,11 +141,11 @@ describe('TaskStateService', () => {
   it('leaves the tasks signal unchanged when create fails', () => {
     // Given — an existing task
     service.loadMyTasks();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
     // When
-    service.createTask({ subjectId: '7', title: 'x', description: 'y' });
+    service.createTask({ subjectId: 7, title: 'x', description: 'y' });
     httpMock.expectOne('/api/v1/tasks').flush('boom', {
       status: 400,
       statusText: 'Bad Request'

@@ -6,14 +6,17 @@ import {
 } from '@angular/common/http/testing';
 
 import { Task } from './task';
-import { Task as TaskModel } from './task.model';
+import { Task as TaskModel, TaskId, EmployeeId } from './task.model';
 
 describe('Task (My Tasks view)', () => {
   let httpMock: HttpTestingController;
 
+  const taskId = (value: number): TaskId => ({ value });
+  const employeeId = (value: number): EmployeeId => ({ value });
+
   const task = (overrides: Partial<TaskModel> = {}): TaskModel => ({
-    id: '1',
-    subjectId: '7',
+    id: taskId(1),
+    subject: employeeId(7),
     title: 'Test task',
     description: 'desc',
     completed: false,
@@ -31,21 +34,21 @@ describe('Task (My Tasks view)', () => {
 
   afterEach(() => httpMock.verify());
 
-  it('renders the loaded tasks as cards', async () => {
+  it('renders the loaded tasks in a table', async () => {
     // Given — the component loads my tasks on init
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/me/tasks').flush([
-      task({ id: '1', title: 'Write tests', description: 'BDD first' }),
-      task({ id: '2', title: 'Ship it', description: 'Done' })
+      task({ id: taskId(1), title: 'Write tests', description: 'BDD first' }),
+      task({ id: taskId(2), title: 'Ship it', description: 'Done' })
     ]);
 
     // When
     fixture.detectChanges();
 
     // Then
-    const cards = fixture.nativeElement.querySelectorAll('.task-card');
-    expect(cards).toHaveLength(2);
+    const rows = fixture.nativeElement.querySelectorAll('.task-table tbody tr');
+    expect(rows).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('Write tests');
     expect(fixture.nativeElement.textContent).toContain('Ship it');
     // The create-form modal is hidden until the user asks for it
@@ -70,19 +73,19 @@ describe('Task (My Tasks view)', () => {
     // Given
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1', completed: false })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1), completed: false })]);
     fixture.detectChanges();
 
     // When — toggling the first task's checkbox
     const component = fixture.componentInstance as unknown as {
       toggleTask: (t: TaskModel) => void;
-      state: { toggleCompletion: (id: string, completed: boolean) => void };
+      state: { toggleCompletion: (id: number, completed: boolean) => void };
     };
-    component.toggleTask(task({ id: '1', completed: false }));
+    component.toggleTask(task({ id: taskId(1), completed: false }));
     const put = httpMock.expectOne('/api/v1/tasks/1');
     expect(put.request.method).toBe('PUT');
     expect(put.request.body).toEqual({ completed: true });
-    put.flush(task({ id: '1', completed: true }));
+    put.flush(task({ id: taskId(1), completed: true }));
 
     // Then
     fixture.detectChanges();

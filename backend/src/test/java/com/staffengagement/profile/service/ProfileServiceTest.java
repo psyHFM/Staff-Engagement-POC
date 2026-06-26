@@ -171,7 +171,7 @@ class ProfileServiceTest {
 
     private TaskSummary taskSummary(TaskId id, EmployeeId subject) {
         return new TaskSummary(
-                id, subject, "Read docs", new InteractionId(42L), false, "Read design doc");
+                id, subject, "Read docs", new InteractionId(42L), false, "Read design doc", Instant.now());
     }
 
     private PortfolioSummary portfolioSummary(EmployeeId id) {
