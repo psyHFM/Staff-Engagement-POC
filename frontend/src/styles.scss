@@ -1,5 +1,26 @@
-/* Global styles for the Staff Engagement POC. PrimeIcons are loaded via
-   angular.json (node_modules/primeicons/primeicons.css). */
+/* Global styles for the Staff Engagement POC.
+
+   PrimeIcons wiring: the `primeicons` package (see frontend/package.json) ships
+   node_modules/primeicons/primeicons.css plus the icon font files
+   (primeicons.woff2/.woff/.ttf/.eot/.svg under primeicons/fonts/). That stylesheet
+   is loaded ahead of this file via the angular.json build `styles` array, so the
+   @font-face and `.pi`/`.pi-*` glyph classes are available app-wide and the font is
+   bundled/served by the build.
+
+   No-icon fallback: the rule below reserves a fixed 1em inline-block box for every
+   `.pi` slot. PrimeIcons uses `font-display: block`, so if the icon font fails to
+   load (or a glyph is missing) the slot stays blank rather than showing tofu/garbled
+   fallback text — and because the box is pre-sized, surrounding layout (header brand,
+   spinners, buttons) keeps its position instead of collapsing or shifting. The rule
+   is additive: it only sets layout/sizing properties, never glyph content, so working
+   icons render exactly as PrimeIcons intends. */
+.pi {
+  display: inline-block;
+  min-width: 1em;
+  line-height: 1;
+  text-align: center;
+}
+
 * {
   box-sizing: border-box;
 }

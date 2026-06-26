@@ -1135,3 +1135,286 @@ Target archive directory already exists.
 - Show clear summary of what happened
 - If sync is requested, use the Skill tool to invoke `openspec-sync-specs` (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
+### Gregory Robson — 2026-06-26 10:42:00
+
+> **Model:** `claude-opus-4-8`  
+> **Tokens:** `2` in / `603` out · cache read `52,984` / write `290` · **53,879 total**
+
+Propose a new change - create the change and generate all artifacts in one step.
+
+I'll create a change with artifacts:
+- proposal.md (what & why)
+- design.md (how)
+- tasks.md (implementation steps)
+
+When ready to implement, run /opsx:apply
+
+---
+
+**Input**: The argument after `/opsx:propose` is the change name (kebab-case), OR a description of what the user wants to build.
+
+**Steps**
+
+1. **If no input provided, ask what they want to build**
+
+   Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
+   > "What change do you want to work on? Describe what you want to build or fix."
+
+   From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
+
+   **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
+
+2. **Create the change directory**
+   ```bash
+   openspec new change "<name>"
+   ```
+   This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml`.
+
+3. **Get the artifact build order**
+   ```bash
+   openspec status --change "<name>" --json
+   ```
+   Parse the JSON to get:
+   - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
+   - `artifacts`: list of all artifacts with their status and dependencies
+
+4. **Create artifacts in sequence until apply-ready**
+
+   Use the **TodoWrite tool** to track progress through the artifacts.
+
+   Loop through artifacts in dependency order (artifacts with no pending dependencies first):
+
+   a. **For each artifact that is `ready` (dependencies satisfied)**:
+      - Get instructions:
+        ```bash
+        openspec instructions <artifact-id> --change "<name>" --json
+        ```
+      - The instructions JSON includes:
+        - `context`: Project background (constraints for you - do NOT include in output)
+        - `rules`: Artifact-specific rules (constraints for you - do NOT include in output)
+        - `template`: The structure to use for your output file
+        - `instruction`: Schema-specific guidance for this artifact type
+        - `outputPath`: Where to write the artifact
+        - `dependencies`: Completed artifacts to read for context
+      - Read any completed dependency files for context
+      - Create the artifact file using `template` as the structure
+      - Apply `context` and `rules` as constraints - but do NOT copy them into the file
+      - Show brief progress: "Created <artifact-id>"
+
+   b. **Continue until all `applyRequires` artifacts are complete**
+      - After creating each artifact, re-run `openspec status --change "<name>" --json`
+      - Check if every artifact ID in `applyRequires` has `status: "done"` in the artifacts array
+      - Stop when all `applyRequires` artifacts are done
+
+   c. **If an artifact requires user input** (unclear context):
+      - Use **AskUserQuestion tool** to clarify
+      - Then continue with creation
+
+5. **Show final status**
+   ```bash
+   openspec status --change "<name>"
+   ```
+
+**Output**
+
+After completing all artifacts, summarize:
+- Change name and location
+- List of artifacts created with brief descriptions
+- What's ready: "All artifacts created! Ready for implementation."
+- Prompt: "Run `/opsx:apply` to start implementing."
+
+**Artifact Creation Guidelines**
+
+- Follow the `instruction` field from `openspec instructions` for each artifact type
+- The schema defines what each artifact should contain - follow it
+- Read dependency artifacts for context before creating new ones
+- Use `template` as the structure for your output file - fill in its sections
+- **IMPORTANT**: `context` and `rules` are constraints for YOU, not content for the file
+  - Do NOT copy `<context>`, `<rules>`, `<project_context>` blocks into the artifact
+  - These guide what you write, but should never appear in the output
+
+**Guardrails**
+- Create ALL artifacts needed for implementation (as defined by schema's `apply.requires`)
+- Always read dependency artifacts before creating a new one
+- If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
+- If a change with that name already exists, ask if user wants to continue it or create a new one
+- Verify each artifact file exists after writing before proceeding to next
+
+
+ARGUMENTS: bug-fix: PrimeIcons font not loaded — header brand icon and spinners render as empty boxes (ATSE1-68). Verify primeicons dependency in frontend/package.json and that the font is loaded via angular.json styles config (or imported into styles.scss). Ensure shell brand icon (pi-th-large) and loading spinner (pi-spinner) render. Add a "no icon" CSS fallback so layout doesn't break if the font fails to load. Files: frontend/package.json, frontend/angular.json, frontend/src/styles.scss.
+
+### Gregory Robson — 2026-06-26 10:44:09
+
+> **Model:** `claude-opus-4-8`  
+> **Tokens:** `2` in / `539` out · cache read `20,661` / write `5,098` · **26,300 total**
+
+Error response from daemon: ports are not available: exposing port TCP 0.0.0.0:8080 -> 127.0.0.1:0: listen tcp 0.0.0.0:8080: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+
+What's next:
+    Debug this Compose error with Gordon → docker ai "help me fix this compose error"
+    Filter, search, and stream logs from all your Compose services
+    in one place with Docker Desktop's Logs view. docker-desktop://dashboard/logs?appId=staff-engagement-poc
+
+### Gregory Robson — 2026-06-26 10:56:39
+
+> **Model:** `claude-opus-4-8`  
+> **Tokens:** `2` in / `939` out · cache read `87,140` / write `311` · **88,392 total**
+
+Yes, do that
+
+### Gregory Robson — 2026-06-26 11:01:09
+
+> **Model:** `claude-opus-4-8`  
+> **Tokens:** `2` in / `363` out · cache read `93,060` / write `597` · **94,022 total**
+
+Archive a completed change in the experimental workflow.
+
+**Input**: Optionally specify a change name after `/opsx:archive` (e.g., `/opsx:archive add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+
+**Steps**
+
+1. **If no change name provided, prompt for selection**
+
+   Run `openspec list --json` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+
+   Show only active changes (not already archived).
+   Include the schema used for each change if available.
+
+   **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
+
+2. **Check artifact completion status**
+
+   Run `openspec status --change "<name>" --json` to check artifact completion.
+
+   Parse the JSON to understand:
+   - `schemaName`: The workflow being used
+   - `artifacts`: List of artifacts with their status (`done` or other)
+
+   **If any artifacts are not `done`:**
+   - Display warning listing incomplete artifacts
+   - Prompt user for confirmation to continue
+   - Proceed if user confirms
+
+3. **Check task completion status**
+
+   Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
+
+   Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
+
+   **If incomplete tasks found:**
+   - Display warning showing count of incomplete tasks
+   - Prompt user for confirmation to continue
+   - Proceed if user confirms
+
+   **If no tasks file exists:** Proceed without task-related warning.
+
+4. **Assess delta spec sync state**
+
+   Check for delta specs at `openspec/changes/<name>/specs/`. If none exist, proceed without sync prompt.
+
+   **If delta specs exist:**
+   - Compare each delta spec with its corresponding main spec at `openspec/specs/<capability>/spec.md`
+   - Determine what changes would be applied (adds, modifications, removals, renames)
+   - Show a combined summary before prompting
+
+   **Prompt options:**
+   - If changes needed: "Sync now (recommended)", "Archive without syncing"
+   - If already synced: "Archive now", "Sync anyway", "Cancel"
+
+   If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
+
+5. **Perform the archive**
+
+   Create the archive directory if it doesn't exist:
+   ```bash
+   mkdir -p openspec/changes/archive
+   ```
+
+   Generate target name using current date: `YYYY-MM-DD-<change-name>`
+
+   **Check if target already exists:**
+   - If yes: Fail with error, suggest renaming existing archive or using different date
+   - If no: Move the change directory to archive
+
+   ```bash
+   mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
+   ```
+
+6. **Display summary**
+
+   Show archive completion summary including:
+   - Change name
+   - Schema that was used
+   - Archive location
+   - Spec sync status (synced / sync skipped / no delta specs)
+   - Note about any warnings (incomplete artifacts/tasks)
+
+**Output On Success**
+
+```
+## Archive Complete
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
+**Specs:** ✓ Synced to main specs
+
+All artifacts complete. All tasks complete.
+```
+
+**Output On Success (No Delta Specs)**
+
+```
+## Archive Complete
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
+**Specs:** No delta specs
+
+All artifacts complete. All tasks complete.
+```
+
+**Output On Success With Warnings**
+
+```
+## Archive Complete (with warnings)
+
+**Change:** <change-name>
+**Schema:** <schema-name>
+**Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
+**Specs:** Sync skipped (user chose to skip)
+
+**Warnings:**
+- Archived with 2 incomplete artifacts
+- Archived with 3 incomplete tasks
+- Delta spec sync was skipped (user chose to skip)
+
+Review the archive if this was not intentional.
+```
+
+**Output On Error (Archive Exists)**
+
+```
+## Archive Failed
+
+**Change:** <change-name>
+**Target:** openspec/changes/archive/YYYY-MM-DD-<name>/
+
+Target archive directory already exists.
+
+**Options:**
+1. Rename the existing archive
+2. Delete the existing archive if it's a duplicate
+3. Wait until a different date to archive
+```
+
+**Guardrails**
+- Always prompt for change selection if not provided
+- Use artifact graph (openspec status --json) for completion checking
+- Don't block archive on warnings - just inform and confirm
+- Preserve .openspec.yaml when moving to archive (it moves with the directory)
+- Show clear summary of what happened
+- If sync is requested, use the Skill tool to invoke `openspec-sync-specs` (agent-driven)
+- If delta specs exist, always run the sync assessment and show the combined summary before prompting
+
