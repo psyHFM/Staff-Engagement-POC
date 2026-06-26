@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.staffengagement.employee.controller.dto.CreateEmployeeRequest;
 import com.staffengagement.employee.controller.dto.UpdateEmployeeRequest;
 import com.staffengagement.employee.domain.EmployeeLevel;
-import com.staffengagement.employee.service.Caller;
+import com.staffengagement.shared.kernel.Caller;
 import com.staffengagement.employee.service.EmployeeException;
 import com.staffengagement.employee.service.EmployeeResponse;
 import com.staffengagement.employee.service.EmployeeService;

@@ -357,6 +357,104 @@ class SkillsServiceTest {
         assertThat(result.content()).extracting(SkillStrength::employeeName).containsExactly("Bob", "Alice");
     }
 
+    // ---- ATSE1-43: sort by name / popularity ----
+
+    @Test
+    void searchSortsByNameAscending() {
+        // Given
+        EmployeeSummary a = employee(1L, "A");
+        EmployeeSummary b = employee(2L, "B");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b));
+        givenPortfolio(a.id(), portfolio(skill(1L, "A", "React", 1, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "B", "Angular", 1, 1)));
+
+        // When
+        Paged<SkillStrength> result = service.search("A", 0, 0, 20, "name,asc");
+
+        // Then — Angular < React alphabetically
+        assertThat(result.content()).extracting(SkillStrength::skill).containsExactly("Angular", "React");
+    }
+
+    @Test
+    void searchSortsByNameDescending() {
+        // Given
+        EmployeeSummary a = employee(1L, "A");
+        EmployeeSummary b = employee(2L, "B");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b));
+        givenPortfolio(a.id(), portfolio(skill(1L, "A", "React", 1, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "B", "Angular", 1, 1)));
+
+        // When
+        Paged<SkillStrength> result = service.search("A", 0, 0, 20, "name,desc");
+
+        // Then
+        assertThat(result.content()).extracting(SkillStrength::skill).containsExactly("React", "Angular");
+    }
+
+    @Test
+    void searchSortsByNameCaseInsensitive() {
+        // Given — both skills contain "a" so the search filter keeps both rows
+        EmployeeSummary a = employee(1L, "A");
+        EmployeeSummary b = employee(2L, "B");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b));
+        givenPortfolio(a.id(), portfolio(skill(1L, "A", "angular", 1, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "B", "Vanilla", 1, 1)));
+
+        // When — sort=name,asc must use lower-cased name for ordering
+        Paged<SkillStrength> result = service.search("a", 0, 0, 20, "name,asc");
+
+        // Then — lower-cased "angular" < lower-cased "vanilla"
+        assertThat(result.content()).extracting(SkillStrength::skill).containsExactly("angular", "Vanilla");
+    }
+
+    @Test
+    void searchSortByPopularityMapsToYearsDesc() {
+        // Given — two entries with different years
+        EmployeeSummary a = employee(1L, "A");
+        EmployeeSummary b = employee(2L, "B");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b));
+        givenPortfolio(a.id(), portfolio(skill(1L, "A", "Java", 1, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "B", "Java", 5, 3)));
+
+        // When — sort=popularity is accepted (no 400) and falls back to years,desc at row level
+        Paged<SkillStrength> result = service.search("Java", 0, 0, 20, "popularity,desc");
+
+        // Then — B (5 years) ahead of A (1 year)
+        assertThat(result.content()).extracting(SkillStrength::employeeName).containsExactly("B", "A");
+    }
+
+    @Test
+    void searchSortByPopularityIgnoresDirection() {
+        // Given — popularity is years,desc only; asc direction still yields years,desc
+        EmployeeSummary a = employee(1L, "A");
+        EmployeeSummary b = employee(2L, "B");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b));
+        givenPortfolio(a.id(), portfolio(skill(1L, "A", "Java", 1, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "B", "Java", 5, 3)));
+
+        // When
+        Paged<SkillStrength> result = service.search("Java", 0, 0, 20, "popularity,asc");
+
+        // Then — still years desc
+        assertThat(result.content()).extracting(SkillStrength::employeeName).containsExactly("B", "A");
+    }
+
+    @Test
+    void searchSortByNameBreaksTiesByYearsThenName() {
+        // Given — two entries with the same skill name; tie-break by years desc then name asc
+        EmployeeSummary a = employee(1L, "Bob");
+        EmployeeSummary b = employee(2L, "Alice");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b));
+        givenPortfolio(a.id(), portfolio(skill(1L, "Bob", "Java", 2, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "Alice", "Java", 5, 1)));
+
+        // When
+        Paged<SkillStrength> result = service.search("Java", 0, 0, 20, "name,asc");
+
+        // Then — same skill name → years desc → Alice (5y) ahead of Bob (2y)
+        assertThat(result.content()).extracting(SkillStrength::employeeName).containsExactly("Alice", "Bob");
+    }
+
     // ---- Validation ----
 
     @Test
@@ -473,5 +571,153 @@ class SkillsServiceTest {
 
         // Then — portfolioContract is never called ( Mockito defaults to no interaction)
         org.mockito.Mockito.verifyNoInteractions(portfolioContract);
+    }
+
+    // ---- popularSkills (ATSE1-40) ----
+
+    @Test
+    void popularSkillsGroupsBySkillNameCaseInsensitively() {
+        // Given — same skill under different capitalisations
+        EmployeeSummary a = employee(1L, "Alice");
+        EmployeeSummary b = employee(2L, "Bob");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b));
+        givenPortfolio(a.id(), portfolio(skill(1L, "Alice", "Angular", 3, 2)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "Bob", "angular", 5, 4)));
+
+        // When
+        List<SkillSummary> result = service.popularSkills(20);
+
+        // Then — one group, count=2, topHolder = Bob (more years)
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).employeeCount()).isEqualTo(2);
+        assertThat(result.get(0).topHolder().employeeName()).isEqualTo("Bob");
+        assertThat(result.get(0).topHolder().years()).isEqualTo(5);
+        // Canonical spelling = first-seen
+        assertThat(result.get(0).skill()).isEqualTo("Angular");
+    }
+
+    @Test
+    void popularSkillsSortsByEmployeeCountDescendingThenSkillNameAsc() {
+        // Given — three skills, with employee counts 1, 3, 2
+        EmployeeSummary a = employee(1L, "Alice");
+        EmployeeSummary b = employee(2L, "Bob");
+        EmployeeSummary c = employee(3L, "Carol");
+        EmployeeSummary d = employee(4L, "Dan");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b, c, d));
+        givenPortfolio(a.id(), portfolio(skill(1L, "Alice", "Java", 5, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "Bob", "Angular", 5, 1)));
+        givenPortfolio(c.id(), portfolio(skill(3L, "Carol", "Angular", 2, 1)));
+        givenPortfolio(d.id(), portfolio(skill(4L, "Dan", "Angular", 1, 1)));
+
+        // When
+        List<SkillSummary> result = service.popularSkills(20);
+
+        // Then — Angular (3 employees) > Java (1 employee)
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).skill()).isEqualTo("Angular");
+        assertThat(result.get(0).employeeCount()).isEqualTo(3);
+        assertThat(result.get(1).skill()).isEqualTo("Java");
+        assertThat(result.get(1).employeeCount()).isEqualTo(1);
+    }
+
+    @Test
+    void popularSkillsPicksTopHolderByYearsThenProjectsThenName() {
+        // Given — same skill, same years; tie-break by projects desc then name asc
+        EmployeeSummary a = employee(1L, "Bob");
+        EmployeeSummary b = employee(2L, "Alice");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b));
+        givenPortfolio(a.id(), portfolio(skill(1L, "Bob", "Java", 5, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "Alice", "Java", 5, 3)));
+
+        // When
+        List<SkillSummary> result = service.popularSkills(20);
+
+        // Then — Alice wins on projects (3 > 1)
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).topHolder().employeeName()).isEqualTo("Alice");
+        assertThat(result.get(0).topHolder().projectCount()).isEqualTo(3);
+    }
+
+    @Test
+    void popularSkillsSkipsBlankSkillNames() {
+        // Given
+        EmployeeSummary emp = employee(1L, "Jane");
+        given(employeeContract.allEmployees()).willReturn(List.of(emp));
+        givenPortfolio(emp.id(), new PortfolioSummary(emp.id(), List.of(
+                skill(1L, "Jane", "Angular", 5, 2),
+                new SkillStrength(emp.id(), "Jane", null, 3, 4),
+                new SkillStrength(emp.id(), "Jane", "   ", 1, 1)), List.of(), List.of(), List.of()));
+
+        // When
+        List<SkillSummary> result = service.popularSkills(20);
+
+        // Then — only the "Angular" group survives
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).skill()).isEqualTo("Angular");
+        assertThat(result.get(0).employeeCount()).isEqualTo(1);
+    }
+
+    @Test
+    void popularSkillsReturnsEmptyWhenNoEmployees() {
+        // Given
+        given(employeeContract.allEmployees()).willReturn(List.of());
+
+        // When
+        List<SkillSummary> result = service.popularSkills(20);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void popularSkillsRespectsLimitAndClampsToMax() {
+        // Given — 3 distinct skills
+        EmployeeSummary a = employee(1L, "A");
+        EmployeeSummary b = employee(2L, "B");
+        EmployeeSummary c = employee(3L, "C");
+        given(employeeContract.allEmployees()).willReturn(List.of(a, b, c));
+        givenPortfolio(a.id(), portfolio(skill(1L, "A", "Java", 1, 1)));
+        givenPortfolio(b.id(), portfolio(skill(2L, "B", "Angular", 1, 1)));
+        givenPortfolio(c.id(), portfolio(skill(3L, "C", "React", 1, 1)));
+
+        // When — limit=2
+        List<SkillSummary> result = service.popularSkills(2);
+
+        // Then
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void popularSkillsUsesDefaultLimitWhenLimitIsNonPositive() {
+        // Given
+        EmployeeSummary emp = employee(1L, "Jane");
+        given(employeeContract.allEmployees()).willReturn(List.of(emp));
+        givenPortfolio(emp.id(), portfolio(skill(1L, "Jane", "Angular", 1, 1)));
+
+        // When
+        List<SkillSummary> result = service.popularSkills(0);
+
+        // Then — limit=0 → default (20); single skill returned
+        assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void popularSkillsCountsDistinctEmployeesOncePerSkill() {
+        // Given — same employee lists "Angular" twice with different strengths;
+        // should still count as one employee in the popular aggregate
+        EmployeeSummary emp = employee(1L, "Jane");
+        given(employeeContract.allEmployees()).willReturn(List.of(emp));
+        givenPortfolio(emp.id(), new PortfolioSummary(emp.id(), List.of(
+                skill(1L, "Jane", "Angular", 4, 2),
+                skill(1L, "Jane", "Angular", 1, 1)), List.of(), List.of(), List.of()));
+
+        // When
+        List<SkillSummary> result = service.popularSkills(20);
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).employeeCount()).isEqualTo(1);
+        // Top holder is the higher-years entry
+        assertThat(result.get(0).topHolder().years()).isEqualTo(4);
     }
 }

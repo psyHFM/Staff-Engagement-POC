@@ -31,3 +31,28 @@ export interface SkillSearch {
   readonly offset?: number;
   readonly limit?: number;
 }
+
+/**
+ * Aggregated view of one skill across all employees (ATSE1-40 "Popular skills"
+ * grid). Mirrors the backend {@code SkillSummary} record.
+ *
+ * <p>Kept module-local — never crosses to {@code shared/api}.
+ */
+export interface SkillSummary {
+  readonly skill: string;
+  readonly employeeCount: number;
+  readonly topHolder: SkillStrength | null;
+}
+
+/**
+ * Sort options exposed in the UI dropdown (ATSE1-43). Mapped to the API's
+ * {@code sort} query parameter; "default" omits the param so the backend applies
+ * its native ranking ({@code years,desc}).
+ */
+export type SkillSortOption =
+  | 'default'
+  | 'name-asc'
+  | 'name-desc'
+  | 'years-asc'
+  | 'years-desc'
+  | 'projects-desc';

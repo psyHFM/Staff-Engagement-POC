@@ -22,6 +22,7 @@ import com.staffengagement.shared.api.EmployeeContract;
 import com.staffengagement.shared.api.EmployeeSummary;
 import com.staffengagement.shared.api.PortfolioSummary;
 import com.staffengagement.shared.api.SkillStrength;
+import com.staffengagement.shared.kernel.Caller;
 import com.staffengagement.shared.kernel.EmployeeId;
 import com.staffengagement.shared.kernel.EmployeeRole;
 import java.util.List;
@@ -53,6 +54,11 @@ class PortfolioServiceTest {
 
     private static final EmployeeId EMPLOYEE = new EmployeeId(1L);
     private static final EmployeeId OTHER_EMPLOYEE = new EmployeeId(2L);
+    /** Email-shaped principal for EMPLOYEE (the owner of the portfolio under test). */
+    private static final String OWNER_EMAIL = "ada@staff.eng";
+    private static final String OTHER_EMAIL = "other@staff.eng";
+    private static final Caller OWNER = new Caller(OWNER_EMAIL, EmployeeRole.EMPLOYEE);
+    private static final Caller ADMIN = new Caller("admin@staff.eng", EmployeeRole.ADMIN);
 
     @Mock
     private PortfolioRepository portfolioRepository;
@@ -75,6 +81,10 @@ class PortfolioServiceTest {
     @BeforeEach
     void setUp() {
         given(employeeContractProvider.getIfAvailable()).willReturn(employeeContract);
+        // Default: EMPLOYEE (id=1) is owned by ada@staff.eng. Tests that need a
+        // different owner / an admin / a non-owner caller set up their own call.
+        given(employeeContract.findById(EMPLOYEE)).willReturn(
+                Optional.of(new EmployeeSummary(EMPLOYEE, "Ada Lovelace", OWNER_EMAIL, EmployeeRole.EMPLOYEE, "Engineer", "Platform", "senior")));
     }
 
     // ---------------- portfolioFor (frozen contract) ----------------
@@ -242,7 +252,7 @@ class PortfolioServiceTest {
     @DisplayName("Should create the portfolio and replace all child rows on bulk replace")
     void replacePortfolio_upsertsAndReplacesChildren() {
         // Given — no portfolio yet; replace creates it and inserts children
-        PortfolioView view = new PortfolioView(1L,
+        PortfolioView view = new PortfolioView(1L, OWNER_EMAIL,
                 List.of(new PortfolioView.SkillView(null, "Angular", 5, 9)),
                 List.of(new PortfolioView.EducationView(null, "Uni", "BSc", 2010, 2014)),
                 List.of(new PortfolioView.ProjectView(null, "Portal", "desc", 2020, 2021)),
@@ -256,7 +266,7 @@ class PortfolioServiceTest {
         given(linkRepository.findByPortfolioId(10L)).willReturn(List.of());
 
         // When
-        service.replacePortfolio(EMPLOYEE, view);
+        service.replacePortfolio(EMPLOYEE, view, OWNER);
 
         // Then — every old child collection is cleared and the new rows are inserted
         then(skillRepository).should().deleteByPortfolioId(10L);
@@ -277,7 +287,7 @@ class PortfolioServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE,
-                new PortfolioView(1L, List.of(), List.of(), List.of(), List.of())))
+                new PortfolioView(1L, null, List.of(), List.of(), List.of(), List.of()), OWNER))
                 .isInstanceOf(EmployeeNotFoundException.class);
         then(portfolioRepository).should(never()).findByEmployeeId(any());
     }
@@ -295,7 +305,7 @@ class PortfolioServiceTest {
         given(skillRepository.save(any(PortfolioSkill.class))).willAnswer(inv -> withId(inv.getArgument(0), 100L));
 
         // When
-        PortfolioView.SkillView result = service.addSkill(EMPLOYEE, entry);
+        PortfolioView.SkillView result = service.addSkill(EMPLOYEE, entry, OWNER);
 
         // Then — the saved skill is stamped with ids and echoes the request fields
         ArgumentCaptor<PortfolioSkill> captor = ArgumentCaptor.forClass(PortfolioSkill.class);
@@ -316,7 +326,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, new PortfolioView.SkillView(null, "  ", 1, 1)))
+        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, new PortfolioView.SkillView(null, "  ", 1, 1), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("skill is required");
         then(skillRepository).should(never()).save(any(PortfolioSkill.class));
@@ -330,7 +340,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, new PortfolioView.SkillView(null, "Angular", -1, 1)))
+        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, new PortfolioView.SkillView(null, "Angular", -1, 1), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("years");
         then(skillRepository).should(never()).save(any(PortfolioSkill.class));
@@ -344,7 +354,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, new PortfolioView.SkillView(null, "Angular", 1, -2)))
+        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, new PortfolioView.SkillView(null, "Angular", 1, -2), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("projectCount");
         then(skillRepository).should(never()).save(any(PortfolioSkill.class));
@@ -361,7 +371,7 @@ class PortfolioServiceTest {
         given(skillRepository.save(any(PortfolioSkill.class))).willAnswer(inv -> inv.getArgument(0));
 
         // When
-        PortfolioView.SkillView result = service.updateSkill(EMPLOYEE, 100L, new PortfolioView.SkillView(100L, "New", 7, 12));
+        PortfolioView.SkillView result = service.updateSkill(EMPLOYEE, 100L, new PortfolioView.SkillView(100L, "New", 7, 12), OWNER);
 
         // Then
         assertThat(skill.getSkill()).isEqualTo("New");
@@ -380,7 +390,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(20L)).willReturn(Optional.of(portfolio(20L, OTHER_EMPLOYEE.value())));
 
         // When / Then — ownership check fails → 404 domain exception, no save
-        assertThatThrownBy(() -> service.updateSkill(EMPLOYEE, 100L, new PortfolioView.SkillView(100L, "New", 1, 1)))
+        assertThatThrownBy(() -> service.updateSkill(EMPLOYEE, 100L, new PortfolioView.SkillView(100L, "New", 1, 1), OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
         then(skillRepository).should(never()).save(any(PortfolioSkill.class));
     }
@@ -393,7 +403,7 @@ class PortfolioServiceTest {
         given(skillRepository.findById(404L)).willReturn(Optional.empty());
 
         // When / Then
-        assertThatThrownBy(() -> service.updateSkill(EMPLOYEE, 404L, new PortfolioView.SkillView(404L, "New", 1, 1)))
+        assertThatThrownBy(() -> service.updateSkill(EMPLOYEE, 404L, new PortfolioView.SkillView(404L, "New", 1, 1), OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
     }
 
@@ -407,7 +417,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(10L)).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When
-        service.deleteSkill(EMPLOYEE, 100L);
+        service.deleteSkill(EMPLOYEE, 100L, OWNER);
 
         // Then
         then(skillRepository).should().delete(skill);
@@ -423,7 +433,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(20L)).willReturn(Optional.of(portfolio(20L, OTHER_EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.deleteSkill(EMPLOYEE, 100L))
+        assertThatThrownBy(() -> service.deleteSkill(EMPLOYEE, 100L, OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
         then(skillRepository).should(never()).delete(any(PortfolioSkill.class));
     }
@@ -441,7 +451,7 @@ class PortfolioServiceTest {
         given(educationRepository.save(any(PortfolioEducation.class))).willAnswer(inv -> withId(inv.getArgument(0), 200L));
 
         // When
-        PortfolioView.EducationView result = service.addEducation(EMPLOYEE, entry);
+        PortfolioView.EducationView result = service.addEducation(EMPLOYEE, entry, OWNER);
 
         // Then
         assertThat(result.id()).isEqualTo(200L);
@@ -456,7 +466,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.addEducation(EMPLOYEE, new PortfolioView.EducationView(null, "", null, null, null)))
+        assertThatThrownBy(() -> service.addEducation(EMPLOYEE, new PortfolioView.EducationView(null, "", null, null, null), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("institution is required");
     }
@@ -471,7 +481,7 @@ class PortfolioServiceTest {
         given(projectRepository.save(any(PortfolioProject.class))).willAnswer(inv -> withId(inv.getArgument(0), 300L));
 
         // When
-        PortfolioView.ProjectView result = service.addProject(EMPLOYEE, entry);
+        PortfolioView.ProjectView result = service.addProject(EMPLOYEE, entry, OWNER);
 
         // Then
         assertThat(result.id()).isEqualTo(300L);
@@ -486,7 +496,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.addProject(EMPLOYEE, new PortfolioView.ProjectView(null, " ", null, null, null)))
+        assertThatThrownBy(() -> service.addProject(EMPLOYEE, new PortfolioView.ProjectView(null, " ", null, null, null), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("name is required");
     }
@@ -501,7 +511,7 @@ class PortfolioServiceTest {
         given(linkRepository.save(any(PortfolioLink.class))).willAnswer(inv -> withId(inv.getArgument(0), 400L));
 
         // When
-        PortfolioView.LinkView result = service.addLink(EMPLOYEE, entry);
+        PortfolioView.LinkView result = service.addLink(EMPLOYEE, entry, OWNER);
 
         // Then
         assertThat(result.id()).isEqualTo(400L);
@@ -516,7 +526,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.addLink(EMPLOYEE, new PortfolioView.LinkView(null, "GitHub", " ")))
+        assertThatThrownBy(() -> service.addLink(EMPLOYEE, new PortfolioView.LinkView(null, "GitHub", " "), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("url is required");
     }
@@ -533,14 +543,14 @@ class PortfolioServiceTest {
 
         // When — update
         PortfolioView.ProjectView updated = service.updateProject(EMPLOYEE, 300L,
-                new PortfolioView.ProjectView(300L, "New", "d", 2020, 2021));
+                new PortfolioView.ProjectView(300L, "New", "d", 2020, 2021), OWNER);
 
         // Then
         assertThat(updated.name()).isEqualTo("New");
         assertThat(project.getName()).isEqualTo("New");
 
         // When — delete
-        service.deleteProject(EMPLOYEE, 300L);
+        service.deleteProject(EMPLOYEE, 300L, OWNER);
 
         // Then
         then(projectRepository).should().delete(project);
@@ -556,7 +566,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(20L)).willReturn(Optional.of(portfolio(20L, OTHER_EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.updateLink(EMPLOYEE, 400L, new PortfolioView.LinkView(400L, "L", "https://y")))
+        assertThatThrownBy(() -> service.updateLink(EMPLOYEE, 400L, new PortfolioView.LinkView(400L, "L", "https://y"), OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
         then(linkRepository).should(never()).save(any(PortfolioLink.class));
     }
@@ -575,18 +585,18 @@ class PortfolioServiceTest {
         PortfolioView.LinkView link = new PortfolioView.LinkView(null, "L", "https://x");
 
         // When / Then — each method throws before touching any repository
-        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, skill)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.addEducation(EMPLOYEE, edu)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.addProject(EMPLOYEE, proj)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.addLink(EMPLOYEE, link)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.updateSkill(EMPLOYEE, 1L, skill)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.updateEducation(EMPLOYEE, 1L, edu)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.updateProject(EMPLOYEE, 1L, proj)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.updateLink(EMPLOYEE, 1L, link)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.deleteSkill(EMPLOYEE, 1L)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.deleteEducation(EMPLOYEE, 1L)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.deleteProject(EMPLOYEE, 1L)).isInstanceOf(EmployeeNotFoundException.class);
-        assertThatThrownBy(() -> service.deleteLink(EMPLOYEE, 1L)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, skill, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.addEducation(EMPLOYEE, edu, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.addProject(EMPLOYEE, proj, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.addLink(EMPLOYEE, link, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.updateSkill(EMPLOYEE, 1L, skill, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.updateEducation(EMPLOYEE, 1L, edu, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.updateProject(EMPLOYEE, 1L, proj, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.updateLink(EMPLOYEE, 1L, link, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.deleteSkill(EMPLOYEE, 1L, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.deleteEducation(EMPLOYEE, 1L, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.deleteProject(EMPLOYEE, 1L, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
+        assertThatThrownBy(() -> service.deleteLink(EMPLOYEE, 1L, OWNER)).isInstanceOf(EmployeeNotFoundException.class);
         then(portfolioRepository).should(never()).save(any(Portfolio.class));
         then(skillRepository).should(never()).save(any(PortfolioSkill.class));
     }
@@ -603,7 +613,7 @@ class PortfolioServiceTest {
         given(skillRepository.save(any(PortfolioSkill.class))).willAnswer(inv -> withId(inv.getArgument(0), 100L));
 
         // When
-        PortfolioView.SkillView result = service.addSkill(EMPLOYEE, new PortfolioView.SkillView(null, "Angular", 0, 0));
+        PortfolioView.SkillView result = service.addSkill(EMPLOYEE, new PortfolioView.SkillView(null, "Angular", 0, 0), OWNER);
 
         // Then — no rejection; the zeros round-trip
         assertThat(result.years()).isZero();
@@ -625,7 +635,7 @@ class PortfolioServiceTest {
 
         // When
         PortfolioView.EducationView result = service.updateEducation(EMPLOYEE, 200L,
-                new PortfolioView.EducationView(200L, "NewUni", "PhD", 2010, 2014));
+                new PortfolioView.EducationView(200L, "NewUni", "PhD", 2010, 2014), OWNER);
 
         // Then — every field is applied and echoed back
         assertThat(edu.getInstitution()).isEqualTo("NewUni");
@@ -647,7 +657,7 @@ class PortfolioServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> service.updateEducation(EMPLOYEE, 200L,
-                new PortfolioView.EducationView(200L, "New", null, null, null)))
+                new PortfolioView.EducationView(200L, "New", null, null, null), OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
         then(educationRepository).should(never()).save(any(PortfolioEducation.class));
     }
@@ -662,7 +672,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(10L)).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When
-        service.deleteEducation(EMPLOYEE, 200L);
+        service.deleteEducation(EMPLOYEE, 200L, OWNER);
 
         // Then
         then(educationRepository).should().delete(edu);
@@ -678,7 +688,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(20L)).willReturn(Optional.of(portfolio(20L, OTHER_EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.deleteEducation(EMPLOYEE, 200L))
+        assertThatThrownBy(() -> service.deleteEducation(EMPLOYEE, 200L, OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
         then(educationRepository).should(never()).delete(any(PortfolioEducation.class));
     }
@@ -698,7 +708,7 @@ class PortfolioServiceTest {
 
         // When
         PortfolioView.ProjectView result = service.updateProject(EMPLOYEE, 300L,
-                new PortfolioView.ProjectView(300L, "New", "new desc", 2020, 2021));
+                new PortfolioView.ProjectView(300L, "New", "new desc", 2020, 2021), OWNER);
 
         // Then — name, description, and both years are applied
         assertThat(project.getName()).isEqualTo("New");
@@ -720,7 +730,7 @@ class PortfolioServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> service.updateProject(EMPLOYEE, 300L,
-                new PortfolioView.ProjectView(300L, "New", null, null, null)))
+                new PortfolioView.ProjectView(300L, "New", null, null, null), OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
         then(projectRepository).should(never()).save(any(PortfolioProject.class));
     }
@@ -735,7 +745,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(20L)).willReturn(Optional.of(portfolio(20L, OTHER_EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.deleteProject(EMPLOYEE, 300L))
+        assertThatThrownBy(() -> service.deleteProject(EMPLOYEE, 300L, OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
         then(projectRepository).should(never()).delete(any(PortfolioProject.class));
     }
@@ -754,7 +764,7 @@ class PortfolioServiceTest {
 
         // When
         PortfolioView.LinkView result = service.updateLink(EMPLOYEE, 400L,
-                new PortfolioView.LinkView(400L, "GitHub", "https://gh"));
+                new PortfolioView.LinkView(400L, "GitHub", "https://gh"), OWNER);
 
         // Then — both label and url are applied
         assertThat(link.getLabel()).isEqualTo("GitHub");
@@ -772,7 +782,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(10L)).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When
-        service.deleteLink(EMPLOYEE, 400L);
+        service.deleteLink(EMPLOYEE, 400L, OWNER);
 
         // Then
         then(linkRepository).should().delete(link);
@@ -788,7 +798,7 @@ class PortfolioServiceTest {
         given(portfolioRepository.findById(20L)).willReturn(Optional.of(portfolio(20L, OTHER_EMPLOYEE.value())));
 
         // When / Then
-        assertThatThrownBy(() -> service.deleteLink(EMPLOYEE, 400L))
+        assertThatThrownBy(() -> service.deleteLink(EMPLOYEE, 400L, OWNER))
                 .isInstanceOf(PortfolioEntryNotFoundException.class);
         then(linkRepository).should(never()).delete(any(PortfolioLink.class));
     }
@@ -803,8 +813,8 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then — a blank skill trips validateSkill inside replaceChildren
-        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, new PortfolioView(1L,
-                List.of(new PortfolioView.SkillView(null, "  ", 1, 1)), List.of(), List.of(), List.of())))
+        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, new PortfolioView(1L, null,
+                List.of(new PortfolioView.SkillView(null, "  ", 1, 1)), List.of(), List.of(), List.of()), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("skill is required");
         then(skillRepository).should(never()).save(any(PortfolioSkill.class));
@@ -818,8 +828,8 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then — a blank institution trips validateEducation inside replaceChildren
-        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, new PortfolioView(1L,
-                List.of(), List.of(new PortfolioView.EducationView(null, "", null, null, null)), List.of(), List.of())))
+        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, new PortfolioView(1L, null,
+                List.of(), List.of(new PortfolioView.EducationView(null, "", null, null, null)), List.of(), List.of()), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("institution is required");
         then(educationRepository).should(never()).save(any(PortfolioEducation.class));
@@ -833,8 +843,8 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then — a blank name trips validateProject inside replaceChildren
-        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, new PortfolioView(1L,
-                List.of(), List.of(), List.of(new PortfolioView.ProjectView(null, " ", null, null, null)), List.of())))
+        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, new PortfolioView(1L, null,
+                List.of(), List.of(), List.of(new PortfolioView.ProjectView(null, " ", null, null, null)), List.of()), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("name is required");
         then(projectRepository).should(never()).save(any(PortfolioProject.class));
@@ -848,11 +858,112 @@ class PortfolioServiceTest {
         given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio(10L, EMPLOYEE.value())));
 
         // When / Then — a blank url trips validateLink inside replaceChildren
-        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, new PortfolioView(1L,
-                List.of(), List.of(), List.of(), List.of(new PortfolioView.LinkView(null, "L", " ")))))
+        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, new PortfolioView(1L, null,
+                List.of(), List.of(), List.of(), List.of(new PortfolioView.LinkView(null, "L", " "))), OWNER))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("url is required");
         then(linkRepository).should(never()).save(any(PortfolioLink.class));
+    }
+
+    // ---------------- ATSE1-39 RBAC: owner-or-admin gate on every mutating method ----------------
+
+    @Test
+    @DisplayName("Should reject a non-owner non-admin caller with ACCESS_DENIED on every mutating method (RBAC)")
+    void rbac_rejectsNonOwnerNonAdminOnEveryWrite() {
+        // Given — caller is a different employee who is neither the portfolio owner nor an admin
+        Caller other = new Caller(OTHER_EMAIL, EmployeeRole.EMPLOYEE);
+        given(employeeContract.exists(EMPLOYEE)).willReturn(true);
+
+        PortfolioView.SkillView skill = new PortfolioView.SkillView(null, "Angular", 1, 1);
+        PortfolioView.EducationView edu = new PortfolioView.EducationView(null, "Uni", null, null, null);
+        PortfolioView.ProjectView proj = new PortfolioView.ProjectView(null, "Portal", null, null, null);
+        PortfolioView.LinkView link = new PortfolioView.LinkView(null, "L", "https://x");
+        PortfolioView bulk = new PortfolioView(1L, null, List.of(), List.of(), List.of(), List.of());
+
+        // When / Then — every mutating method throws PortfolioException(ACCESS_DENIED)
+        assertThatThrownBy(() -> service.replacePortfolio(EMPLOYEE, bulk, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.addSkill(EMPLOYEE, skill, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.updateSkill(EMPLOYEE, 1L, skill, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.deleteSkill(EMPLOYEE, 1L, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.addEducation(EMPLOYEE, edu, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.updateEducation(EMPLOYEE, 1L, edu, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.deleteEducation(EMPLOYEE, 1L, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.addProject(EMPLOYEE, proj, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.updateProject(EMPLOYEE, 1L, proj, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.deleteProject(EMPLOYEE, 1L, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.addLink(EMPLOYEE, link, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.updateLink(EMPLOYEE, 1L, link, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+        assertThatThrownBy(() -> service.deleteLink(EMPLOYEE, 1L, other))
+                .isInstanceOf(PortfolioException.class)
+                .extracting(e -> ((PortfolioException) e).kind()).isEqualTo(PortfolioException.Kind.ACCESS_DENIED);
+
+        // And — no repository was touched by any of those rejected calls
+        then(portfolioRepository).should(never()).save(any(Portfolio.class));
+        then(skillRepository).should(never()).save(any(PortfolioSkill.class));
+        then(educationRepository).should(never()).save(any(PortfolioEducation.class));
+        then(projectRepository).should(never()).save(any(PortfolioProject.class));
+        then(linkRepository).should(never()).save(any(PortfolioLink.class));
+    }
+
+    @Test
+    @DisplayName("Should allow an ADMIN caller to mutate any employee's portfolio (RBAC override)")
+    void rbac_adminCanMutateAnyPortfolio() {
+        // Given — caller is an ADMIN, not the portfolio owner
+        given(employeeContract.exists(EMPLOYEE)).willReturn(true);
+        given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.empty());
+        given(portfolioRepository.save(any(Portfolio.class))).willAnswer(inv -> withId(inv.getArgument(0), 10L));
+        given(skillRepository.save(any(PortfolioSkill.class))).willAnswer(inv -> withId(inv.getArgument(0), 100L));
+
+        // When — admin adds a skill on behalf of the employee
+        PortfolioView.SkillView result = service.addSkill(EMPLOYEE,
+                new PortfolioView.SkillView(null, "Angular", 5, 9), ADMIN);
+
+        // Then — the row is persisted; admin's email is recorded as neither blocker nor owner check
+        assertThat(result.id()).isEqualTo(100L);
+        then(skillRepository).should().save(any(PortfolioSkill.class));
+    }
+
+    @Test
+    @DisplayName("Should allow the portfolio owner to mutate their own portfolio (RBAC owner path)")
+    void rbac_ownerCanMutateOwnPortfolio() {
+        // Given — caller is the owner (ada@staff.eng), portfolio row already exists
+        Portfolio portfolio = portfolio(10L, EMPLOYEE.value());
+        given(employeeContract.exists(EMPLOYEE)).willReturn(true);
+        given(portfolioRepository.findByEmployeeId(EMPLOYEE.value())).willReturn(Optional.of(portfolio));
+        given(skillRepository.findByPortfolioId(10L)).willReturn(List.of());
+        given(skillRepository.save(any(PortfolioSkill.class))).willAnswer(inv -> withId(inv.getArgument(0), 100L));
+
+        // When — owner adds a skill to their own portfolio
+        PortfolioView.SkillView result = service.addSkill(EMPLOYEE,
+                new PortfolioView.SkillView(null, "Angular", 5, 9), OWNER);
+
+        // Then — the row is persisted under the owner's portfolio
+        assertThat(result.skill()).isEqualTo("Angular");
+        then(skillRepository).should().save(any(PortfolioSkill.class));
     }
 
     // ---------------- helpers ----------------
