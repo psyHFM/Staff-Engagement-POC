@@ -1,0 +1,40 @@
+<div
+  class="modal-overlay"
+  role="dialog"
+  aria-modal="true"
+  tabindex="-1"
+  (click)="closeForm()"
+  (keydown.escape)="closeForm()">
+  <div class="modal-content">
+    <header class="modal-header">
+      <h2>{{ interactionId ? 'Create Task from Interaction' : 'Create New Task' }}</h2>
+      <button type="button" (click)="closeForm()" class="close-btn" aria-label="Close">&times;</button>
+    </header>
+
+    <form (ngSubmit)="submit()" #taskForm="ngForm" class="task-form">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input id="title" name="title" [(ngModel)]="request.title" required placeholder="Enter task title..." />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" [(ngModel)]="request.description" required placeholder="Enter task details..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <app-employee-picker
+          [value]="request.subjectId || null"
+          (valueChange)="onSubjectChange($event)">
+        </app-employee-picker>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" (click)="closeForm()" class="btn-secondary">Cancel</button>
+        <button type="submit" [disabled]="!taskForm.form.valid || state.loading()" class="btn-primary">
+          Create Task
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

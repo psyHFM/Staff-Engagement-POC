@@ -1,0 +1,31 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "Staff Engagement" [ref=e5] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e6]: 
+      - text: Staff Engagement
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Employees" [ref=e9] [cursor=pointer]:
+        - /url: /employees
+      - link "Interactions" [ref=e10] [cursor=pointer]:
+        - /url: /interactions
+      - link "Tasks" [ref=e11] [cursor=pointer]:
+        - /url: /tasks
+      - link "Portfolio" [ref=e12] [cursor=pointer]:
+        - /url: /portfolio
+      - link "Skills" [active] [ref=e13] [cursor=pointer]:
+        - /url: /skills
+    - generic [ref=e14]:
+      - generic [ref=e30]: admin@staff.eng
+      - button "Sign out" [ref=e31] [cursor=pointer]
+  - main [ref=e16]:
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - heading "Skills Register" [level=1] [ref=e40]
+        - paragraph [ref=e41]: Find who's strong in a skill
+      - generic [ref=e43]:
+        - generic [ref=e44]: 
+        - textbox "Skill search" [ref=e45]:
+          - /placeholder: Search for a skill, e.g. Angular

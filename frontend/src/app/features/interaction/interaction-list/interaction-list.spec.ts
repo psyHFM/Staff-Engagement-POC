@@ -7,12 +7,14 @@ describe('InteractionList', () => {
   let fixture: ComponentFixture<InteractionList>;
   let component: InteractionList;
 
-  const interaction = (id: number): InteractionSummary => ({
+  const interaction = (id: number, overrides: Partial<InteractionSummary> = {}): InteractionSummary => ({
     id: { value: id },
     type: 'check-in',
     subject: { value: 1 },
     facilitator: { value: 2 },
-    note: `Note ${id}`
+    note: `Note ${id}`,
+    createdAt: '2026-06-25T10:00:00Z',
+    ...overrides
   });
 
   const page = (overrides: Partial<Paged<InteractionSummary>> = {}): Paged<InteractionSummary> => ({
@@ -52,7 +54,7 @@ describe('InteractionList', () => {
     fixture.detectChanges();
 
     // Then
-    expect(fixture.nativeElement.querySelector('.interaction-list__empty')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.interaction-list__empty')).not.toBeNull();
   });
 
   it('disables the Previous button on the first page', () => {
@@ -102,5 +104,82 @@ describe('InteractionList', () => {
 
     // Then
     expect(emitted).toEqual([{ offset: 0, limit: 20 }]);
+  });
+
+  // ---- ATSE1-28 / ATSE1-29 — row actions ----------------------------
+
+  it('renders an Edit and Create task button for every row', () => {
+    // When
+    fixture.detectChanges();
+
+    // Then
+    const editButtons = fixture.nativeElement.querySelectorAll('.interaction-list__action-btn:not(.interaction-list__action-btn--secondary)');
+    const createTaskButtons = fixture.nativeElement.querySelectorAll('.interaction-list__action-btn--secondary');
+    expect(editButtons.length).toBe(2);
+    expect(createTaskButtons.length).toBe(2);
+    expect(editButtons[0].getAttribute('aria-label')).toBe('Edit interaction 1');
+    expect(createTaskButtons[1].getAttribute('aria-label')).toBe('Create task from interaction 2');
+  });
+
+  it('emits rowEdit with the full interaction when an Edit button is clicked', () => {
+    // Given
+    fixture.detectChanges();
+    const emitted: InteractionSummary[] = [];
+    component.rowEdit.subscribe((item) => emitted.push(item));
+    const editButton = fixture.nativeElement.querySelector(
+      '.interaction-list__action-btn:not(.interaction-list__action-btn--secondary)'
+    ) as HTMLButtonElement;
+
+    // When
+    editButton.click();
+
+    // Then
+    expect(emitted).toHaveLength(1);
+    expect(emitted[0].id).toEqual({ value: 1 });
+    expect(emitted[0].note).toBe('Note 1');
+  });
+
+  it('emits createTask with the full interaction when a Create-task button is clicked', () => {
+    // Given
+    fixture.detectChanges();
+    const emitted: InteractionSummary[] = [];
+    component.createTask.subscribe((item) => emitted.push(item));
+    const createTaskButton = fixture.nativeElement.querySelector(
+      '.interaction-list__action-btn--secondary'
+    ) as HTMLButtonElement;
+
+    // When
+    createTaskButton.click();
+
+    // Then
+    expect(emitted).toHaveLength(1);
+    expect(emitted[0].id).toEqual({ value: 1 });
+    expect(emitted[0].note).toBe('Note 1');
+  });
+
+  it('onEdit only emits the supplied interaction and not others', () => {
+    // Given
+    const target = interaction(2);
+    const emitted: InteractionSummary[] = [];
+    component.rowEdit.subscribe((item) => emitted.push(item));
+
+    // When
+    component.onEdit(target);
+
+    // Then
+    expect(emitted).toEqual([target]);
+  });
+
+  it('onCreateTask only emits the supplied interaction and not others', () => {
+    // Given
+    const target = interaction(2);
+    const emitted: InteractionSummary[] = [];
+    component.createTask.subscribe((item) => emitted.push(item));
+
+    // When
+    component.onCreateTask(target);
+
+    // Then
+    expect(emitted).toEqual([target]);
   });
 });

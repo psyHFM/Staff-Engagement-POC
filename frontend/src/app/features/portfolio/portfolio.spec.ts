@@ -4,6 +4,8 @@ import {
   HttpTestingController,
   provideHttpClientTesting
 } from '@angular/common/http/testing';
+import { By } from '@angular/platform-browser';
+import { NgForm } from '@angular/forms';
 
 import { Portfolio } from './portfolio';
 import { Portfolio as PortfolioModel, emptyPortfolio } from './portfolio.model';
@@ -17,13 +19,13 @@ type ComponentApi = {
   removeProject: (p: { id: string }) => void;
   addLink: () => void;
   removeLink: (l: { id: string }) => void;
-  skillFormModel: { skill: string; years: string; projectCount: string };
-  eduFormModel: { institution: string; qualification: string; startYear: string; endYear: string };
-  projFormModel: { name: string; description: string; startYear: string; endYear: string };
-  linkFormModel: { label: string; url: string };
+  skillModel: { skill: string; years: number | null; projectCount: number | null };
+  eduModel: { institution: string; qualification: string; startYear: number | null; endYear: number | null };
+  projModel: { name: string; description: string; startYear: number | null; endYear: number | null };
+  linkModel: { label: string; url: string };
 };
 
-describe('Portfolio (editor)', () => {
+describe('Portfolio (editor) — ATSE1-35', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
@@ -37,12 +39,12 @@ describe('Portfolio (editor)', () => {
   afterEach(() => httpMock.verify());
 
   /** Creates the component and flushes the ngOnInit GET with an empty portfolio. */
-  const mount = (): ComponentApi => {
+  const mount = (): { fixture: ReturnType<typeof TestBed.createComponent<Portfolio>>; api: ComponentApi } => {
     const fixture = TestBed.createComponent(Portfolio);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/employees/1/portfolio').flush(emptyPortfolio('1'));
     fixture.detectChanges();
-    return fixture.componentInstance as unknown as ComponentApi;
+    return { fixture, api: fixture.componentInstance as unknown as ComponentApi };
   };
 
   it('loads the portfolio for the default employee on init and renders its skills', () => {
@@ -87,15 +89,16 @@ describe('Portfolio (editor)', () => {
 
   // ---- Form → entry mapping (component-owned logic; dispatched to the state service) ----
 
-  it('addSkill maps the skill form to {skill, years, projectCount}, coercing blanks to 0', () => {
-    // Given
-    const c = mount();
-    c.skillFormModel.skill = 'Java';
-    c.skillFormModel.years = '3';
-    c.skillFormModel.projectCount = '2';
+  it('addSkill maps the skill model to {skill, years, projectCount}, coercing blanks to 0', () => {
+    // Given — populate the per-form model directly
+    const { fixture, api } = mount();
+    api.skillModel.skill = 'Java';
+    api.skillModel.years = 3;
+    api.skillModel.projectCount = 2;
+    fixture.detectChanges();
 
     // When
-    c.addSkill();
+    api.addSkill();
     const post = httpMock.expectOne('/api/v1/employees/1/portfolio/skills');
 
     // Then
@@ -103,47 +106,89 @@ describe('Portfolio (editor)', () => {
     expect(post.request.body).toEqual({ skill: 'Java', years: 3, projectCount: 2 });
   });
 
-  it('addSkill sends 0 for empty/NaN years and projectCount', () => {
-    // Given — years left blank, projectCount non-numeric
-    const c = mount();
-    c.skillFormModel.skill = 'Rust';
-    c.skillFormModel.years = '';
-    c.skillFormModel.projectCount = 'abc';
+  it('addSkill sends 0 for null years and projectCount', () => {
+    // Given — numbers left null
+    const { fixture, api } = mount();
+    api.skillModel.skill = 'Rust';
+    api.skillModel.years = null;
+    api.skillModel.projectCount = null;
+    fixture.detectChanges();
 
     // When
-    c.addSkill();
+    api.addSkill();
     const post = httpMock.expectOne('/api/v1/employees/1/portfolio/skills');
 
-    // Then — blanks/NaN coerce to 0 via num() ?? 0
+    // Then — null coerces to 0
     expect(post.request.body).toEqual({ skill: 'Rust', years: 0, projectCount: 0 });
   });
 
-  it('addEducation maps the form, dropping blank optional fields to undefined', () => {
-    // Given — only the required institution is set
-    const c = mount();
-    c.eduFormModel.institution = 'Uni';
-    c.eduFormModel.qualification = '';
-    c.eduFormModel.startYear = '';
-    c.eduFormModel.endYear = '';
+  it('addSkill resets the form model and clears the inputs after a successful submit', () => {
+    // Given — populate, submit, then assert the model + DOM inputs are reset
+    const { fixture, api } = mount();
+    api.skillModel.skill = 'Go';
+    api.skillModel.years = 2;
+    api.skillModel.projectCount = 1;
+    fixture.detectChanges();
 
     // When
-    c.addEducation();
+    api.addSkill();
+    httpMock.expectOne('/api/v1/employees/1/portfolio/skills');
+    fixture.detectChanges();
+
+    // Then — the model is reset to the empty initial values
+    expect(api.skillModel.skill).toBe('');
+    expect(api.skillModel.years).toBeNull();
+    expect(api.skillModel.projectCount).toBeNull();
+
+    // And the DOM inputs reflect those values
+    const skillForm = fixture.debugElement.query(By.directive(NgForm));
+    const inputs = skillForm.queryAll(By.css('input'));
+    expect((inputs[0].nativeElement as HTMLInputElement).value).toBe('');
+    expect((inputs[1].nativeElement as HTMLInputElement).value).toBe('');
+    expect((inputs[2].nativeElement as HTMLInputElement).value).toBe('');
+  });
+
+  it('addSkill is a no-op when the form is invalid (missing required skill)', () => {
+    // Given — skill left blank; required validator fails
+    const { fixture, api } = mount();
+    api.skillModel.years = 2;
+    fixture.detectChanges();
+
+    // When
+    api.addSkill();
+
+    // Then — no POST issued
+    httpMock.expectNone('/api/v1/employees/1/portfolio/skills');
+  });
+
+  it('addEducation maps the model, dropping blank optional fields to undefined', () => {
+    // Given — only the required institution is set
+    const { fixture, api } = mount();
+    api.eduModel.institution = 'Uni';
+    api.eduModel.qualification = '';
+    api.eduModel.startYear = null;
+    api.eduModel.endYear = null;
+    fixture.detectChanges();
+
+    // When
+    api.addEducation();
     const post = httpMock.expectOne('/api/v1/employees/1/portfolio/education');
 
-    // Then — blank qualification → undefined; blank years → undefined
+    // Then — blank qualification → undefined; null years → undefined
     expect(post.request.body).toEqual({ institution: 'Uni', qualification: undefined, startYear: undefined, endYear: undefined });
   });
 
   it('addEducation passes through numeric years and an optional qualification', () => {
     // Given
-    const c = mount();
-    c.eduFormModel.institution = 'Uni';
-    c.eduFormModel.qualification = 'BSc';
-    c.eduFormModel.startYear = '2018';
-    c.eduFormModel.endYear = '2021';
+    const { fixture, api } = mount();
+    api.eduModel.institution = 'Uni';
+    api.eduModel.qualification = 'BSc';
+    api.eduModel.startYear = 2018;
+    api.eduModel.endYear = 2021;
+    fixture.detectChanges();
 
     // When
-    c.addEducation();
+    api.addEducation();
     const post = httpMock.expectOne('/api/v1/employees/1/portfolio/education');
 
     // Then
@@ -152,14 +197,15 @@ describe('Portfolio (editor)', () => {
 
   it('addProject maps name/description/years, dropping a blank description to undefined', () => {
     // Given
-    const c = mount();
-    c.projFormModel.name = 'Portal';
-    c.projFormModel.description = '';
-    c.projFormModel.startYear = '2020';
-    c.projFormModel.endYear = '';
+    const { fixture, api } = mount();
+    api.projModel.name = 'Portal';
+    api.projModel.description = '';
+    api.projModel.startYear = 2020;
+    api.projModel.endYear = null;
+    fixture.detectChanges();
 
     // When
-    c.addProject();
+    api.addProject();
     const post = httpMock.expectOne('/api/v1/employees/1/portfolio/projects');
 
     // Then
@@ -168,12 +214,13 @@ describe('Portfolio (editor)', () => {
 
   it('addLink maps label/url, dropping a blank label to undefined', () => {
     // Given
-    const c = mount();
-    c.linkFormModel.label = '';
-    c.linkFormModel.url = 'https://gh';
+    const { fixture, api } = mount();
+    api.linkModel.label = '';
+    api.linkModel.url = 'https://gh';
+    fixture.detectChanges();
 
     // When
-    c.addLink();
+    api.addLink();
     const post = httpMock.expectOne('/api/v1/employees/1/portfolio/links');
 
     // Then — blank label → undefined; url always sent
@@ -182,26 +229,41 @@ describe('Portfolio (editor)', () => {
 
   it('addLink passes through a non-blank label', () => {
     // Given
-    const c = mount();
-    c.linkFormModel.label = 'GitHub';
-    c.linkFormModel.url = 'https://gh';
+    const { fixture, api } = mount();
+    api.linkModel.label = 'GitHub';
+    api.linkModel.url = 'https://gh';
+    fixture.detectChanges();
 
     // When
-    c.addLink();
+    api.addLink();
     const post = httpMock.expectOne('/api/v1/employees/1/portfolio/links');
 
     // Then
     expect(post.request.body).toEqual({ label: 'GitHub', url: 'https://gh' });
   });
 
+  it('addLink is a no-op when url is blank (required field missing)', () => {
+    // Given
+    const { fixture, api } = mount();
+    api.linkModel.label = 'GitHub';
+    api.linkModel.url = '';
+    fixture.detectChanges();
+
+    // When
+    api.addLink();
+
+    // Then — no POST issued (form invalid because url is required)
+    httpMock.expectNone('/api/v1/employees/1/portfolio/links');
+  });
+
   // ---- Remove dispatch (DELETE to the correct sub-resource URL) ----
 
   it('removeSkill dispatches DELETE /skills/{id}', () => {
     // Given
-    const c = mount();
+    const { api } = mount();
 
     // When
-    c.removeSkill({ id: '7' });
+    api.removeSkill({ id: '7' });
     const del = httpMock.expectOne('/api/v1/employees/1/portfolio/skills/7');
 
     // Then
@@ -209,20 +271,20 @@ describe('Portfolio (editor)', () => {
   });
 
   it('removeEducation dispatches DELETE /education/{id}', () => {
-    const c = mount();
-    c.removeEducation({ id: '8' });
+    const { api } = mount();
+    api.removeEducation({ id: '8' });
     expect(httpMock.expectOne('/api/v1/employees/1/portfolio/education/8').request.method).toBe('DELETE');
   });
 
   it('removeProject dispatches DELETE /projects/{id}', () => {
-    const c = mount();
-    c.removeProject({ id: '9' });
+    const { api } = mount();
+    api.removeProject({ id: '9' });
     expect(httpMock.expectOne('/api/v1/employees/1/portfolio/projects/9').request.method).toBe('DELETE');
   });
 
   it('removeLink dispatches DELETE /links/{id}', () => {
-    const c = mount();
-    c.removeLink({ id: '10' });
+    const { api } = mount();
+    api.removeLink({ id: '10' });
     expect(httpMock.expectOne('/api/v1/employees/1/portfolio/links/10').request.method).toBe('DELETE');
   });
 });

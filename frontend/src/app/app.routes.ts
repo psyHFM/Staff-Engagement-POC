@@ -47,5 +47,13 @@ export const routes: Routes = [
     path: 'employees/:id/profile',
     loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),
     canActivate: [authGuard]
+  },
+  // Self-service page — resolves the current user from the JWT subject and
+  // surfaces their own Employee record. Split out from /employees in ATSE1-32
+  // so the directory page can stay focused on browsing.
+  {
+    path: 'profile',
+    loadComponent: () => import('./your-details/your-details-page').then((m) => m.YourDetailsPage),
+    canActivate: [authGuard]
   }
 ];

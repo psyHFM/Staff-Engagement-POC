@@ -3,8 +3,8 @@
 > Constitution document. Primary source of truth for *why* this project exists and *what* domain it models.
 > Pair with `ROADMAP.md` (how/when) and the YAML specs in `.claude/constitution/` (how it must be built).
 
-- **Version:** 1.1.0
-- **Last updated:** 2026-06-23
+- **Version:** 1.3.0
+- **Last updated:** 2026-06-25
 - **Status:** POC — exploratory, not a committed product
 
 ---
@@ -122,7 +122,11 @@ The POC is successful if it can answer, end-to-end through the UI:
 - Notifications, email, scheduling.
 - Mobile clients.
 - Data migration from existing note systems.
-- Persistence of frontend state across refreshes.
+- Persistence of frontend state across refreshes, **except** the
+  authentication token (JWT) which is persisted to `sessionStorage` to
+  preserve session continuity on reload / direct navigation. See
+  `frontend-state.yaml -> persistence.carve_outs` for the rationale and
+  the explicit key.
 - Integration / end-to-end tests.
 
 ## 7. Architectural alignment

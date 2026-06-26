@@ -226,3 +226,58 @@ test end to end with playwright if you see seeded stuff please
 
 commit nad make PR
 
+### Hendrik Muller — 2026-06-25 15:33:10
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `155,871` in / `586` out · cache read `0` / write `0` · **156,457 total**
+
+check all the fucntionality on the front end with new docker container and playwright, test every tab and button , all The CRUD and see make notes of what intuative for a human to use , in regards of the domain, like working in names rather than ids or either/or. keep track so we can make jira tickets to fix or add
+
+### Hendrik Muller — 2026-06-25 15:46:31
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `80,138` in / `1,097` out · cache read `0` / write `0` · **81,235 total**
+
+add these notes together: General:
+- refreshing shouldnt log you out 
+
+Employyes/Profile
+- the "your profile" part of the employees page should be "your details" and should not be on the eployyes page but rather when the user clicks on the span.shell_user.. that page should also be the users Profile (the /profile page) 
+    -hence the employees page is just the director (user details and profiles can not be edited by non admin users)
+
+    Interactions:
+- the employee drop down on interactions should list all employees (scrollable drop down)
+- the subject field is short text input 
+- the faciailator field should default to the logged in user
+- when pressing log interaction it should show up in interaction history without having to refresh the page. 
+eac h interction item on the interaction history should be editable. 
+- tasks shoiuld be able o be created from an inbteraction without having to go to the tasks tab and creating one there. 
+
+Tasks:
+- should have an employee and inbteraction drop down (emp name and interaction name displayed on drop down but li nked by ID) to link back to employees and interactions. 
+    - depending on whoch is chosen first the dropdown for interaction and employee should be dependent opn the other. for example: if you click employee 1 on the dro down and then the drop down for interactions should filter for the ones linked to that employee and visa versa.. 
+- perhaps some subtasks on tasks like checkbox items ? 
+- big: currently tasks arent showing up, when you create oine it does nothing nd even of reload/refresh 
+
+Portfolio: 
+- you shhould only be able to edit your own portfolio. somehow you should be able to view other peoples portfolios but not be able to edit (unless an admin i think?)
+- its buggy right now, you cant add multple of anything, there should be a add xxx (to add more) and a save to save the one youre currently typing out
+
+Skills
+- should maybe have a list of skills. maybe like a grid of cards like 5 on a row or something, whatever fits, can be sorted in alphabetcical (a-z or z-a) and most popurlar (one that has trhe most eployees on it so like if 10 emplotees have it listed as a skill i mean, ranked like that). in addtion to the current search functionaliy.
+- clicking on the tile wil display the current skill-card that comes up when you search . it just needs a redisgn int the whole its not qworking right now  check jira and make tickets
+
+### Hendrik Muller — 2026-06-25 17:13:00
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `90,299` in / `120` out · cache read `0` / write `0` · **90,419 total**
+
+help me on a new branch ,open spec propose and apply with personas , tasks 25 to task 35 on jira ,
+
+### Hendrik Muller — 2026-06-25 18:43:28
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `157,102` in / `32` out · cache read `0` / write `0` · **157,134 total**
+
+continue
+

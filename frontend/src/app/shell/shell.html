@@ -15,7 +15,7 @@
 
   <div class="shell__auth">
     @if (auth.isAuthenticated()) {
-      <span class="shell__user">{{ auth.currentUser() }}</span>
+      <a routerLink="/profile" class="shell__user" title="Your details">{{ auth.currentUser() }}</a>
       <button type="button" class="shell__logout" (click)="logout()">Sign out</button>
     } @else {
       <a routerLink="/login" class="shell__login">Sign in</a>

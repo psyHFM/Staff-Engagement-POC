@@ -50,7 +50,7 @@ describe('InteractionStateService', () => {
     );
 
   beforeEach(() => {
-    apiClientSpy = { get: jest.fn(), post: jest.fn() };
+    apiClientSpy = { get: jest.fn(), post: jest.fn(), patch: jest.fn() };
     authStateMock = { currentUser: signal(null) };
 
     TestBed.configureTestingModule({
@@ -64,10 +64,47 @@ describe('InteractionStateService', () => {
     service = TestBed.inject(InteractionStateService);
   });
 
-  it('exposes the stub employee list as subjects', () => {
-    // Then
-    expect(service.subjects()).toHaveLength(3);
-    expect(service.subjects()[0].fullName).toBe('Admin User');
+  it('starts with an empty subjects list (real data is loaded on demand)', () => {
+    // Then — no stub data; the UI must call loadSubjects() to populate the dropdown
+    expect(service.subjects()).toEqual([]);
+  });
+
+  it('loadSubjects fetches GET /api/v1/employees and maps to EmployeeOption[]', () => {
+    // Given — the backend returns a paginated employee directory
+    const page = {
+      content: [
+        { id: { value: 1 }, fullName: 'Admin User', email: 'admin@staff.eng', role: 'admin' },
+        { id: { value: 2 }, fullName: 'Employee User', email: 'employee@staff.eng', role: 'employee' }
+      ],
+      offset: 0,
+      limit: 100,
+      total: 2
+    };
+    apiClientSpy.get.mockReturnValue(of(page));
+
+    // When
+    service.loadSubjects();
+
+    // Then — the GET hits the employees endpoint with a wide page
+    expect(apiClientSpy.get).toHaveBeenCalledWith('employees', { offset: 0, limit: 100 });
+    // And the subjects signal exposes the projected EmployeeOption shape
+    expect(service.subjects()).toEqual([
+      { id: { value: 1 }, fullName: 'Admin User' },
+      { id: { value: 2 }, fullName: 'Employee User' }
+    ]);
+  });
+
+  it('loadSubjects surfaces a directory failure via the state error signal', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(throwError(() => apiError(500)));
+
+    // When
+    service.loadSubjects();
+
+    // Then — subjects stay empty, error surfaces
+    expect(service.subjects()).toEqual([]);
+    expect(service.error()).toEqual(apiError(500));
+    expect(service.isLoading()).toBe(false);
   });
 
   it('selectSubject updates the selected subject and clears errors', () => {
@@ -218,5 +255,98 @@ describe('InteractionStateService', () => {
     // Then
     expect(service.created()).toBeNull();
     expect(service.error()).toBeNull();
+  });
+
+  // ---- ATSE1-28 — PATCH /api/v1/interactions/{id} -----------------
+
+  it('updateInteraction PATCHes /interactions/{id} with type+note and refreshes history', () => {
+    // Given
+    const updated = interaction({ id: { value: 5 }, type: 'mentoring', note: 'updated note' });
+    apiClientSpy.patch.mockReturnValue(of(updated));
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+
+    // When
+    service.updateInteraction({ value: 5 }, 'mentoring', 'updated note').subscribe();
+
+    // Then — PATCH was called with the correct body shape
+    expect(apiClientSpy.patch).toHaveBeenCalledWith('interactions/5', { type: 'mentoring', note: 'updated note' });
+    // And history was refreshed
+    expect(apiClientSpy.get).toHaveBeenCalled();
+    // And the success signal is set so the page can toast
+    expect(service.created()).toEqual(updated);
+    // And the loading flag flipped back to false (beginLoad/endLoad pair)
+    expect(service.isLoading()).toBe(false);
+  });
+
+  it('updateInteraction surfaces a 404 (existence-opaque) as an API error', () => {
+    // Given
+    apiClientSpy.patch.mockReturnValue(throwError(() => apiError(404)));
+
+    // When
+    service.updateInteraction({ value: 999 }, 'check-in', 'note').subscribe({ error: () => {} });
+
+    // Then — error surfaces via the state.error signal
+    expect(service.error()).toEqual(apiError(404));
+    expect(service.isLoading()).toBe(false);
+  });
+
+  it('updateInteraction does not refresh history when the call fails', () => {
+    // Given
+    apiClientSpy.patch.mockReturnValue(throwError(() => apiError(403)));
+    apiClientSpy.get.mockClear();
+
+    // When
+    service.updateInteraction({ value: 5 }, 'check-in', 'note').subscribe({ error: () => {} });
+
+    // Then
+    expect(apiClientSpy.get).not.toHaveBeenCalled();
+  });
+
+  // ---- ATSE1-28 — verifyEditableLocally pre-flight ----------------
+
+  it('verifyEditableLocally returns false when no history has been loaded', () => {
+    // Then — no history yet
+    expect(service.verifyEditableLocally({ value: 5 }, employee(2), false)).toBe(false);
+  });
+
+  it('verifyEditableLocally returns false when the interaction is not in the cached page', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+    service.loadHistory();
+
+    // When / Then — id=999 is not in the seeded page
+    expect(service.verifyEditableLocally({ value: 999 }, employee(2), false)).toBe(false);
+  });
+
+  it('verifyEditableLocally returns true for the original facilitator', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+    service.loadHistory();
+
+    // When / Then — facilitator=2, actor=2 → editable
+    expect(service.verifyEditableLocally({ value: 1 }, employee(2), false)).toBe(true);
+  });
+
+  it('verifyEditableLocally returns true for any admin regardless of facilitator', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+    service.loadHistory();
+
+    // When / Then — admin flag bypasses the facilitator check
+    expect(service.verifyEditableLocally({ value: 1 }, employee(99), true)).toBe(true);
+  });
+
+  it('verifyEditableLocally returns false for a non-admin non-facilitator actor', () => {
+    // Given
+    apiClientSpy.get.mockReturnValue(of(page()));
+    service.selectSubject(employee(1));
+    service.loadHistory();
+
+    // When / Then — actor=3, facilitator=2, not admin → false
+    expect(service.verifyEditableLocally({ value: 1 }, employee(3), false)).toBe(false);
   });
 });

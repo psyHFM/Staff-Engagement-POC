@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { PortfolioStateService } from './portfolio-state.service';
 import { SkillEntry, EducationEntry, ProjectEntry, LinkEntry } from './portfolio.model';
 
@@ -39,9 +39,9 @@ import { SkillEntry, EducationEntry, ProjectEntry, LinkEntry } from './portfolio
             <li *ngIf="p.skills.length === 0" class="empty">No skills yet.</li>
           </ul>
           <form (ngSubmit)="addSkill()" class="inline-form" #skillForm="ngForm">
-            <input name="skill" ngModel placeholder="Skill (e.g. Angular)" required />
-            <input type="number" name="years" ngModel placeholder="Years" min="0" />
-            <input type="number" name="projectCount" ngModel placeholder="Projects" min="0" />
+            <input name="skill" [(ngModel)]="skillModel.skill" placeholder="Skill (e.g. Angular)" required />
+            <input type="number" name="years" [(ngModel)]="skillModel.years" placeholder="Years" min="0" />
+            <input type="number" name="projectCount" [(ngModel)]="skillModel.projectCount" placeholder="Projects" min="0" />
             <button type="submit" [disabled]="!skillForm.valid" class="btn-secondary">Add skill</button>
           </form>
         </section>
@@ -59,10 +59,10 @@ import { SkillEntry, EducationEntry, ProjectEntry, LinkEntry } from './portfolio
             <li *ngIf="p.education.length === 0" class="empty">No education entries.</li>
           </ul>
           <form (ngSubmit)="addEducation()" class="inline-form" #eduForm="ngForm">
-            <input name="institution" ngModel placeholder="Institution" required />
-            <input name="qualification" ngModel placeholder="Qualification" />
-            <input type="number" name="startYear" ngModel placeholder="Start year" />
-            <input type="number" name="endYear" ngModel placeholder="End year" />
+            <input name="institution" [(ngModel)]="eduModel.institution" placeholder="Institution" required />
+            <input name="qualification" [(ngModel)]="eduModel.qualification" placeholder="Qualification" />
+            <input type="number" name="startYear" [(ngModel)]="eduModel.startYear" placeholder="Start year" />
+            <input type="number" name="endYear" [(ngModel)]="eduModel.endYear" placeholder="End year" />
             <button type="submit" [disabled]="!eduForm.valid" class="btn-secondary">Add education</button>
           </form>
         </section>
@@ -79,10 +79,10 @@ import { SkillEntry, EducationEntry, ProjectEntry, LinkEntry } from './portfolio
             <li *ngIf="p.projects.length === 0" class="empty">No projects.</li>
           </ul>
           <form (ngSubmit)="addProject()" class="inline-form" #projForm="ngForm">
-            <input name="name" ngModel placeholder="Project name" required />
-            <input name="description" ngModel placeholder="Description" />
-            <input type="number" name="startYear" ngModel placeholder="Start year" />
-            <input type="number" name="endYear" ngModel placeholder="End year" />
+            <input name="name" [(ngModel)]="projModel.name" placeholder="Project name" required />
+            <input name="description" [(ngModel)]="projModel.description" placeholder="Description" />
+            <input type="number" name="startYear" [(ngModel)]="projModel.startYear" placeholder="Start year" />
+            <input type="number" name="endYear" [(ngModel)]="projModel.endYear" placeholder="End year" />
             <button type="submit" [disabled]="!projForm.valid" class="btn-secondary">Add project</button>
           </form>
         </section>
@@ -99,8 +99,8 @@ import { SkillEntry, EducationEntry, ProjectEntry, LinkEntry } from './portfolio
             <li *ngIf="p.links.length === 0" class="empty">No links.</li>
           </ul>
           <form (ngSubmit)="addLink()" class="inline-form" #linkForm="ngForm">
-            <input name="label" ngModel placeholder="Label (optional)" />
-            <input name="url" ngModel placeholder="https://…" required />
+            <input name="label" [(ngModel)]="linkModel.label" placeholder="Label (optional)" />
+            <input name="url" [(ngModel)]="linkModel.url" placeholder="https://…" required />
             <button type="submit" [disabled]="!linkForm.valid" class="btn-secondary">Add link</button>
           </form>
         </section>
@@ -137,6 +137,44 @@ export class Portfolio implements OnInit {
   /** Read-only view of the service's portfolio signal. */
   protected readonly portfolio = computed(() => this.state.portfolio());
 
+  // ATSE1-35: per-form local models. The original code declared
+  // skillFormModel/eduFormModel/projFormModel/linkFormModel fields but
+  // never bound the template inputs to them (the inputs used bare
+  // `ngModel` with no two-way binding), so submit was always a no-op.
+  // Each form now owns a signal-backed model; the template uses
+  // `[(ngModel)]="<model>.<field>"`, so the model IS the source of
+  // truth read by addX(). After a successful submit the model is
+  // reset to its initial empty values, which clears the inputs via
+  // the same two-way binding.
+  protected skillModel: { skill: string; years: number | null; projectCount: number | null } = {
+    skill: '',
+    years: null,
+    projectCount: null
+  };
+  protected eduModel: { institution: string; qualification: string; startYear: number | null; endYear: number | null } = {
+    institution: '',
+    qualification: '',
+    startYear: null,
+    endYear: null
+  };
+  protected projModel: { name: string; description: string; startYear: number | null; endYear: number | null } = {
+    name: '',
+    description: '',
+    startYear: null,
+    endYear: null
+  };
+  protected linkModel: { label: string; url: string } = {
+    label: '',
+    url: ''
+  };
+
+  // ATSE1-35: @ViewChild on the form so we can read `form.valid` and
+  // call `form.resetForm()` after submit.
+  @ViewChild('skillForm') skillForm?: NgForm;
+  @ViewChild('eduForm') eduForm?: NgForm;
+  @ViewChild('projForm') projForm?: NgForm;
+  @ViewChild('linkForm') linkForm?: NgForm;
+
   ngOnInit(): void {
     this.load();
   }
@@ -146,12 +184,22 @@ export class Portfolio implements OnInit {
   }
 
   addSkill(): void {
-    const f = this.skillFormModel;
+    const m = this.skillModel;
+    if (!this.skillForm || !this.isSkillValid(m)) {
+      return;
+    }
     this.state.addSkill(this.employeeId(), {
-      skill: f.skill,
-      years: num(f.years) ?? 0,
-      projectCount: num(f.projectCount) ?? 0
+      skill: m.skill,
+      years: m.years ?? 0,
+      projectCount: m.projectCount ?? 0
     });
+    this.skillModel = { skill: '', years: null, projectCount: null };
+    this.skillForm.resetForm();
+  }
+
+  /** Mirrors the `required` attribute on the skill name input. */
+  private isSkillValid(m: { skill: string }): boolean {
+    return m.skill.trim().length > 0;
   }
 
   removeSkill(s: SkillEntry): void {
@@ -159,11 +207,19 @@ export class Portfolio implements OnInit {
   }
 
   addEducation(): void {
-    const f = this.eduFormModel;
+    const form = this.eduForm;
+    if (!form || !form.valid) {
+      return;
+    }
+    const m = this.eduModel;
     this.state.addEducation(this.employeeId(), {
-      institution: f.institution, qualification: f.qualification || undefined,
-      startYear: num(f.startYear), endYear: num(f.endYear)
+      institution: m.institution,
+      qualification: m.qualification || undefined,
+      startYear: m.startYear ?? undefined,
+      endYear: m.endYear ?? undefined
     });
+    this.eduModel = { institution: '', qualification: '', startYear: null, endYear: null };
+    form.resetForm();
   }
 
   removeEducation(e: EducationEntry): void {
@@ -171,11 +227,19 @@ export class Portfolio implements OnInit {
   }
 
   addProject(): void {
-    const f = this.projFormModel;
+    const form = this.projForm;
+    if (!form || !form.valid) {
+      return;
+    }
+    const m = this.projModel;
     this.state.addProject(this.employeeId(), {
-      name: f.name, description: f.description || undefined,
-      startYear: num(f.startYear), endYear: num(f.endYear)
+      name: m.name,
+      description: m.description || undefined,
+      startYear: m.startYear ?? undefined,
+      endYear: m.endYear ?? undefined
     });
+    this.projModel = { name: '', description: '', startYear: null, endYear: null };
+    form.resetForm();
   }
 
   removeProject(pr: ProjectEntry): void {
@@ -183,25 +247,21 @@ export class Portfolio implements OnInit {
   }
 
   addLink(): void {
-    const f = this.linkFormModel;
-    this.state.addLink(this.employeeId(), { label: f.label || undefined, url: f.url });
+    const m = this.linkModel;
+    if (!this.linkForm || !this.isLinkValid(m)) {
+      return;
+    }
+    this.state.addLink(this.employeeId(), { label: m.label || undefined, url: m.url });
+    this.linkModel = { label: '', url: '' };
+    this.linkForm.resetForm();
+  }
+
+  /** Mirrors the `required` attribute on the link url input. */
+  private isLinkValid(m: { url: string }): boolean {
+    return m.url.trim().length > 0;
   }
 
   removeLink(l: LinkEntry): void {
     this.state.removeLink(this.employeeId(), l.id);
   }
-
-  // ---- Local form state (transient UI; reset after submit) ----
-  protected skillFormModel = { skill: '', years: '', projectCount: '' };
-  protected eduFormModel = { institution: '', qualification: '', startYear: '', endYear: '' };
-  protected projFormModel = { name: '', description: '', startYear: '', endYear: '' };
-  protected linkFormModel = { label: '', url: '' };
-}
-
-function num(value: string | number | undefined): number | undefined {
-  if (value === '' || value === undefined || value === null) {
-    return undefined;
-  }
-  const n = Number(value);
-  return Number.isNaN(n) ? undefined : n;
 }

@@ -1,0 +1,61 @@
+databaseChangeLog:
+  # ATSE1-34 — task subtasks. Added in v1.1.0 (2026-06-25) of the task module.
+  #
+  # Picked up by master.yaml's `includeAll` on db/changelog/modules/ — no edit
+  # to master.yaml (frozen per backend-architecture.yaml). Same-module FK is
+  # acceptable because the task_item table is owned by the same module as task
+  # (matches the portfolio-002-skills / portfolio_skill convention from Phase 4).
+  - changeSet:
+      id: task-003-create-task-item-table
+      author: atse1-34
+      comment: |
+        ATSE1-34 — add a task_item sibling table for the new sub-items
+        (checklist) feature. task_id is a same-module FK to task(id)
+        because the table is owned by the same module — matches the
+        portfolio_skill convention.
+      changes:
+        - createTable:
+            tableName: task_item
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: task_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    # Same-module FK (task owns its child rows); matches
+                    # the portfolio_skill / portfolio_id pattern from
+                    # Phase 4 — see portfolio-001-initial.yaml.
+                    references: task(id)
+                    foreignKeyName: fk_task_item_task
+              - column:
+                  name: ordinal
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  # No DB default: the TaskItem entity stamps
+                  # createdAt = Instant.now() at construction
+                  # (updatable = false). Matches the Task + Interaction
+                  # module's timestamp convention.
+                  type: timestamp
+                  constraints:
+                    nullable: false

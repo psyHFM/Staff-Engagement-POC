@@ -1,141 +1,66 @@
-import { Component, inject, EventEmitter, Output, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+import { EmployeePicker } from '../../shared/forms/employee-picker/employee-picker';
 import { TaskStateService } from './task-state.service';
 import { CreateTaskRequest } from './task.model';
 
+/**
+ * Task-create modal (Phase 3 + ATSE1-29/ATSE1-30).
+ *
+ * <p>Used in two modes:
+ * <ul>
+ *   <li>Standalone from the task list — the user picks the subject.</li>
+ *   <li>Embedded from an interaction row (ATSE1-29) — the parent passes
+ *       {@link interactionId} so {@link sourceInteractionId} is seeded on
+ *       the request, and the parent owns re-opening the interaction list
+ *       after submit.</li>
+ * </ul>
+ *
+ * <p>The subject is now picked from the real employee directory via the
+ * shared {@link EmployeePicker} (ATSE1-30) — no more free-text id input.
+ */
 @Component({
   selector: 'app-task-create-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <div class="modal-overlay" (click)="closeForm()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <header class="modal-header">
-          <h2>{{ interactionId ? 'Create Task from Interaction' : 'Create New Task' }}</h2>
-          <button (click)="closeForm()" class="close-btn">&times;</button>
-        </header>
-
-        <form (ngSubmit)="submit()" #taskForm="ngForm" class="task-form">
-          <div class="form-group">
-            <label for="title">Title</label>
-            <input id="title" name="title" [(ngModel)]="request.title" required placeholder="Enter task title..." />
-          </div>
-
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" [(ngModel)]="request.description" required placeholder="Enter task details..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="subjectId">Subject (Employee ID)</label>
-            <input id="subjectId" name="subjectId" [(ngModel)]="request.subjectId" required placeholder="e.g. EMP-123" />
-          </div>
-
-          <div class="form-actions">
-            <button type="button" (click)="closeForm()" class="btn-secondary">Cancel</button>
-            <button type="submit" [disabled]="!taskForm.form.valid || state.loading()" class="btn-primary">
-              <i *ngIf="state.loading()" class="pi pi-spin pi-spinner"></i>
-              Create Task
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white;
-      padding: 2rem;
-      border-radius: 1rem;
-      width: 100%;
-      max-width: 500px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-    .modal-header h2 { margin: 0; font-size: 1.5rem; color: #111827; }
-    .close-btn {
-      background: none; border: none; font-size: 2rem; cursor: pointer; color: #9ca3af;
-    }
-    .close-btn:hover { color: #111827; }
-
-    .task-form { display: flex; flex-direction: column; gap: 1.25rem; }
-    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .form-group label { font-weight: 600; font-size: 0.9rem; color: #374151; }
-    .form-group input, .form-group textarea {
-      padding: 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.4rem;
-      font-size: 1rem;
-    }
-    .form-group textarea { min-height: 100px; resize: vertical; }
-
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    .btn-secondary {
-      background: white;
-      border: 1px solid #d1d5db;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      cursor: pointer;
-    }
-    .btn-primary {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
-  `]
+  imports: [CommonModule, FormsModule, EmployeePicker],
+  templateUrl: './task-create-form.html',
+  styleUrls: ['./task-create-form.scss']
 })
 export class TaskCreateForm implements OnInit {
   protected readonly state = inject(TaskStateService);
 
-  // Input for interaction context
+  /** Source interaction id when this form is opened from an interaction row. */
   @Input() interactionId?: string;
 
+  /** Renamed from `close` — `close` is a native DOM event name and trips
+   *  @angular-eslint/no-output-native. */
+  @Output() formClosed = new EventEmitter<void>();
+
+  /** The in-progress create request bound to the form. */
   request: CreateTaskRequest = {
     title: '',
     description: '',
-    subjectId: ''
+    subjectId: 0
   };
 
-  // Renamed from `close` — `close` is a native DOM event name and trips
-  // @angular-eslint/no-output-native.
-  @Output() formClosed = new EventEmitter<void>();
-
-  ngOnInit() {
+  ngOnInit(): void {
     if (this.interactionId) {
       this.request.sourceInteractionId = this.interactionId;
     }
   }
 
-  closeForm() {
+  /** Dropdown change bridge — receives the numeric id from the picker. */
+  protected onSubjectChange(id: number | null): void {
+    this.request.subjectId = id ?? 0;
+  }
+
+  closeForm(): void {
     this.formClosed.emit();
   }
 
-  submit() {
+  submit(): void {
     this.state.createTask(this.request);
     this.closeForm();
   }
