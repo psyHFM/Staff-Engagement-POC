@@ -70,12 +70,12 @@ export class AuthState {
         this.token.set(response.token);
         this.username.set(credentials.username);
         this.employeeId.set(response.employeeId ?? null);
-        this.storage.write(AUTH_STORAGE_KEY, response.token);
-        this.storage.write(AUTH_USERNAME_KEY, credentials.username);
+        this.safeWrite(AUTH_STORAGE_KEY, response.token);
+        this.safeWrite(AUTH_USERNAME_KEY, credentials.username);
         if (response.employeeId != null) {
-          this.storage.write(AUTH_EMPLOYEE_ID_KEY, String(response.employeeId));
+          this.safeWrite(AUTH_EMPLOYEE_ID_KEY, String(response.employeeId));
         } else {
-          this.storage.remove(AUTH_EMPLOYEE_ID_KEY);
+          this.safeRemove(AUTH_EMPLOYEE_ID_KEY);
         }
       })
     );
@@ -85,9 +85,9 @@ export class AuthState {
     this.token.set(null);
     this.username.set(null);
     this.employeeId.set(null);
-    this.storage.remove(AUTH_STORAGE_KEY);
-    this.storage.remove(AUTH_USERNAME_KEY);
-    this.storage.remove(AUTH_EMPLOYEE_ID_KEY);
+    this.safeRemove(AUTH_STORAGE_KEY);
+    this.safeRemove(AUTH_USERNAME_KEY);
+    this.safeRemove(AUTH_EMPLOYEE_ID_KEY);
   }
 
   /**
@@ -102,12 +102,36 @@ export class AuthState {
   }
 
   private rehydrate(): void {
-    const storedToken = this.storage.read(AUTH_STORAGE_KEY);
-    const storedUsername = this.storage.read(AUTH_USERNAME_KEY);
+    const storedToken = this.safeRead(AUTH_STORAGE_KEY);
+    const storedUsername = this.safeRead(AUTH_USERNAME_KEY);
     if (storedToken && storedUsername) {
       this.token.set(storedToken);
       this.username.set(storedUsername);
-      this.employeeId.set(safeReadNumber(this.storage, AUTH_EMPLOYEE_ID_KEY));
+      this.employeeId.set(safeReadNumber(this.safeRead(AUTH_EMPLOYEE_ID_KEY)));
+    }
+  }
+
+  private safeRead(key: string): string | null {
+    try {
+      return this.storage.read(key);
+    } catch {
+      return null;
+    }
+  }
+
+  private safeWrite(key: string, value: string): void {
+    try {
+      this.storage.write(key, value);
+    } catch {
+      /* no-op: storage unavailable */
+    }
+  }
+
+  private safeRemove(key: string): void {
+    try {
+      this.storage.remove(key);
+    } catch {
+      /* no-op: storage unavailable */
     }
   }
 }
@@ -145,8 +169,7 @@ function decodeSubject(token: string | null): string | null {
   }
 }
 
-function safeReadNumber(storage: AuthStorage, key: string): number | null {
-  const raw = storage.read(key);
+function safeReadNumber(raw: string | null): number | null {
   if (!raw) {
     return null;
   }

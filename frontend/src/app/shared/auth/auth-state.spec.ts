@@ -166,9 +166,21 @@ describe('AuthState', () => {
     });
 
     it('remains unauthenticated when read throws during rehydration', () => {
-      // Given
-      storage.write(AUTH_STORAGE_KEY, 'stored-token');
-      storage.write(AUTH_USERNAME_KEY, 'stored-user');
+      // Given — a pre-populated store whose read() always throws
+      const map = new Map<string, string>();
+      map.set(AUTH_STORAGE_KEY, 'stored-token');
+      map.set(AUTH_USERNAME_KEY, 'stored-user');
+      storage = {
+        read: () => {
+          throw new Error('Storage disabled');
+        },
+        write: (key, value) => {
+          map.set(key, value);
+        },
+        remove: (key) => {
+          map.delete(key);
+        }
+      };
 
       // When
       TestBed.resetTestingModule();
