@@ -325,4 +325,24 @@ i thought atse1-25-35-ux-walkthrough is done
 > **Tokens:** `91,763` in / `493` out · cache read `0` / write `0` · **92,256 total**
 
 can you archive atse1 -25 -35
+### Hendrik Muller — 2026-06-26 11:54:56
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `166,565` in / `364` out · cache read `0` / write `0` · **166,929 total**
+
+on a new branch remove persona reviews
+
+### Hendrik Muller — 2026-06-26 11:59:42
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `77,924` in / `829` out · cache read `0` / write `0` · **78,753 total**
+
+when did persona review enter the workflow
+
+### Hendrik Muller — 2026-06-26 12:02:20
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `80,089` in / `725` out · cache read `0` / write `0` · **80,814 total**
+
+so why are persona review still ongoing
 

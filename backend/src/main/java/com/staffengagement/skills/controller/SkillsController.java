@@ -3,7 +3,9 @@ package com.staffengagement.skills.controller;
 import com.staffengagement.shared.api.PageRequest;
 import com.staffengagement.shared.api.Paged;
 import com.staffengagement.shared.api.SkillStrength;
+import com.staffengagement.skills.service.SkillSummary;
 import com.staffengagement.skills.service.SkillsService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,5 +47,16 @@ public class SkillsController {
             throw new IllegalArgumentException("name is required");
         }
         return skillsService.search(name.trim(), minYears, offset, limit, sort);
+    }
+
+    /**
+     * Aggregated "popular skills" grid (ATSE1-40). Returns the top-N skills
+     * across all employees, ordered by employee count desc then by skill name
+     * asc. Limit defaults to 20 and is clamped to 100 by the service.
+     */
+    @GetMapping("/skills/popular")
+    @PreAuthorize("isAuthenticated()")
+    public List<SkillSummary> popular(@RequestParam(defaultValue = "20") int limit) {
+        return skillsService.popularSkills(limit);
     }
 }

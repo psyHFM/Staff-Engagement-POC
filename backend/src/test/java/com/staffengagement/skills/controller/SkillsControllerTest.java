@@ -13,6 +13,7 @@ import com.staffengagement.shared.api.PageRequest;
 import com.staffengagement.shared.api.Paged;
 import com.staffengagement.shared.api.SkillStrength;
 import com.staffengagement.shared.kernel.EmployeeId;
+import com.staffengagement.skills.service.SkillSummary;
 import com.staffengagement.skills.service.SkillsService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -118,5 +119,40 @@ class SkillsControllerTest {
 
         // Then
         then(skillsService).should().search("angular", 0, 0, 20, null);
+    }
+
+    // ---- GET /skills/popular (ATSE1-40) ----
+
+    private static SkillStrength skill(Long id, String name, int years, int projects) {
+        return new SkillStrength(new EmployeeId(id), name, "Angular", years, projects);
+    }
+
+    @Test
+    void popularForwardsLimitToServiceAndReturnsList() {
+        // Given
+        SkillSummary summary = new SkillSummary("Angular", 3, skill(1L, "Alice", 5, 2));
+        given(skillsService.popularSkills(10)).willReturn(List.of(summary));
+
+        // When
+        List<SkillSummary> result = controller.popular(10);
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).skill()).isEqualTo("Angular");
+        assertThat(result.get(0).employeeCount()).isEqualTo(3);
+        then(skillsService).should().popularSkills(10);
+    }
+
+    @Test
+    void popularDefaultsToLimit20WhenNotProvided() {
+        // Given
+        given(skillsService.popularSkills(20)).willReturn(List.of());
+
+        // When
+        List<SkillSummary> result = controller.popular(20);
+
+        // Then — the controller's @RequestParam default of 20 is forwarded
+        then(skillsService).should().popularSkills(20);
+        assertThat(result).isEmpty();
     }
 }

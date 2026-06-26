@@ -7,42 +7,79 @@ import {
 import { By } from '@angular/platform-browser';
 import { NgForm } from '@angular/forms';
 
+import { AuthState } from '../../shared/auth/auth-state';
 import { Portfolio } from './portfolio';
 import { Portfolio as PortfolioModel, emptyPortfolio } from './portfolio.model';
 
 type ComponentApi = {
-  addSkill: () => void;
+  addSkill: () => boolean;
   removeSkill: (s: { id: string }) => void;
-  addEducation: () => void;
+  addEducation: () => boolean;
   removeEducation: (e: { id: string }) => void;
-  addProject: () => void;
+  addProject: () => boolean;
   removeProject: (p: { id: string }) => void;
-  addLink: () => void;
+  addLink: () => boolean;
   removeLink: (l: { id: string }) => void;
+  isReadOnly: () => boolean;
+  saveAndClose: (section: 'skills' | 'education' | 'projects' | 'links') => void;
+  reopen: (section: 'skills' | 'education' | 'projects' | 'links') => void;
+  isClosed: (section: 'skills' | 'education' | 'projects' | 'links') => boolean;
   skillModel: { skill: string; years: number | null; projectCount: number | null };
   eduModel: { institution: string; qualification: string; startYear: number | null; endYear: number | null };
   projModel: { name: string; description: string; startYear: number | null; endYear: number | null };
   linkModel: { label: string; url: string };
 };
 
-describe('Portfolio (editor) — ATSE1-35', () => {
+const OWNER_EMAIL = 'owner@staff.eng';
+const OTHER_EMAIL = 'other@staff.eng';
+
+/**
+ * Build a non-admin bearer JWT — payload encoded as base64url — so the
+ * `isAdminToken` helper returns `false` and the owner check is exercised.
+ * (The token does not need to be valid for the HttpTestingController; it
+ * only feeds the JWT claim helper.)
+ */
+const nonAdminToken = `header.${btoa(JSON.stringify({ sub: OTHER_EMAIL, roles: ['EMPLOYEE'] }))}.signature`;
+
+describe('Portfolio (editor)', () => {
   let httpMock: HttpTestingController;
 
-  beforeEach(() => {
+  const configureAuth = (overrides: Partial<{ currentUser: string | null; bearerToken: string | null }> = {}) => {
+    const authSpy = {
+      // Default: the caller is the owner of the test portfolio, so the RBAC
+      // guard is satisfied. Individual tests override this to exercise the
+      // non-owner / no-auth / admin paths.
+      currentUser: jest.fn(() => overrides.currentUser ?? OWNER_EMAIL),
+      bearerToken: jest.fn(() => overrides.bearerToken ?? null)
+    };
     TestBed.configureTestingModule({
       imports: [Portfolio],
-      providers: [provideHttpClient(), provideHttpClientTesting()]
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AuthState, useValue: authSpy as unknown as AuthState }
+      ]
     });
+    return authSpy;
+  };
+
+  beforeEach(() => {
+    configureAuth();
     httpMock = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => httpMock.verify());
 
-  /** Creates the component and flushes the ngOnInit GET with an empty portfolio. */
-  const mount = (): { fixture: ReturnType<typeof TestBed.createComponent<Portfolio>>; api: ComponentApi } => {
+  /**
+   * Creates the component and flushes the ngOnInit GET with a portfolio whose
+   * {@code ownerEmail} matches the supplied caller (defaults to OWNER_EMAIL).
+   * The component reads the response and re-renders.
+   */
+  const mount = (ownerEmail: string | undefined = OWNER_EMAIL): { fixture: ReturnType<typeof TestBed.createComponent<Portfolio>>; api: ComponentApi } => {
     const fixture = TestBed.createComponent(Portfolio);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/employees/1/portfolio').flush(emptyPortfolio('1'));
+    const portfolio: PortfolioModel = { ...emptyPortfolio('1'), ownerEmail };
+    httpMock.expectOne('/api/v1/employees/1/portfolio').flush(portfolio);
     fixture.detectChanges();
     return { fixture, api: fixture.componentInstance as unknown as ComponentApi };
   };
@@ -53,6 +90,7 @@ describe('Portfolio (editor) — ATSE1-35', () => {
     fixture.detectChanges();
     const portfolio: PortfolioModel = {
       employeeId: '1',
+      ownerEmail: OWNER_EMAIL,
       skills: [{ id: '1', skill: 'Angular', years: 5, projectCount: 9 }],
       education: [{ id: '2', institution: 'Uni' }],
       projects: [{ id: '3', name: 'Portal' }],
@@ -76,7 +114,7 @@ describe('Portfolio (editor) — ATSE1-35', () => {
     // Given
     const fixture = TestBed.createComponent(Portfolio);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/employees/1/portfolio').flush(emptyPortfolio('1'));
+    httpMock.expectOne('/api/v1/employees/1/portfolio').flush({ ...emptyPortfolio('1'), ownerEmail: OWNER_EMAIL });
 
     // When
     fixture.detectChanges();
@@ -286,5 +324,142 @@ describe('Portfolio (editor) — ATSE1-35', () => {
     const { api } = mount();
     api.removeLink({ id: '10' });
     expect(httpMock.expectOne('/api/v1/employees/1/portfolio/links/10').request.method).toBe('DELETE');
+  });
+
+  // ---- ATSE1-39: owner-or-admin RBAC gate ----
+
+  it('isReadOnly is false when the caller is the owner', () => {
+    TestBed.resetTestingModule();
+    configureAuth({ currentUser: OWNER_EMAIL });
+    httpMock = TestBed.inject(HttpTestingController);
+
+    const fixture = TestBed.createComponent(Portfolio);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/employees/1/portfolio').flush({ ...emptyPortfolio('1'), ownerEmail: OWNER_EMAIL });
+    fixture.detectChanges();
+
+    expect((fixture.componentInstance as unknown as ComponentApi).isReadOnly()).toBe(false);
+  });
+
+  it('isReadOnly is true for a non-owner non-admin viewer and renders the read-only banner', () => {
+    TestBed.resetTestingModule();
+    configureAuth({ currentUser: OTHER_EMAIL, bearerToken: nonAdminToken });
+    httpMock = TestBed.inject(HttpTestingController);
+
+    const fixture = TestBed.createComponent(Portfolio);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/employees/1/portfolio').flush({ ...emptyPortfolio('1'), ownerEmail: OWNER_EMAIL });
+    fixture.detectChanges();
+
+    expect((fixture.componentInstance as unknown as ComponentApi).isReadOnly()).toBe(true);
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('only');
+    expect(text).toContain(OWNER_EMAIL);
+    expect(text).toContain('or an admin can edit it');
+  });
+
+  it('isReadOnly is true when the payload omits ownerEmail (defense in depth)', () => {
+    // Given — explicitly drop the ownerEmail field by serializing through JSON
+    // (mirrors what the backend would do if the field is absent).
+    const fixture = TestBed.createComponent(Portfolio);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/employees/1/portfolio').flush(JSON.parse(JSON.stringify(emptyPortfolio('1'))));
+    fixture.detectChanges();
+
+    // Then
+    expect((fixture.componentInstance as unknown as ComponentApi).isReadOnly()).toBe(true);
+  });
+
+  it('isReadOnly is false when the caller has the ADMIN role', () => {
+    TestBed.resetTestingModule();
+    const adminToken = `header.${btoa(JSON.stringify({ sub: 'admin@staff.eng', roles: ['ADMIN'] }))}.signature`;
+    configureAuth({ currentUser: 'admin@staff.eng', bearerToken: adminToken });
+    httpMock = TestBed.inject(HttpTestingController);
+
+    const fixture = TestBed.createComponent(Portfolio);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/employees/1/portfolio').flush({ ...emptyPortfolio('1'), ownerEmail: OWNER_EMAIL });
+    fixture.detectChanges();
+
+    expect((fixture.componentInstance as unknown as ComponentApi).isReadOnly()).toBe(false);
+  });
+
+  it('non-owner non-admin cannot dispatch a POST through addSkill', () => {
+    TestBed.resetTestingModule();
+    configureAuth({ currentUser: OTHER_EMAIL, bearerToken: nonAdminToken });
+    httpMock = TestBed.inject(HttpTestingController);
+
+    const fixture = TestBed.createComponent(Portfolio);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/employees/1/portfolio').flush({ ...emptyPortfolio('1'), ownerEmail: OWNER_EMAIL });
+    fixture.detectChanges();
+
+    const c = fixture.componentInstance as unknown as ComponentApi;
+    c.skillModel.skill = 'Java';
+    c.skillModel.years = 3;
+    c.skillModel.projectCount = 1;
+
+    c.addSkill();
+
+    // No POST request should be issued — the guard blocks it.
+    httpMock.expectNone('/api/v1/employees/1/portfolio/skills');
+  });
+
+  // ---- ATSE1-36: "Save & close" button collapses the form ----
+
+  it('Save & close dispatches the same POST as Add another and hides the form', () => {
+    // Given
+    const { fixture, api } = mount();
+    api.skillModel.skill = 'TypeScript';
+    api.skillModel.years = 4;
+    api.skillModel.projectCount = 2;
+    fixture.detectChanges();
+
+    // When — Save & close on the skills section
+    api.saveAndClose('skills');
+
+    // Then — same POST goes out
+    const post = httpMock.expectOne('/api/v1/employees/1/portfolio/skills');
+    expect(post.request.method).toBe('POST');
+    expect(post.request.body).toEqual({ skill: 'TypeScript', years: 4, projectCount: 2 });
+
+    // And no further HTTP traffic is pending — httpMock.verify() (afterEach) will catch
+    // any leaked requests.
+  });
+
+  it('Save & close marks the section closed so the form is hidden until reopened', () => {
+    // Given
+    const { fixture, api } = mount();
+    api.skillModel.skill = 'TypeScript';
+    api.skillModel.years = 4;
+    api.skillModel.projectCount = 2;
+    fixture.detectChanges();
+
+    // When
+    api.saveAndClose('skills');
+    httpMock.expectOne('/api/v1/employees/1/portfolio/skills').flush({ id: '1', skill: 'TypeScript', years: 4, projectCount: 2 });
+    fixture.detectChanges();
+
+    // Then
+    expect(api.isClosed('skills')).toBe(true);
+  });
+
+  it('Save & close is a no-op when the viewer is read-only', () => {
+    TestBed.resetTestingModule();
+    configureAuth({ currentUser: OTHER_EMAIL, bearerToken: nonAdminToken });
+    httpMock = TestBed.inject(HttpTestingController);
+
+    const fixture = TestBed.createComponent(Portfolio);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/employees/1/portfolio').flush({ ...emptyPortfolio('1'), ownerEmail: OWNER_EMAIL });
+    fixture.detectChanges();
+
+    const c = fixture.componentInstance as unknown as ComponentApi;
+    c.linkModel.url = 'https://example.com';
+
+    c.saveAndClose('links');
+
+    httpMock.expectNone('/api/v1/employees/1/portfolio/links');
+    expect(c.isClosed('links')).toBe(false);
   });
 });

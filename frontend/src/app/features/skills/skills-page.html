@@ -25,6 +25,24 @@
         </button>
       }
     </div>
+
+    <div class="sort-control">
+      <label class="sort-label" for="skills-sort">Sort by</label>
+      <select
+        id="skills-sort"
+        class="sort-select"
+        [ngModel]="state.sortOption()"
+        (ngModelChange)="onSortChange($event)"
+        aria-label="Sort results"
+      >
+        <option value="default">Most popular</option>
+        <option value="name-asc">Alphabetical (A–Z)</option>
+        <option value="name-desc">Alphabetical (Z–A)</option>
+        <option value="years-desc">Years (most)</option>
+        <option value="years-asc">Years (least)</option>
+        <option value="projects-desc">Projects (most)</option>
+      </select>
+    </div>
   </section>
 
   <section class="skills-status" aria-live="polite">
@@ -41,6 +59,42 @@
       </div>
     }
   </section>
+
+  @if (state.popular(); as popular) {
+    <section class="skills-popular" aria-label="Popular skills">
+      <header class="popular-header">
+        <h2>Popular skills</h2>
+        <p class="popular-subtitle">Browse the top skills across the team.</p>
+      </header>
+
+      @if (popular.length === 0) {
+        <p class="empty-state">No skill data yet — once people add skills to their portfolios, the most common ones will appear here.</p>
+      } @else {
+        <div class="skill-grid">
+          @for (summary of popular; track summary.skill) {
+            <button
+              type="button"
+              class="skill-tile"
+              (click)="onTileClick(summary.skill)"
+              [attr.aria-label]="'Search for skill ' + summary.skill"
+            >
+              <span class="skill-tile-name">{{ summary.skill }}</span>
+              <span class="skill-tile-count">
+                {{ summary.employeeCount }} {{ summary.employeeCount === 1 ? 'person' : 'people' }}
+              </span>
+              @if (summary.topHolder; as top) {
+                <span class="skill-tile-top">
+                  Top: <strong>{{ top.employeeName }}</strong>
+                  ({{ top.years }} yr{{ top.years === 1 ? '' : 's' }},
+                  {{ top.projectCount }} project{{ top.projectCount === 1 ? '' : 's' }})
+                </span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </section>
+  }
 
   @if (!state.isLoading() && state.results(); as page) {
     <section class="skills-results">

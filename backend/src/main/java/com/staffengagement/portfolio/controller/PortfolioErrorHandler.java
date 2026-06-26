@@ -2,6 +2,7 @@ package com.staffengagement.portfolio.controller;
 
 import com.staffengagement.portfolio.service.EmployeeNotFoundException;
 import com.staffengagement.portfolio.service.PortfolioEntryNotFoundException;
+import com.staffengagement.portfolio.service.PortfolioException;
 import com.staffengagement.shared.error.ErrorEnvelope;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,8 @@ import java.time.Instant;
  * <p>Scoped to {@code com.staffengagement.portfolio.controller} so it never intercepts
  * exceptions from other modules. {@code IllegalArgumentException} (validation → 400) is
  * still handled by the frozen {@code shared.error.GlobalExceptionHandler}; this handler is
- * more specific for the module's own not-found types and {@code HttpMessageNotReadableException}.
+ * more specific for the module's own not-found types, the ATSE1-39 owner/admin gate
+ * (ACCESS_DENIED → 403), and {@code HttpMessageNotReadableException}.
  *
  * <p>Uses {@code shared.error.ErrorEnvelope} — the shared error contract
  * ({@code api-standards.yaml}) — which is a legitimate shared-foundation type, not a
@@ -34,6 +36,15 @@ public class PortfolioErrorHandler {
     @ExceptionHandler({EmployeeNotFoundException.class, PortfolioEntryNotFoundException.class})
     public ResponseEntity<ErrorEnvelope> handleNotFound(RuntimeException ex, HttpServletRequest req) {
         return envelope(HttpStatus.NOT_FOUND, ex.getMessage(), req);
+    }
+
+    /** ATSE1-39 RBAC: non-owner non-admin caller → 403. */
+    @ExceptionHandler(PortfolioException.class)
+    public ResponseEntity<ErrorEnvelope> handlePortfolioException(PortfolioException ex, HttpServletRequest req) {
+        HttpStatus status = ex.kind() == PortfolioException.Kind.ACCESS_DENIED
+                ? HttpStatus.FORBIDDEN
+                : HttpStatus.BAD_REQUEST;
+        return envelope(status, ex.getMessage(), req);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
