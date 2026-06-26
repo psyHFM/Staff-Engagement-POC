@@ -6,7 +6,13 @@ import {
 } from '@angular/common/http/testing';
 
 import { AuthState } from './auth-state';
-import { AUTH_STORAGE, AUTH_STORAGE_KEY, AUTH_USERNAME_KEY, AuthStorage } from './auth-storage';
+import {
+  AUTH_EMPLOYEE_ID_KEY,
+  AUTH_STORAGE,
+  AUTH_STORAGE_KEY,
+  AUTH_USERNAME_KEY,
+  AuthStorage
+} from './auth-storage';
 
 describe('AuthState', () => {
   let auth: AuthState;
@@ -48,9 +54,11 @@ describe('AuthState', () => {
     configureAndInject();
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    httpMock.verify();
+  });
 
-  // ---- §2.4 — JWT persistence carve-out (ATSE1-25 / ATSE1-41) -------------
+  // ---- §2.4 — JWT persistence carve-out (ATSE1-25 / ATSE1-41 / ATSE1-42) --
 
   it('stores the issued JWT and marks the session authenticated after login', () => {
     // Given
@@ -62,20 +70,22 @@ describe('AuthState', () => {
     const request = httpMock.expectOne('/api/v1/auth/login');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(credentials);
-    request.flush({ token: 'jwt-stub', tokenType: 'Bearer' });
+    request.flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 7 });
 
     // Then
     expect(auth.isAuthenticated()).toBe(true);
     expect(auth.currentUser()).toBe('employee');
     expect(auth.bearerToken()).toBe('jwt-stub');
+    expect(auth.currentEmployeeId()).toBe(7);
     expect(storage.read(AUTH_STORAGE_KEY)).toBe('jwt-stub');
     expect(storage.read(AUTH_USERNAME_KEY)).toBe('employee');
+    expect(storage.read(AUTH_EMPLOYEE_ID_KEY)).toBe('7');
   });
 
   it('clears the session and storage on logout', () => {
     // Given — an authenticated session
     auth.login({ username: 'manager', password: 'staffeng' }).subscribe();
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' });
+    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 9 });
     expect(auth.isAuthenticated()).toBe(true);
 
     // When
@@ -85,23 +95,27 @@ describe('AuthState', () => {
     expect(auth.isAuthenticated()).toBe(false);
     expect(auth.currentUser()).toBeNull();
     expect(auth.bearerToken()).toBeNull();
+    expect(auth.currentEmployeeId()).toBeNull();
     expect(storage.read(AUTH_STORAGE_KEY)).toBeNull();
     expect(storage.read(AUTH_USERNAME_KEY)).toBeNull();
+    expect(storage.read(AUTH_EMPLOYEE_ID_KEY)).toBeNull();
   });
 
   describe('when storage already contains credentials', () => {
     beforeEach(() => {
       storage.write(AUTH_STORAGE_KEY, 'stored-token');
       storage.write(AUTH_USERNAME_KEY, 'stored-user');
+      storage.write(AUTH_EMPLOYEE_ID_KEY, '42');
       TestBed.resetTestingModule();
       configureAndInject();
     });
 
-    it('rehydrates the session on construction', () => {
+    it('rehydrates the session and employee id on construction', () => {
       // Then
       expect(auth.isAuthenticated()).toBe(true);
       expect(auth.currentUser()).toBe('stored-user');
       expect(auth.bearerToken()).toBe('stored-token');
+      expect(auth.currentEmployeeId()).toBe(42);
     });
   });
 
@@ -117,6 +131,70 @@ describe('AuthState', () => {
       expect(auth.isAuthenticated()).toBe(false);
       expect(auth.currentUser()).toBeNull();
       expect(auth.bearerToken()).toBeNull();
+      expect(auth.currentEmployeeId()).toBeNull();
+    });
+  });
+
+  describe('when storage is unavailable', () => {
+    beforeEach(() => {
+      storage = {
+        read: () => {
+          throw new Error('Storage disabled');
+        },
+        write: () => {
+          throw new Error('Storage disabled');
+        },
+        remove: () => {
+          throw new Error('Storage disabled');
+        }
+      };
+    });
+
+    it('falls back to in-memory signals on login when write throws', () => {
+      // Given
+      const credentials = { username: 'employee', password: 'staffeng' };
+
+      // When
+      auth.login(credentials).subscribe();
+      httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 7 });
+
+      // Then
+      expect(auth.isAuthenticated()).toBe(true);
+      expect(auth.currentUser()).toBe('employee');
+      expect(auth.bearerToken()).toBe('jwt-stub');
+      expect(auth.currentEmployeeId()).toBe(7);
+    });
+
+    it('remains unauthenticated when read throws during rehydration', () => {
+      // Given
+      storage.write(AUTH_STORAGE_KEY, 'stored-token');
+      storage.write(AUTH_USERNAME_KEY, 'stored-user');
+
+      // When
+      TestBed.resetTestingModule();
+      configureAndInject();
+
+      // Then
+      expect(auth.isAuthenticated()).toBe(false);
+      expect(auth.bearerToken()).toBeNull();
+      expect(auth.currentUser()).toBeNull();
+      expect(auth.currentEmployeeId()).toBeNull();
+    });
+
+    it('clears in-memory state even when remove throws during logout', () => {
+      // Given
+      auth.login({ username: 'manager', password: 'staffeng' }).subscribe();
+      httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 9 });
+      expect(auth.isAuthenticated()).toBe(true);
+
+      // When
+      auth.logout();
+
+      // Then
+      expect(auth.isAuthenticated()).toBe(false);
+      expect(auth.bearerToken()).toBeNull();
+      expect(auth.currentUser()).toBeNull();
+      expect(auth.currentEmployeeId()).toBeNull();
     });
   });
 
@@ -133,27 +211,28 @@ describe('AuthState', () => {
       expect(auth.isAuthenticated()).toBe(false);
       expect(auth.bearerToken()).toBeNull();
       expect(auth.currentUser()).toBeNull();
+      expect(auth.currentEmployeeId()).toBeNull();
     });
   });
 
   it('emits the login response on the returned observable', () => {
     // Given
     const credentials = { username: 'employee', password: 'staffeng' };
-    let emitted: { token: string; tokenType: string } | undefined;
+    let emitted: { token: string; tokenType: string; expiresInSeconds: number; employeeId?: number } | undefined;
 
     // When
     auth.login(credentials).subscribe((response) => {
       emitted = response;
     });
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' });
+    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 7 });
 
     // Then
-    expect(emitted).toEqual({ token: 'jwt-stub', tokenType: 'Bearer' });
+    expect(emitted).toEqual({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 7 });
   });
 
-  // ---- §2 extras — clearOnUnauthorized + currentUserSubject --------------
+  // ---- §2 extras — clearOnUnauthorized + currentUserSubject ---------------
 
-it('decodes the JWT subject claim after login (authoritative identity)', () => {
+  it('decodes the JWT subject claim after login (authoritative identity)', () => {
     // Given — no subject yet
     expect(auth.currentUserSubject()).toBeNull();
 
@@ -163,7 +242,8 @@ it('decodes the JWT subject claim after login (authoritative identity)', () => {
     auth.login({ username: 'admin', password: 'staffeng' }).subscribe();
     httpMock.expectOne('/api/v1/auth/login').flush({
       token: tokenWithSub('jane@staff.eng'),
-      tokenType: 'Bearer'
+      tokenType: 'Bearer',
+      expiresInSeconds: 60
     });
 
     // Then — currentUserSubject reads the `sub` claim, NOT the persisted username
@@ -186,7 +266,8 @@ it('decodes the JWT subject claim after login (authoritative identity)', () => {
       auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
       httpMock.expectOne('/api/v1/auth/login').flush({
         token: tokenWithSub('admin@staff.eng'),
-        tokenType: 'Bearer'
+        tokenType: 'Bearer',
+        expiresInSeconds: 60
       });
 
       // Then — currentUserSubject reads the `sub` claim, not the storage username

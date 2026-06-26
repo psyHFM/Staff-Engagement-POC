@@ -20,22 +20,13 @@
 
   @if (state.profile(); as profile) {
     <article class="profile-card">
-      <div class="profile-header">
-        <h2 class="profile-header__name">{{ profile.employee.fullName }}</h2>
-        <span class="profile-header__email">{{ profile.employee.email }}</span>
-        <span class="profile-header__badge profile-header__badge--{{ profile.employee.role }}">
-          {{ profile.employee.role }}
-        </span>
-        @if (profile.employee.jobTitle) {
-          <span class="profile-header__meta">{{ profile.employee.jobTitle }}</span>
-        }
-        @if (profile.employee.department) {
-          <span class="profile-header__meta">{{ profile.employee.department }}</span>
-        }
-        @if (profile.employee.level) {
-          <span class="profile-header__meta">{{ profile.employee.level }}</span>
-        }
-      </div>
+      <app-employee-detail
+        [employee]="profile.employee"
+        [canEdit]="canEdit()"
+        [canEditRole]="canEditRole()"
+        [showBack]="true"
+        (updated)="onUpdate($event)"
+        (closed)="onBack()"></app-employee-detail>
 
       @if (profile.topSkills.length > 0) {
         <section class="profile-section">

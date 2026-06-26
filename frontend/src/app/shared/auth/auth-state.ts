@@ -3,6 +3,7 @@ import { Observable, tap } from 'rxjs';
 
 import { ApiClient } from '../api/api-client';
 import {
+  AUTH_EMPLOYEE_ID_KEY,
   AUTH_STORAGE,
   AUTH_STORAGE_KEY,
   AUTH_USERNAME_KEY,
@@ -14,29 +15,26 @@ import {
  * global state lives in Root-level State Services, exposed via Signals,
  * side effects handled inside the service).
  *
- * <p>The JWT is persisted to {@code sessionStorage} on successful login
- * and cleared on logout or on any HTTP 401 response. On construction the
- * service re-hydrates the token from storage so a page reload / direct
- * navigation does not bounce the user back to {@code /login}. This is
- * the explicit auth-token carve-out recorded in
- * {@code frontend-state.yaml -> persistence.carve_outs}; all other
- * state remains in-memory.
+ * <p>The JWT, username, and current user's employee id are persisted to
+ * {@code sessionStorage} on successful login and cleared on logout or on any
+ * HTTP 401 response. On construction the service re-hydrates them from storage
+ * so a page reload / direct navigation does not bounce the user back to
+ * {@code /login}. This is the explicit auth carve-out recorded in
+ * {@code frontend-state.yaml -> persistence.carve_outs}; all other state
+ * remains in-memory.
  *
- * <p>Storage access goes through the injected {@link AuthStorage}
- * abstraction so tests can swap in an in-memory implementation without
- * stubbing {@code window.sessionStorage} directly. The default
- * {@code browserAuthStorage} uses {@code window.sessionStorage} with
- * try/catch swallow (SSR / disabled storage).
+ * <p>Storage access goes through the injected {@link AuthStorage} abstraction
+ * so tests can swap in an in-memory implementation without stubbing
+ * {@code window.sessionStorage} directly. The default {@code browserAuthStorage}
+ * uses {@code window.sessionStorage} with try/catch swallow (SSR / disabled
+ * storage).
  *
- * <p>Beyond the token, this service exposes the JWT subject claim
- * (the {@code sub} field) as {@link currentUserSubject}. The auth
- * controller sets the subject to the email-shaped principal
- * (see {@code shared.security.AuthController#login}), so today this
- * equals the email too — but the signal is read off the token itself,
- * which is the authoritative source. New callers should prefer
- * {@link currentUserSubject} over {@link currentUser} when they need
- * to identify the logged-in user; the latter is a storage-only echo
- * kept for display in the shell.
+ * <p>Beyond the token, this service exposes the JWT subject claim (the
+ * {@code sub} field) as {@link currentUserSubject}. The auth controller sets
+ * the subject to the email-shaped principal, so today this equals the email —
+ * but the signal is read off the token itself, which is the authoritative
+ * source. New callers should prefer {@link currentUserSubject} over
+ * {@link currentUser} when they need to identify the logged-in user.
  */
 @Injectable({ providedIn: 'root' })
 export class AuthState {
@@ -45,6 +43,7 @@ export class AuthState {
 
   private readonly token = signal<string | null>(null);
   private readonly username = signal<string | null>(null);
+  private readonly employeeId = signal<number | null>(null);
 
   constructor() {
     this.rehydrate();
@@ -56,11 +55,13 @@ export class AuthState {
   /** Read by the Bearer interceptor — signal so Angular tracks changes. */
   readonly bearerToken = computed(() => this.token());
   /**
-   * The JWT {@code sub} claim (authoritative identity). Null when no
-   * token is present or the token is malformed; the latter collapses
-   * silently so a bad token doesn't break the UI.
+   * The JWT {@code sub} claim (authoritative identity). Null when no token is
+   * present or the token is malformed; the latter collapses silently so a bad
+   * token doesn't break the UI.
    */
   readonly currentUserSubject = computed(() => decodeSubject(this.token()));
+  /** Resolved employee id for the current user (null when no record yet). */
+  readonly currentEmployeeId = computed(() => this.employeeId());
 
   /** POST /api/v1/auth/login → stores the issued JWT in memory and in sessionStorage. */
   login(credentials: { username: string; password: string }): Observable<LoginResponse> {
@@ -68,8 +69,14 @@ export class AuthState {
       tap((response) => {
         this.token.set(response.token);
         this.username.set(credentials.username);
+        this.employeeId.set(response.employeeId ?? null);
         this.storage.write(AUTH_STORAGE_KEY, response.token);
         this.storage.write(AUTH_USERNAME_KEY, credentials.username);
+        if (response.employeeId != null) {
+          this.storage.write(AUTH_EMPLOYEE_ID_KEY, String(response.employeeId));
+        } else {
+          this.storage.remove(AUTH_EMPLOYEE_ID_KEY);
+        }
       })
     );
   }
@@ -77,16 +84,18 @@ export class AuthState {
   logout(): void {
     this.token.set(null);
     this.username.set(null);
+    this.employeeId.set(null);
     this.storage.remove(AUTH_STORAGE_KEY);
     this.storage.remove(AUTH_USERNAME_KEY);
+    this.storage.remove(AUTH_EMPLOYEE_ID_KEY);
   }
 
   /**
    * Clear the persisted token in response to a 401 (called by
    * {@code authErrorInterceptor} so a stale token can't outlive its
-   * server-side rejection). Equivalent to {@link logout}; kept as a
-   * named method so the interceptor's intent is readable at the call
-   * site and so the spec scenario reads cleanly.
+   * server-side rejection). Equivalent to {@link logout}; kept as a named
+   * method so the interceptor's intent is readable at the call site and so
+   * the spec scenario reads cleanly.
    */
   clearOnUnauthorized(): void {
     this.logout();
@@ -98,6 +107,7 @@ export class AuthState {
     if (storedToken && storedUsername) {
       this.token.set(storedToken);
       this.username.set(storedUsername);
+      this.employeeId.set(safeReadNumber(this.storage, AUTH_EMPLOYEE_ID_KEY));
     }
   }
 }
@@ -106,13 +116,15 @@ export class AuthState {
 export interface LoginResponse {
   readonly token: string;
   readonly tokenType: string;
+  readonly expiresInSeconds: number;
+  readonly employeeId?: number;
 }
 
 /**
  * Decode the {@code sub} claim of a JWT without verifying the signature.
  * The token is opaque to the UI — only the backend trusts it. This is a
- * best-effort identity read for routing/UX; the server re-verifies on
- * every request. Returns {@code null} on any parse failure.
+ * best-effort identity read for routing/UX; the server re-verifies on every
+ * request. Returns {@code null} on any parse failure.
  */
 function decodeSubject(token: string | null): string | null {
   if (!token) {
@@ -131,4 +143,13 @@ function decodeSubject(token: string | null): string | null {
   } catch {
     return null;
   }
+}
+
+function safeReadNumber(storage: AuthStorage, key: string): number | null {
+  const raw = storage.read(key);
+  if (!raw) {
+    return null;
+  }
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : null;
 }

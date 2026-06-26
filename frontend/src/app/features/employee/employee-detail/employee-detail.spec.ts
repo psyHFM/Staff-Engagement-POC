@@ -50,7 +50,7 @@ describe('EmployeeDetail', () => {
     expect(fixture.nativeElement.querySelector('.employee-detail__readonly')).toBeFalsy();
   });
 
-  it('shows a read-only note instead of the form when canEdit is false', () => {
+  it('shows a read-only view with no form and no explanatory note when canEdit is false', () => {
     // Given
     fixture.componentRef.setInput('canEdit', false);
 
@@ -59,7 +59,7 @@ describe('EmployeeDetail', () => {
 
     // Then
     expect(fixture.nativeElement.querySelector('.employee-detail__form')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('.employee-detail__readonly')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.employee-detail__readonly')).toBeFalsy();
   });
 
   it('shows the role control only when canEditRole is true', () => {

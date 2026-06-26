@@ -17,16 +17,16 @@ import {
 /**
  * Component-scoped state service for the Employee feature (frontend-state.yaml).
  *
- * <p>Holds the paginated directory, the selected employee, and the last
- * created/updated records as Signals. All side effects (API calls) live here;
- * components call handler methods and read computed Signals.
+ * <p>Holds the paginated directory and the last created/updated records as
+ * Signals. All side effects (API calls) live here; components call handler
+ * methods and read computed Signals.
  *
- * <p>The four backend endpoints are POST/GET/GET-by-id/PUT {@code /api/v1/employees}.
- * The UI flow selects an employee from the directory list (so GET-by-id is not
- * exercised by the frontend); this service wraps the list, create, and update
- * calls. RBAC is enforced by the backend; this service exposes a best-effort
- * {@link isAdmin} computed (decoded from the JWT) and {@link currentEmail} (the
- * logged-in user's identity key) so the detail can gate its edit affordances.
+ * <p>The three backend endpoints exercised by the frontend are POST/GET/PUT
+ * {@code /api/v1/employees}. Profile details are viewed on the dedicated
+ * profile page, so the directory list is read-only here. RBAC is enforced by
+ * the backend; this service exposes a best-effort {@link isAdmin} computed
+ * (decoded from the JWT) and {@link currentEmail} (the logged-in user's identity
+ * key) so the "Your details" section can gate its edit affordances.
  */
 @Injectable()
 export class EmployeeStateService extends StateService {
@@ -34,13 +34,11 @@ export class EmployeeStateService extends StateService {
   private readonly auth = inject(AuthState);
 
   private readonly directory = signal<Paged<EmployeeResponse> | null>(null);
-  private readonly selected = signal<EmployeeResponse | null>(null);
   private readonly lastCreated = signal<EmployeeResponse | null>(null);
   private readonly lastUpdated = signal<EmployeeResponse | null>(null);
   private readonly lastError = signal<ApiError | null>(null);
 
   readonly employees = computed(() => this.directory());
-  readonly selectedEmployee = computed(() => this.selected());
   readonly created = computed(() => this.lastCreated());
   readonly updated = computed(() => this.lastUpdated());
   readonly error = computed(() => this.lastError());
@@ -73,17 +71,6 @@ export class EmployeeStateService extends StateService {
       .subscribe();
   }
 
-  /** Select an employee from the directory to show in the detail. */
-  selectEmployee(employee: EmployeeResponse): void {
-    this.selected.set(employee);
-    this.lastError.set(null);
-  }
-
-  /** Deselect the directory row (collapse the detail view). */
-  clearSelection(): void {
-    this.selected.set(null);
-  }
-
   /** POST a new employee (self-service; email/role are not part of the request). */
   createEmployee(request: CreateEmployeeRequest): Observable<EmployeeResponse> {
     this.beginLoad();
@@ -108,7 +95,6 @@ export class EmployeeStateService extends StateService {
       tap({
         next: (updated) => {
           this.lastUpdated.set(updated);
-          this.selected.set(updated);
         },
         error: (err: ApiError) => this.lastError.set(err)
       })

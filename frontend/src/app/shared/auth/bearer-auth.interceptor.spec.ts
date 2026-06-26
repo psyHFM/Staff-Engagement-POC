@@ -41,7 +41,7 @@ describe('bearerAuthInterceptor', () => {
   it('adds Authorization header when a token is present', () => {
     // Given — an authenticated session
     auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' });
+    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 7 });
 
     // When
     http.get('/api/v1/employees/1/interactions').subscribe();
@@ -68,7 +68,7 @@ describe('bearerAuthInterceptor', () => {
   it('does not overwrite an existing Authorization header', () => {
     // Given — a token and a request that already carries Authorization
     auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' });
+    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 7 });
 
     // When
     http

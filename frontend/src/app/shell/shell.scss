@@ -50,6 +50,18 @@
 
 .shell__user {
   color: #d1d5db;
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    color: #fff;
+  }
+
+  &:focus {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 }
 
 .shell__logout,

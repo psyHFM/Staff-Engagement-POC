@@ -14,8 +14,8 @@ export interface PageRequest {
  *
  * <p>Pure presentation component (frontend-state.yaml): receives the {@link Paged}
  * directory, the loading flag, and the current sort; emits page-change, sort-change,
- * and row-selection events to the parent / state service. Visible to all
- * authenticated users (RBAC gating lives in {@link EmployeeDetail}).
+ * and row-selection events to the parent. Each row links to the employee's dedicated
+ * profile page. Visible to all authenticated users.
  */
 @Component({
   selector: 'app-employee-list',

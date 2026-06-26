@@ -31,12 +31,12 @@ frontend_state:
 
   persistence:
     strategy: "In-Memory by Default; One Explicit Carve-Out"
-    policy: "No state persistence across refreshes for the POC; state is reset on page load. Exception: authentication tokens and usernames managed by AuthState MAY be persisted to sessionStorage for the lifetime of the JWT (see ATSE1-41 / atse1-25-35-ux-walkthrough-fixes)."
+    policy: "No state persistence across refreshes for the POC; state is reset on page load. Exception: authentication tokens, usernames, and the current user's employee id managed by AuthState MAY be persisted to sessionStorage for the lifetime of the JWT (see ATSE1-41)."
     carve_outs:
-      - name: "Authentication token (JWT)"
-        added_in: "atse1-25-35-ux-walkthrough-fixes (2026-06-25); aligned with ATSE1-41 (PR #37) on 2026-06-25"
-        mechanism: "sessionStorage under the key 'staff-engagement:token' (and the companion username under 'staff-engagement:username')"
-        rationale: "Reload and direct-navigation must not bounce the user back to /login. The JWT is already a bearer token, so XSS exposure is no worse than before; the existing bearerAuthInterceptor is the read path. sessionStorage is cleared automatically when the tab closes, scoping the persistence to the JWT's lifetime."
+      - name: "Authentication token (JWT) + username + current employee id"
+        added_in: "atse1-25-35-ux-walkthrough-fixes (2026-06-25); aligned with ATSE1-41 (PR #37); employeeId added by atse1-42-44-69-shell-directory-ux (PR #39) on 2026-06-25"
+        mechanism: "sessionStorage under the keys 'staff-engagement:token', 'staff-engagement:username', and 'staff-engagement:employee-id'"
+        rationale: "Reload and direct-navigation must not bounce the user back to /login. The JWT is already a bearer token, so XSS exposure is no worse than before; the existing bearerAuthInterceptor is the read path. The current user's employee id is auth-session metadata needed by the shell profile link. sessionStorage is cleared automatically when the tab closes, scoping the persistence to the JWT's lifetime."
         lifecycle: "Cleared on explicit AuthState.logout() and on any HTTP 401 response (handled by authErrorInterceptor calling AuthState.clearOnUnauthorized())."
         excludes: "All other state (employees, tasks, interactions, portfolios, current user metadata) remains in-memory. A future per-user preferences layer is still out of scope."
 
