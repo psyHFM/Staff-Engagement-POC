@@ -251,24 +251,9 @@ Employyes/Profile
 - the faciailator field should default to the logged in user
 - when pressing log interaction it should show up in interaction history without having to refresh the page. 
 eac h interction item on the interaction history should be editable. 
-- tasks shoiuld be able o be created from an inbteraction without having to go to the tasks tab and creating one there. 
-
-Tasks:
-- should have an employee and inbteraction drop down (emp name and interaction name displayed on drop down but li nked by ID) to link back to employees and interactions. 
-    - depending on whoch is chosen first the dropdown for interaction and employee should be dependent opn the other. for example: if you click employee 1 on the dro down and then the drop down for interactions should filter for the ones linked to that employee and visa versa.. 
-- perhaps some subtasks on tasks like checkbox items ? 
-- big: currently tasks arent showing up, when you create oine it does nothing nd even of reload/refresh 
-
-Portfolio: 
-- you shhould only be able to edit your own portfolio. somehow you should be able to view other peoples portfolios but not be able to edit (unless an admin i think?)
-- its buggy right now, you cant add multple of anything, there should be a add xxx (to add more) and a save to save the one youre currently typing out
-
-Skills
-- should maybe have a list of skills. maybe like a grid of cards like 5 on a row or something, whatever fits, can be sorted in alphabetcical (a-z or z-a) and most popurlar (one that has trhe most eployees on it so like if 10 emplotees have it listed as a skill i mean, ranked like that). in addtion to the current search functionaliy.
-- clicking on the tile wil display the current skill-card that comes up when you search . it just needs a redisgn int the whole its not qworking right now  check jira and make tickets
-
+- tasks shoiuld be able o be created from an inbteraction without having to go to tqwqwqw
 ### Hendrik Muller — 2026-06-25 17:13:00
-
+qw
 > **Model:** `minimax-m3`  
 > **Tokens:** `90,299` in / `120` out · cache read `0` / write `0` · **90,419 total**
 
@@ -280,4 +265,32 @@ help me on a new branch ,open spec propose and apply with personas , tasks 25 to
 > **Tokens:** `157,102` in / `32` out · cache read `0` / write `0` · **157,134 total**
 
 continue
+
+### Hendrik Muller — 2026-06-25 22:39:18
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `131,983` in / `387` out · cache read `0` / write `0` · **132,370 total**
+
+1
+
+### Hendrik Muller — 2026-06-25 23:56:33
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `144,214` in / `625` out · cache read `0` / write `0` · **144,839 total**
+
+docker compose up this branch
+
+### Hendrik Muller — 2026-06-26 09:29:54
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `64,797` in / `430` out · cache read `0` / write `0` · **65,227 total**
+
+check that the tasks are completed
+
+### Hendrik Muller — 2026-06-26 09:35:18
+
+> **Model:** `minimax-m3`  
+> **Tokens:** `70,310` in / `279` out · cache read `0` / write `0` · **70,589 total**
+
+1
 
