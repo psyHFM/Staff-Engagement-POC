@@ -41,33 +41,36 @@ public class AuthController {
     public record LoginRequest(String username, String password) {
     }
 
-    public record LoginResponse(String token, String tokenType, long expiresInSeconds) {
+    public record LoginResponse(String token, String tokenType, long expiresInSeconds, Long employeeId) {
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         var user = userStore.findByCredentials(request.username(), request.password())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
-        List<String> roles = resolveRoles(request.username(), user);
+        var summary = resolveSummary(request.username());
+        List<String> roles = summary.map(s -> List.of(s.role().name()))
+                .orElseGet(() -> stubUserRoles(user));
         String token = tokenProvider.generate(user.username(), roles);
-        return ResponseEntity.ok(new LoginResponse(token, "Bearer", tokenProvider.expirationSeconds()));
+        Long employeeId = summary.map(s -> s.id().value()).orElse(null);
+        return ResponseEntity.ok(new LoginResponse(token, "Bearer", tokenProvider.expirationSeconds(), employeeId));
     }
 
     /**
-     * Resolves the role authority for the issued token. Prefers the Employee record
-     * (so an admin's promotion takes effect on the user's next login); falls back to the
-     * stub's role list when no record exists yet, and to {@code ROLE_EMPLOYEE} semantics
-     * carried by the stub when no {@link EmployeeContract} bean is available (pre-Employee
-     * module).
+     * Resolves the Employee summary for the principal when the Employee module is wired.
+     * Returns empty when no record exists yet or when no {@link EmployeeContract} bean is
+     * available (pre-Employee module), so the caller can fall back to stub roles and a
+     * null employee id.
      */
-    private List<String> resolveRoles(String email, StubUserStore.StubUser stubUser) {
+    private Optional<EmployeeSummary> resolveSummary(String email) {
         EmployeeContract contract = employeeContracts.getIfAvailable();
         if (contract != null) {
-            Optional<EmployeeSummary> summary = contract.findByEmail(email);
-            if (summary.isPresent()) {
-                return List.of(summary.get().role().name());
-            }
+            return contract.findByEmail(email);
         }
+        return Optional.empty();
+    }
+
+    private List<String> stubUserRoles(StubUserStore.StubUser stubUser) {
         return stubUser.roles();
     }
 }

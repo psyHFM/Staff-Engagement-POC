@@ -1,111 +1,135 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { Location } from '@angular/common';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { Component, signal } from '@angular/core';
+import { provideRouter, Routes } from '@angular/router';
 
 import { Shell } from './shell';
-import { AuthState, LoginResponse } from '../shared/auth/auth-state';
-import { AUTH_STORAGE, AuthStorage } from '../shared/auth/auth-storage';
+import { AuthState } from '../shared/auth/auth-state';
 
-@Component({ selector: 'router-test-outlet', template: '', standalone: true })
-class TestOutletComponent {}
+@Component({ template: '', standalone: true })
+class StubPage {}
 
-/**
- * The shell spec exists primarily to lock in the ATSE1-32 wiring: when
- * authenticated, the username in the top bar is a link to /profile (the
- * self-service "Your details" page). Sign-out still routes to /login.
- */
-describe('Shell (ATSE1-32)', () => {
+const testRoutes: Routes = [
+  { path: 'login', component: StubPage },
+  { path: 'employees/:id/profile', component: StubPage }
+];
+
+describe('Shell', () => {
   let fixture: ComponentFixture<Shell>;
-  let auth: AuthState;
-  let httpMock: HttpTestingController;
-  let location: Location;
-  let storage: AuthStorage;
+  let authMock: AuthState;
+
+  const isAuthenticated = signal(false);
+  const currentUser = signal<string | null>(null);
+  const currentEmployeeId = signal<number | null>(null);
 
   beforeEach(async () => {
-    storage = createInMemoryStorage();
-    await TestBed.configureTestingModule({
-      imports: [Shell],
-      providers: [
-        provideRouter([
-          { path: 'profile', component: TestOutletComponent },
-          { path: 'login', component: TestOutletComponent }
-        ]),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: AUTH_STORAGE, useValue: storage }
-      ]
-    }).compileComponents();
+    isAuthenticated.set(false);
+    currentUser.set(null);
+    currentEmployeeId.set(null);
+
+    authMock = {
+      isAuthenticated,
+      currentUser,
+      currentEmployeeId,
+      bearerToken: signal(null),
+      login: jest.fn(),
+      logout: jest.fn()
+    } as unknown as AuthState;
+
+    await TestBed
+      .configureTestingModule({
+        imports: [Shell],
+        providers: [provideRouter(testRoutes), { provide: AuthState, useValue: authMock }]
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(Shell);
-    auth = TestBed.inject(AuthState);
-    httpMock = TestBed.inject(HttpTestingController);
-    location = TestBed.inject(Location);
-    fixture.detectChanges();
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    fixture.destroy();
+  });
 
-  it('renders a /profile link with the current user when authenticated', () => {
-    // Given — login issues a token
-    auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' } as LoginResponse);
+  it('renders the global navigation links', () => {
+    // When
+    fixture.detectChanges();
+
+    // Then
+    const links = Array.from(fixture.nativeElement.querySelectorAll('.shell__nav a'))
+      .map((a: unknown) => (a as HTMLAnchorElement).textContent?.trim());
+    expect(links).toEqual(['Dashboard', 'Employees', 'Interactions', 'Tasks', 'Portfolio', 'Skills']);
+  });
+
+  it('shows a sign-in link when the user is not authenticated', () => {
+    // Given
+    isAuthenticated.set(false);
 
     // When
     fixture.detectChanges();
 
     // Then
-    const link = fixture.nativeElement.querySelector('a.shell__user') as HTMLAnchorElement;
-    expect(link).toBeTruthy();
-    expect(link.getAttribute('href')).toBe('/profile');
-    expect(link.textContent).toContain('admin@staff.eng');
+    expect(fixture.nativeElement.querySelector('.shell__login')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.shell__logout')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('.shell__user')).toBeFalsy();
   });
 
-  it('renders a Sign in link to /login when not authenticated', () => {
-    // Given — no session
-    expect(auth.isAuthenticated()).toBe(false);
+  it('shows the username chip and sign-out button when authenticated', () => {
+    // Given
+    isAuthenticated.set(true);
+    currentUser.set('jane@staff.eng');
 
     // When
     fixture.detectChanges();
 
     // Then
-    const signIn = fixture.nativeElement.querySelector('a.shell__login') as HTMLAnchorElement;
-    expect(signIn).toBeTruthy();
-    expect(signIn.getAttribute('href')).toBe('/login');
-    expect(fixture.nativeElement.querySelector('a.shell__user')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.shell__user')?.textContent?.trim()).toBe('jane@staff.eng');
+    expect(fixture.nativeElement.querySelector('.shell__logout')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.shell__login')).toBeFalsy();
   });
 
-  it('sign out clears the session and navigates to /login', () => {
-    // Given — authenticated
-    auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' } as LoginResponse);
-    fixture.detectChanges();
+  it('makes the username chip a link to the current user profile when an employee id is available', () => {
+    // Given
+    isAuthenticated.set(true);
+    currentUser.set('jane@staff.eng');
+    currentEmployeeId.set(42);
 
     // When
-    (fixture.nativeElement.querySelector('button.shell__logout') as HTMLButtonElement).click();
+    fixture.detectChanges();
 
-    // Then — session cleared and routed to /login
-    expect(auth.isAuthenticated()).toBe(false);
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        expect(location.path()).toBe('/login');
-        resolve();
-      }, 0);
-    });
+    // Then
+    const chip = fixture.nativeElement.querySelector('.shell__user');
+    expect(chip).toBeTruthy();
+    expect(chip.tagName.toLowerCase()).toBe('a');
+    expect(chip.getAttribute('href')).toBe('/employees/42/profile');
+    expect(chip.getAttribute('aria-label')).toBe('View your profile');
+  });
+
+  it('renders the username as a static span when no employee id is available', () => {
+    // Given
+    isAuthenticated.set(true);
+    currentUser.set('jane@staff.eng');
+    currentEmployeeId.set(null);
+
+    // When
+    fixture.detectChanges();
+
+    // Then
+    const chip = fixture.nativeElement.querySelector('.shell__user');
+    expect(chip).toBeTruthy();
+    expect(chip.tagName.toLowerCase()).toBe('span');
+  });
+
+  it('calls logout when sign out is clicked', () => {
+    // Given
+    isAuthenticated.set(true);
+    currentUser.set('jane@staff.eng');
+
+    fixture.detectChanges();
+    const logoutSpy = jest.spyOn(authMock, 'logout');
+
+    // When
+    fixture.nativeElement.querySelector('.shell__logout').click();
+
+    // Then
+    expect(logoutSpy).toHaveBeenCalled();
   });
 });
-
-function createInMemoryStorage(): AuthStorage {
-  const map = new Map<string, string>();
-  return {
-    read: (key) => (map.has(key) ? (map.get(key) as string) : null),
-    write: (key, value) => {
-      map.set(key, value);
-    },
-    remove: (key) => {
-      map.delete(key);
-    }
-  };
-}

@@ -254,6 +254,24 @@ eac h interction item on the interaction history should be editable.
 - tasks shoiuld be able o be created from an inbteraction without having to go to tqwqwqw
 ### Hendrik Muller — 2026-06-25 17:13:00
 qw
+- tasks shoiuld be able o be created from an inbteraction without having to go to the tasks tab and creating one there. 
+
+Tasks:
+- should have an employee and inbteraction drop down (emp name and interaction name displayed on drop down but li nked by ID) to link back to employees and interactions. 
+    - depending on whoch is chosen first the dropdown for interaction and employee should be dependent opn the other. for example: if you click employee 1 on the dro down and then the drop down for interactions should filter for the ones linked to that employee and visa versa.. 
+- perhaps some subtasks on tasks like checkbox items ? 
+- big: currently tasks arent showing up, when you create oine it does nothing nd even of reload/refresh 
+
+Portfolio: 
+- you shhould only be able to edit your own portfolio. somehow you should be able to view other peoples portfolios but not be able to edit (unless an admin i think?)
+- its buggy right now, you cant add multple of anything, there should be a add xxx (to add more) and a save to save the one youre currently typing out
+
+Skills
+- should maybe have a list of skills. maybe like a grid of cards like 5 on a row or something, whatever fits, can be sorted in alphabetcical (a-z or z-a) and most popurlar (one that has trhe most eployees on it so like if 10 emplotees have it listed as a skill i mean, ranked like that). in addtion to the current search functionaliy.
+- clicking on the tile wil display the current skill-card that comes up when you search . it just needs a redisgn int the whole its not qworking right now  check jira and make tickets
+
+### Hendrik Muller — 2026-06-25 17:13:00
+
 > **Model:** `minimax-m3`  
 > **Tokens:** `90,299` in / `120` out · cache read `0` / write `0` · **90,419 total**
 

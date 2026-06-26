@@ -3,6 +3,8 @@ import { of, throwError } from 'rxjs';
 
 import { ApiClient } from '../shared/api/api-client';
 import { ApiError } from '../shared/api/error-envelope';
+import { AUTH_STORAGE, AuthStorage } from '../shared/auth/auth-storage';
+import { AuthState } from '../shared/auth/auth-state';
 import { ProfileStateService } from './profile-state.service';
 import { PersonProfile } from './profile.types';
 
@@ -45,7 +47,9 @@ describe('ProfileStateService', () => {
     TestBed.configureTestingModule({
       providers: [
         ProfileStateService,
-        { provide: ApiClient, useValue: apiClientSpy as unknown as ApiClient }
+        AuthState,
+        { provide: ApiClient, useValue: apiClientSpy as unknown as ApiClient },
+        { provide: AUTH_STORAGE, useValue: createInMemoryStorage() }
       ]
     });
 
@@ -96,6 +100,19 @@ describe('ProfileStateService', () => {
     expect(service.error()).toEqual(apiError(404));
     expect(service.isLoading()).toBe(false);
   });
+
+  function createInMemoryStorage(): AuthStorage {
+    const map = new Map<string, string>();
+    return {
+      read: (key) => (map.has(key) ? (map.get(key) as string) : null),
+      write: (key, value) => {
+        map.set(key, value);
+      },
+      remove: (key) => {
+        map.delete(key);
+      }
+    };
+  }
 
   it('clear resets profile, error and loading state', () => {
     // Given

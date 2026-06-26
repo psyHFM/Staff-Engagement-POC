@@ -121,18 +121,6 @@ describe('EmployeeStateService', () => {
     expect(service.isLoading()).toBe(false);
   });
 
-  it('selectEmployee updates the selected employee and clears errors', () => {
-    // Given
-    service.selectEmployee(employee({ id: id(1) }));
-
-    // When
-    service.selectEmployee(employee({ id: id(2) }));
-
-    // Then
-    expect(service.selectedEmployee()?.id).toEqual(id(2));
-    expect(service.error()).toBeNull();
-  });
-
   it('createEmployee POSTs to /api/v1/employees with the create body and exposes created', () => {
     // Given
     const created = employee({ id: id(42) });
@@ -166,7 +154,7 @@ describe('EmployeeStateService', () => {
     expect(service.isLoading()).toBe(false);
   });
 
-  it('updateEmployee PUTs to /api/v1/employees/{id} and selects the updated record', () => {
+  it('updateEmployee PUTs to /api/v1/employees/{id} and exposes the updated record', () => {
     // Given
     const updated = employee({ id: id(7), fullName: 'Jane Smith', role: 'admin' });
     apiClientSpy.put.mockReturnValue(of(updated));
@@ -178,7 +166,7 @@ describe('EmployeeStateService', () => {
     const expectedRequest: UpdateEmployeeRequest = { fullName: 'Jane Smith', role: 'admin', email: null };
     expect(apiClientSpy.put).toHaveBeenCalledWith('employees/7', expectedRequest);
     expect(service.updated()).toEqual(updated);
-    expect(service.selectedEmployee()).toEqual(updated);
+    expect(service.employees()).toBeNull();
   });
 
   it('updateEmployee surfaces an API error and clears loading', () => {

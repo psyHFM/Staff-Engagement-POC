@@ -1,18 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { Component, signal } from '@angular/core';
+import { provideRouter, Router } from '@angular/router';
 
 import { Employee } from './employee';
 import { EmployeeStateService } from './employee-state.service';
-import { EmployeeResponse, Paged, UpdateEmployeeRequest } from './employee.types';
+import { EmployeeResponse, Paged } from './employee.types';
 
-describe('Employee (directory only — ATSE1-27)', () => {
+@Component({ template: '', standalone: true })
+class StubPage {}
+
+describe('Employee (directory only — ATSE1-42)', () => {
   let fixture: ComponentFixture<Employee>;
   let stateMock: EmployeeStateService;
+  let router: Router;
 
   const employees = signal<Paged<EmployeeResponse> | null>(null);
-  const selectedEmployee = signal<EmployeeResponse | null>(null);
   const created = signal(null);
   const updated = signal(null);
   const error = signal(null);
@@ -29,18 +31,17 @@ describe('Employee (directory only — ATSE1-27)', () => {
 
   beforeEach(async () => {
     employees.set(null);
-    selectedEmployee.set(null);
     currentEmail.set(null);
     isAdmin.set(false);
+    created.set(null);
+    updated.set(null);
+    error.set(null);
+    isLoading.set(false);
 
     stateMock = {
       loadDirectory: jest.fn(),
-      selectEmployee: jest.fn(),
-      clearSelection: jest.fn(),
-      updateEmployee: jest.fn().mockReturnValue(of({})),
       clearTransient: jest.fn(),
       employees,
-      selectedEmployee,
       created,
       updated,
       error,
@@ -52,7 +53,12 @@ describe('Employee (directory only — ATSE1-27)', () => {
     await TestBed
       .configureTestingModule({
         imports: [Employee],
-        providers: [provideRouter([])]
+        providers: [
+          provideRouter([
+            { path: 'employees', component: StubPage },
+            { path: 'employees/:id/profile', component: StubPage }
+          ])
+        ]
       })
       .overrideComponent(Employee, {
         set: { providers: [{ provide: EmployeeStateService, useValue: stateMock }] }
@@ -60,6 +66,7 @@ describe('Employee (directory only — ATSE1-27)', () => {
       .compileComponents();
 
     fixture = TestBed.createComponent(Employee);
+    router = TestBed.inject(Router);
   });
 
   it('loads the directory on init', () => {
@@ -94,70 +101,14 @@ describe('Employee (directory only — ATSE1-27)', () => {
     expect(stateMock.loadDirectory).toHaveBeenCalledWith(0, 20, 'fullName,asc');
   });
 
-  it('onUpdateSelected forwards the update for the selected directory row', () => {
+  it('onSelect navigates to the employee profile page', () => {
     // Given
-    selectedEmployee.set(profile('bob@staff.eng', 9));
-    const request: UpdateEmployeeRequest = { fullName: 'Bob', email: null };
+    const navigateSpy = jest.spyOn(router, 'navigate');
 
     // When
-    fixture.componentInstance.onUpdateSelected(request);
+    fixture.componentInstance.onSelect(profile('bob@staff.eng', 9));
 
     // Then
-    expect(stateMock.updateEmployee).toHaveBeenCalledWith({ value: 9 }, request);
-  });
-
-  it('onUpdateSelected does nothing when no row is selected', () => {
-    // When
-    fixture.componentInstance.onUpdateSelected({ fullName: 'X', email: null });
-
-    // Then
-    expect(stateMock.updateEmployee).not.toHaveBeenCalled();
-  });
-
-  it('onClose clears the directory selection', () => {
-    // When
-    fixture.componentInstance.onClose();
-
-    // Then
-    expect(stateMock.clearSelection).toHaveBeenCalled();
-  });
-
-  it('canEditSelected is true for an admin regardless of ownership', () => {
-    // Given
-    isAdmin.set(true);
-    selectedEmployee.set(profile('bob@staff.eng', 9));
-    currentEmail.set('someone-else@staff.eng');
-
-    // Then
-    expect(fixture.componentInstance.canEditSelected()).toBe(true);
-  });
-
-  it('canEditSelected is true for a non-admin editing their own profile', () => {
-    // Given
-    isAdmin.set(false);
-    selectedEmployee.set(profile('jane@staff.eng', 7));
-    currentEmail.set('jane@staff.eng');
-
-    // Then
-    expect(fixture.componentInstance.canEditSelected()).toBe(true);
-  });
-
-  it('canEditSelected is false for a non-admin viewing another profile', () => {
-    // Given
-    isAdmin.set(false);
-    selectedEmployee.set(profile('jane@staff.eng', 7));
-    currentEmail.set('someone-else@staff.eng');
-
-    // Then
-    expect(fixture.componentInstance.canEditSelected()).toBe(false);
-  });
-
-  it('canEditRoleSelected mirrors the admin flag', () => {
-    // Given
-    isAdmin.set(true);
-    expect(fixture.componentInstance.canEditRoleSelected()).toBe(true);
-
-    isAdmin.set(false);
-    expect(fixture.componentInstance.canEditRoleSelected()).toBe(false);
+    expect(navigateSpy).toHaveBeenCalledWith(['/employees', 9, 'profile']);
   });
 });

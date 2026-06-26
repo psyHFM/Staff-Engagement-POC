@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthState } from '../shared/auth/auth-state';
@@ -17,6 +17,12 @@ import { AuthState } from '../shared/auth/auth-state';
 export class Shell {
   protected readonly auth = inject(AuthState);
   private readonly router = inject(Router);
+
+  /** Link to the current user's profile page when their employee id is known. */
+  protected readonly profileLink = computed(() => {
+    const id = this.auth.currentEmployeeId();
+    return id != null ? ['/employees', id, 'profile'] : null;
+  });
 
   protected logout(): void {
     this.auth.logout();

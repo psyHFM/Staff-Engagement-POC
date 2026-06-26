@@ -1,18 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
-import { signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { of } from 'rxjs';
 
 import { ProfilePage } from './profile-page';
 import { ProfileStateService } from './profile-state.service';
 import { PersonProfile } from './profile.types';
 
+@Component({ template: '', standalone: true })
+class StubPage {}
+
 describe('ProfilePage', () => {
   let fixture: ComponentFixture<ProfilePage>;
+  let router: Router;
   let fakeState: {
     profile: ReturnType<typeof signal<PersonProfile | null>>;
     error: ReturnType<typeof signal<{ message: string } | null>>;
     isLoading: ReturnType<typeof signal<boolean>>;
+    currentUser: ReturnType<typeof signal<string | null>>;
+    bearerToken: ReturnType<typeof signal<string | null>>;
     loadProfile: jest.Mock;
+    updateEmployee: jest.Mock;
   };
 
   const id = (value: number): { value: number } => ({ value });
@@ -59,19 +67,33 @@ describe('ProfilePage', () => {
     ...overrides
   });
 
+  const jwt = (roles: string[]): string => {
+    const payload = btoa(JSON.stringify({ roles }))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    return `header.${payload}.signature`;
+  };
+
   beforeEach(async () => {
     fakeState = {
       profile: signal<PersonProfile | null>(null),
       error: signal<{ message: string } | null>(null),
       isLoading: signal(false),
-      loadProfile: jest.fn()
+      currentUser: signal<string | null>(null),
+      bearerToken: signal<string | null>(null),
+      loadProfile: jest.fn(),
+      updateEmployee: jest.fn().mockReturnValue(of({}))
     };
 
     await TestBed
       .configureTestingModule({
         imports: [ProfilePage],
         providers: [
-          provideRouter([]),
+          provideRouter([
+            { path: 'employees', component: StubPage },
+            { path: 'employees/:id/profile', component: StubPage }
+          ]),
           {
             provide: ActivatedRoute,
             useValue: { snapshot: { paramMap: { get: () => '7' } } }
@@ -84,6 +106,7 @@ describe('ProfilePage', () => {
       .compileComponents();
 
     fixture = TestBed.createComponent(ProfilePage);
+    router = TestBed.inject(Router);
   });
 
   it('loads the profile for the route id on init', () => {
@@ -94,7 +117,7 @@ describe('ProfilePage', () => {
     expect(fakeState.loadProfile).toHaveBeenCalledWith('7');
   });
 
-  it('renders the employee header', () => {
+  it('renders the employee detail section', () => {
     // Given
     fakeState.profile.set(personProfile());
 
@@ -102,10 +125,10 @@ describe('ProfilePage', () => {
     fixture.detectChanges();
 
     // Then
-    const header = fixture.nativeElement.querySelector('.profile-header');
-    expect(header.textContent).toContain('Jane Doe');
-    expect(header.textContent).toContain('jane@staff.eng');
-    expect(header.textContent).toContain('Engineer');
+    const detail = fixture.nativeElement.querySelector('.employee-detail');
+    expect(detail).toBeTruthy();
+    expect(detail.textContent).toContain('Jane Doe');
+    expect(detail.textContent).toContain('jane@staff.eng');
   });
 
   it('renders interactions, tasks and portfolio sections', () => {
@@ -132,5 +155,70 @@ describe('ProfilePage', () => {
     // Then
     expect(fixture.nativeElement.querySelector('.profile-page__error')).toBeTruthy();
     expect(fixture.nativeElement.textContent).toContain('Employee profile not found: 99');
+  });
+
+  it('allows the owner to edit their profile', () => {
+    // Given
+    fakeState.profile.set(personProfile());
+    fakeState.currentUser.set('jane@staff.eng');
+
+    // When
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.componentInstance.canEdit()).toBe(true);
+    expect(fixture.componentInstance.canEditRole()).toBe(false);
+  });
+
+  it('allows an admin to edit any profile and change role', () => {
+    // Given
+    fakeState.profile.set(personProfile({ employee: { ...personProfile().employee, email: 'bob@staff.eng' } }));
+    fakeState.currentUser.set('admin@staff.eng');
+    fakeState.bearerToken.set(jwt(['ADMIN']));
+
+    // When
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.componentInstance.canEdit()).toBe(true);
+    expect(fixture.componentInstance.canEditRole()).toBe(true);
+  });
+
+  it('forbids a non-admin from editing another profile', () => {
+    // Given
+    fakeState.profile.set(personProfile({ employee: { ...personProfile().employee, email: 'bob@staff.eng' } }));
+    fakeState.currentUser.set('jane@staff.eng');
+    fakeState.bearerToken.set(jwt(['EMPLOYEE']));
+
+    // When
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.componentInstance.canEdit()).toBe(false);
+    expect(fixture.componentInstance.canEditRole()).toBe(false);
+  });
+
+  it('updates the employee record and reloads the profile', () => {
+    // Given
+    fakeState.profile.set(personProfile());
+    fakeState.updateEmployee.mockReturnValue(of({}));
+
+    // When
+    fixture.componentInstance.onUpdate({ fullName: 'Jane Smith', email: null });
+
+    // Then
+    expect(fakeState.updateEmployee).toHaveBeenCalledWith(id(7), { fullName: 'Jane Smith', email: null });
+    expect(fakeState.loadProfile).toHaveBeenCalledWith('7');
+  });
+
+  it('navigates back to the directory when closed', () => {
+    // Given
+    const navigateSpy = jest.spyOn(router, 'navigate');
+
+    // When
+    fixture.componentInstance.onBack();
+
+    // Then
+    expect(navigateSpy).toHaveBeenCalledWith(['/employees']);
   });
 });
