@@ -65,6 +65,7 @@ class AuthControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().token()).isNotBlank();
         assertThat(response.getBody().tokenType()).isEqualTo("Bearer");
+        assertThat(response.getBody().employeeId()).isNull();
     }
 
     @Test
@@ -93,6 +94,7 @@ class AuthControllerTest {
         // Then — the JWT carries the record's role, not the stub's EMPLOYEE
         assertThat(response.getBody()).isNotNull();
         assertThat(provider.roles(response.getBody().token())).containsExactly("ADMIN");
+        assertThat(response.getBody().employeeId()).isEqualTo(7L);
     }
 
     @Test
@@ -108,6 +110,7 @@ class AuthControllerTest {
         // Then — falls back to the stub's EMPLOYEE role so they can self-create
         assertThat(response.getBody()).isNotNull();
         assertThat(provider.roles(response.getBody().token())).containsExactly("EMPLOYEE");
+        assertThat(response.getBody().employeeId()).isNull();
     }
 
     @Test

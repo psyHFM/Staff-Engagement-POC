@@ -11,20 +11,6 @@
     </div>
   }
 
-  @if (state.created()) {
-    <div class="employee-page__success" role="status">
-      Profile created for {{ state.created()?.email }}.
-      <button type="button" (click)="state.clearTransient()">Dismiss</button>
-    </div>
-  }
-
-  @if (state.updated()) {
-    <div class="employee-page__success" role="status">
-      Profile updated for {{ state.updated()?.email }}.
-      <button type="button" (click)="state.clearTransient()">Dismiss</button>
-    </div>
-  }
-
   <section class="employee-page__directory">
     <h2 class="employee-page__section-title">Employee directory</h2>
     <app-employee-list
@@ -33,17 +19,6 @@
       [sort]="sort()"
       (pageRequested)="onPageRequested($event)"
       (sortRequested)="onSortRequested($event)"
-      (selected)="state.selectEmployee($event)"></app-employee-list>
-
-    @if (state.selectedEmployee()) {
-      <div class="employee-page__selected">
-        <app-employee-detail
-          [employee]="state.selectedEmployee()"
-          [canEdit]="canEditSelected()"
-          [canEditRole]="canEditRoleSelected()"
-          (updated)="onUpdateSelected($event)"
-          (closed)="onClose()"></app-employee-detail>
-      </div>
-    }
+      (selected)="onSelect($event)"></app-employee-list>
   </section>
 </section>
