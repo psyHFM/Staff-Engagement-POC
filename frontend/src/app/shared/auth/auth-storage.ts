@@ -18,6 +18,7 @@ export const AUTH_STORAGE = new InjectionToken<AuthStorage>('AUTH_STORAGE');
 
 export const AUTH_STORAGE_KEY = 'staff-engagement:token';
 export const AUTH_USERNAME_KEY = 'staff-engagement:username';
+export const AUTH_EMPLOYEE_ID_KEY = 'staff-engagement:employee-id';
 
 /**
  * Default {@link AuthStorage} backed by {@code window.sessionStorage}.
