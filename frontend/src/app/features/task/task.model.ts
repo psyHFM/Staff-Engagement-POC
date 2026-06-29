@@ -22,11 +22,19 @@ export interface Task {
   readonly id: TaskId;
   readonly subject: EmployeeId;
   readonly title: string;
-  readonly sourceInteractionId?: EmployeeId;
+  readonly sourceInteractionId?: InteractionId;
   readonly completed: boolean;
   readonly description: string;
   readonly createdAt: string;
   readonly completedAt?: string;
+}
+
+/**
+ * Typed identifier for an Interaction — matches the backend {@code InteractionId} record.
+ * Wire form is {@code {"value": N}}.
+ */
+export interface InteractionId {
+  readonly value: number;
 }
 
 /**

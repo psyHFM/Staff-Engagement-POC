@@ -535,3 +535,25 @@ probably option B. how do other features do it like employee and interaction?
 
 failed to solve: process "/bin/sh -c npm run build -- --configuration=production" did not complete successfully: exit code: 1
 
+### psyTayobHarrison — 2026-06-26 15:47:22
+
+> **Model:** `qwen3-coder-next`  
+> **Tokens:** `126,187` in / `111` out · cache read `0` / write `0` · **126,298 total**
+
+add and commit
+
+### psyTayobHarrison — 2026-06-29 11:13:11
+
+> **Model:** `qwen3-coder-next`  
+> **Tokens:** `143,273` in / `303` out · cache read `0` / write `0` · **143,576 total**
+
+=> [backend build 4/8] COPY .mvn .mvn                          0.1s
+ => [backend build 5/8] RUN chmod +x mvnw                       1.5s 
+ => ERROR [backend build 6/8] RUN ./mvnw -B -q dependency:go-o  4.6s
+------
+ > [backend build 6/8] RUN ./mvnw -B -q dependency:go-offline:
+4.439 The JAVA_HOME environment variable is not defined correctly,
+4.439 this environment variable is needed to run this program.
+------
+failed to solve: process "/bin/sh -c ./mvnw -B -q dependency:go-offline" did not complete successfully: exit code: 1
+
