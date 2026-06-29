@@ -28,4 +28,13 @@ public interface EmployeeContract {
      * whole workforce without importing Employee module internals.
      */
     List<EmployeeSummary> allEmployees();
+
+    /**
+     * Returns the full name of an employee by ID. Convenience method for denormalising
+     * employee names into read models (e.g. {@link InteractionSummary#facilitatorName}).
+     * Returns {@link Optional#empty()} if the employee does not exist.
+     */
+    default Optional<String> getFullName(EmployeeId id) {
+        return findById(id).map(EmployeeSummary::fullName);
+    }
 }

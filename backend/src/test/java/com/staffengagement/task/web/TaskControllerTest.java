@@ -78,7 +78,7 @@ class TaskControllerTest {
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
                         new InteractionId(42L), InteractionType.CHECK_IN,
-                        new EmployeeId(1L), new EmployeeId(2L), "note",
+                        new EmployeeId(1L), new EmployeeId(2L), "Facilitator Name", "subject", "note",
                         Instant.parse("2026-06-25T10:00:00Z"))));
         Task persisted = Task.builder()
                 .id(777L)
@@ -148,7 +148,7 @@ class TaskControllerTest {
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
                         new InteractionId(42L), InteractionType.CHECK_IN,
-                        new EmployeeId(1L), new EmployeeId(2L), "note",
+                        new EmployeeId(1L), new EmployeeId(2L), "Facilitator Name", "subject", "note",
                         Instant.parse("2026-06-25T10:00:00Z"))));
 
         // When / Then
