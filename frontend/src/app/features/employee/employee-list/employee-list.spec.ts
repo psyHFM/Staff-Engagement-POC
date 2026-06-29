@@ -121,6 +121,17 @@ describe('EmployeeList', () => {
     expect(emitted).toEqual(['fullName,asc']);
   });
 
+  it('renders a Profile link for each employee', () => {
+    // When
+    fixture.detectChanges();
+
+    // Then
+    const links = fixture.nativeElement.querySelectorAll('.employee-list__profile');
+    expect(links.length).toBe(2);
+    expect(links[0].getAttribute('href')).toBe('/employees/1/profile');
+    expect(links[0].textContent).toContain('Profile');
+  });
+
   it('emits the selected employee when a row is clicked', () => {
     // Given
     const emitted: EmployeeResponse[] = [];
@@ -132,15 +143,5 @@ describe('EmployeeList', () => {
     // Then
     expect(emitted).toHaveLength(1);
     expect(emitted[0].id.value).toBe(1);
-  });
-
-  it('renders a Profile link for each employee', () => {
-    // When
-    fixture.detectChanges();
-
-    // Then
-    const links = fixture.nativeElement.querySelectorAll('.employee-list__profile');
-    expect(links.length).toBe(2);
-    expect(links[0].textContent).toContain('Profile');
   });
 });

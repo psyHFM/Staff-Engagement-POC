@@ -107,6 +107,53 @@ public class InteractionService implements InteractionContract {
         return repository.findById(id.value()).map(InteractionService::toSummary);
     }
 
+    /**
+     * Update an interaction's mutable fields ({@code type}, {@code note}).
+     *
+     * <p>Subject, facilitator and {@code createdAt} are immutable to keep the
+     * audit trail honest — those fields are part of the "what happened" record,
+     * not the "what was the latest edit" record. Editing the {@code type} or
+     * {@code note} is a correction of the same event, so it remains the same
+     * event id and timestamp; only {@code updatedAt} advances.
+     *
+     * <p>RBAC: admins may edit any interaction; non-admins may only edit
+     * interactions they facilitated. The 404-on-unauthorised policy prevents
+     * the existence leak a 403 would expose.
+     *
+     * @throws InteractionNotFoundException if the id does not exist, OR if a
+     *         non-admin tries to edit an interaction they did not facilitate.
+     *         Both paths collapse to 404 to keep existence opaque.
+     */
+    public InteractionSummary update(InteractionId id, InteractionType type, String note,
+                                     EmployeeId actor, boolean isAdmin) {
+        Interaction entity = repository.findById(id.value())
+                .orElseThrow(() -> new InteractionNotFoundException(id.value()));
+        if (!isAdmin && !entity.getFacilitatorId().equals(actor.value())) {
+            // Collapse "not yours" into "not found" — no existence leak.
+            throw new InteractionNotFoundException(id.value());
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("type is required");
+        }
+        entity.setType(type);
+        entity.setNote(note);
+        entity.setUpdatedAt(Instant.now());
+        Interaction saved = repository.save(entity);
+        return toSummary(saved);
+    }
+
+    /**
+     * Override of the additive {@link InteractionContract#verifyEditable} default.
+     * Returns the {@link InteractionId} if the actor is allowed to edit, or empty
+     * for both "not found" and "not authorised" (existence opaque).
+     */
+    @Override
+    public Optional<InteractionId> verifyEditable(InteractionId id, EmployeeId actor, boolean isAdmin) {
+        return repository.findById(id.value())
+                .filter(entity -> isAdmin || entity.getFacilitatorId().equals(actor.value()))
+                .map(entity -> id);
+    }
+
     private static InteractionSummary toSummary(Interaction entity) {
         return new InteractionSummary(
                 new InteractionId(entity.getId()),

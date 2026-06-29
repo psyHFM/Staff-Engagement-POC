@@ -1,30 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
 
 import { EmployeeCreateForm } from './employee-create-form';
-import { EmployeeStateService } from '../employee-state.service';
 
-describe('EmployeeCreateForm', () => {
+describe('EmployeeCreateForm (parent-driven)', () => {
   let fixture: ComponentFixture<EmployeeCreateForm>;
   let component: EmployeeCreateForm;
-  let stateMock: EmployeeStateService;
 
   beforeEach(async () => {
-    stateMock = {
-      createEmployee: jest.fn()
-    } as unknown as EmployeeStateService;
-    (stateMock.createEmployee as jest.Mock).mockReturnValue(
-      of({
-        id: { value: 42 },
-        fullName: 'Jane Doe',
-        email: 'jane@staff.eng',
-        role: 'employee'
-      })
-    );
-
     await TestBed.configureTestingModule({
-      imports: [EmployeeCreateForm],
-      providers: [{ provide: EmployeeStateService, useValue: stateMock }]
+      imports: [EmployeeCreateForm]
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmployeeCreateForm);
@@ -42,11 +26,11 @@ describe('EmployeeCreateForm', () => {
     expect(component.level).toBeNull();
   });
 
-  it('submits the create request (no email, no role) and emits created on success', () => {
+  it('emits a create request with the trimmed values on submit (no email, no role)', () => {
     // Given
     fixture.detectChanges();
-    const createdSpy = jest.fn();
-    component.created.subscribe(createdSpy);
+    const createSpy = jest.fn();
+    component.create.subscribe(createSpy);
 
     component.fullName = 'Jane Doe';
     component.jobTitle = 'Eng';
@@ -56,56 +40,58 @@ describe('EmployeeCreateForm', () => {
     // When
     component.submit();
 
-    // Then — email and role are NOT part of the self-service create body
-    expect(stateMock.createEmployee).toHaveBeenCalledWith({
+    // Then — no email, no role in the payload (server-side binding + self-promotion guard)
+    expect(createSpy).toHaveBeenCalledWith({
       fullName: 'Jane Doe',
       jobTitle: 'Eng',
       department: 'Platform',
       level: 'senior'
     });
-    expect(createdSpy).toHaveBeenCalled();
   });
 
-  it('resets the form after a successful submit', () => {
+  it('does not emit when the full name is blank', () => {
     // Given
     fixture.detectChanges();
-    component.fullName = 'Jane Doe';
-    component.level = 'senior';
+    const createSpy = jest.fn();
+    component.create.subscribe(createSpy);
 
-    // When
-    component.submit();
-
-    // Then
-    expect(component.fullName).toBe('');
-    expect(component.level).toBeNull();
-  });
-
-  it('does not submit when the full name is blank', () => {
-    // Given
-    fixture.detectChanges();
     component.fullName = '   ';
 
     // When
     component.submit();
 
     // Then
-    expect(stateMock.createEmployee).not.toHaveBeenCalled();
+    expect(createSpy).not.toHaveBeenCalled();
   });
 
-  it('sends null for the optional fields when left blank', () => {
+  it('emits null for the optional fields when left blank', () => {
     // Given
     fixture.detectChanges();
+    const createSpy = jest.fn();
+    component.create.subscribe(createSpy);
+
     component.fullName = 'Jane Doe';
 
     // When
     component.submit();
 
     // Then
-    expect(stateMock.createEmployee).toHaveBeenCalledWith({
+    expect(createSpy).toHaveBeenCalledWith({
       fullName: 'Jane Doe',
       jobTitle: null,
       department: null,
       level: null
     });
+  });
+
+  it('respects the submitting flag — disabled button blocks submit', () => {
+    // Given — the parent set submitting=true (request in-flight)
+    component.submitting = true;
+    fixture.detectChanges();
+    component.fullName = 'Jane Doe';
+    const button = fixture.nativeElement.querySelector('button[type=submit]') as HTMLButtonElement;
+
+    // Then — the button is disabled (the parent owns the click-while-pending guard)
+    expect(button.disabled).toBe(true);
   });
 });

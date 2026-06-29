@@ -30,6 +30,14 @@
 - [x] 5.3 Document PITest status: `com.staffengagement.skills.*` is not in `pom.xml` `targetClasses`; deferred to a coordination PR (same precedent as interaction/portfolio phases).
 
 ## 6. Commit and push
-- [ ] 6.1 Stage all changes.
-- [ ] 6.2 Commit the coordination-level contract extension first, then the skills module + tests.
-- [ ] 6.3 Push to `feature/ATSE1-20-skills-backend`.
+- [x] 6.1 Stage all changes.
+- [x] 6.2 Commit the coordination-level contract extension first, then the skills module + tests.
+- [x] 6.3 Push to `feature/ATSE1-20-skills-backend`.
+
+## 7. Archive closeout (2026-06-25)
+- [x] Retroactive persona review by Constitution Guard, Angular State Architect, BDD Test Engineer (verdict: PASS WITH WARNINGS; zero blocking Violations). Reports at `.claude/plans/atse1-skills-persona-reviews/`.
+- [x] The original PR #25 (ATSE1-20 backend) and the downstream PR #26 (ATSE1-21 frontend) + PR #29 (e2e) + PR #32 (shell nav) all reached `main`. The `feature/ATSE1-21-skills-frontend` branch is now stale (4 conflicts vs current main) and was tagged `archive/atse1-21-skills-frontend-branch` for audit, then deleted locally only.
+- [x] Non-blocking follow-ups logged in `.claude/plans/atse1-skills-persona-reviews/reconciliation.md`:
+  - Add `com.staffengagement.skills.*` to PITest `targetClasses` in `backend/pom.xml:138-143` (W4/W3 across personas; coordination-level config change; out of scope for this archive).
+  - Stryker CI invocation not inspected (flag-only; verify in `verify` skill).
+- [x] Archived to `openspec/changes/archive/2026-06-25-atse1-20-skills-backend/`. Canonical specs at `openspec/specs/skills-{api,contract,service,tests}/spec.md`.

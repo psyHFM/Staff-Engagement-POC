@@ -5,6 +5,7 @@ import com.staffengagement.employee.domain.EmployeeLevel;
 import com.staffengagement.employee.repository.EmployeeRepository;
 import com.staffengagement.shared.api.EmployeeSummary;
 import com.staffengagement.shared.api.Paged;
+import com.staffengagement.shared.kernel.Caller;
 import com.staffengagement.shared.kernel.EmployeeId;
 import com.staffengagement.shared.kernel.EmployeeRole;
 import java.time.Instant;

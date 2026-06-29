@@ -35,6 +35,13 @@ export interface LinkEntry {
 
 export interface Portfolio {
   employeeId: string;
+  /**
+   * Email of the employee this portfolio belongs to (ATSE1-39). Optional so the
+   * type stays compatible with any pre-RBAC payload that omits the field; the
+   * frontend treats `undefined` as "read-only" since the owner check cannot be
+   * made.
+   */
+  ownerEmail?: string;
   skills: SkillEntry[];
   education: EducationEntry[];
   projects: ProjectEntry[];

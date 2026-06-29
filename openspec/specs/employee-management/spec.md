@@ -169,9 +169,9 @@ The system SHALL provide `frontend/.../features/employee/**` with an `EmployeeLi
 component, an `EmployeeDetail` component, and an `EmployeeStateService` using Angular
 Signals (in-memory only). A lazy route for the feature SHALL be appended as exactly one
 line in `routes.ts`. The create form SHALL omit the email and role fields (derived
-server-side). Edit affordances SHALL be gated by RBAC: an ADMIN can edit any record and
-may change role; a non-admin sees edit only on their own record and cannot change role.
-The list SHALL be visible to all authenticated users.
+server-side). The employee directory SHALL be a directory-only list; selecting a row SHALL
+navigate to the dedicated profile page (`/employees/:id/profile`). The list SHALL be
+visible to all authenticated users.
 
 #### Scenario: Lazy route loads
 - **WHEN** the employee route is navigated to
@@ -181,7 +181,8 @@ The list SHALL be visible to all authenticated users.
 - **WHEN** an authenticated user opens the create form
 - **THEN** the form collects `fullName`, `jobTitle`, `department`, and `level` only; email and role are not entered
 
-#### Scenario: RBAC gates edit and role affordance
-- **WHEN** a non-admin views another employee's detail
-- **THEN** no edit affordance is shown; an admin viewing any detail sees the edit affordance and a role control
+#### Scenario: Directory links to profile page
+- **WHEN** an authenticated user views the employee directory
+- **THEN** each row links to `/employees/{id}/profile` and the directory does not show an inline detail/edit panel
+
 

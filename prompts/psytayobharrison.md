@@ -269,3 +269,17 @@ what's this hook error?
 
 read and understand the project and give me a where we're at
 
+### psyTayobHarrison — 2026-06-25 18:34:23
+
+> **Model:** `kimi-k2.7-code`  
+> **Tokens:** `83,034` in / `1,060` out · cache read `0` / write `0` · **84,094 total**
+
+we were in the middle of applying the changes @openspec/changes/atse1-42-44-69-shell-directory-ux\ when something crahsed, check the status of it
+
+### psyTayobHarrison — 2026-06-25 18:46:57
+
+> **Model:** `kimi-k2.7-code`  
+> **Tokens:** `106,921` in / `1,082` out · cache read `0` / write `0` · **108,003 total**
+
+yes 6.5
+

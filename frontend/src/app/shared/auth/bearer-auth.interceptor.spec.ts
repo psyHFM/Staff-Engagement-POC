@@ -10,6 +10,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { AuthState } from './auth-state';
+import { AUTH_STORAGE, AuthStorage } from './auth-storage';
 import { bearerAuthInterceptor } from './bearer-auth.interceptor';
 
 describe('bearerAuthInterceptor', () => {
@@ -18,11 +19,13 @@ describe('bearerAuthInterceptor', () => {
   let auth: AuthState;
 
   beforeEach(() => {
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         AuthState,
         provideHttpClient(withInterceptors([bearerAuthInterceptor])),
-        provideHttpClientTesting()
+        provideHttpClientTesting(),
+        { provide: AUTH_STORAGE, useValue: createInMemoryStorage() }
       ]
     });
     http = TestBed.inject(HttpClient);
@@ -30,12 +33,15 @@ describe('bearerAuthInterceptor', () => {
     auth = TestBed.inject(AuthState);
   });
 
-  afterEach(() => httpMock.verify());
+  afterEach(() => {
+    httpMock.verify();
+    sessionStorage.clear();
+  });
 
   it('adds Authorization header when a token is present', () => {
     // Given — an authenticated session
     auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' });
+    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 7 });
 
     // When
     http.get('/api/v1/employees/1/interactions').subscribe();
@@ -62,7 +68,7 @@ describe('bearerAuthInterceptor', () => {
   it('does not overwrite an existing Authorization header', () => {
     // Given — a token and a request that already carries Authorization
     auth.login({ username: 'admin@staff.eng', password: 'staffeng' }).subscribe();
-    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer' });
+    httpMock.expectOne('/api/v1/auth/login').flush({ token: 'jwt-stub', tokenType: 'Bearer', expiresInSeconds: 60, employeeId: 7 });
 
     // When
     http
@@ -77,3 +83,16 @@ describe('bearerAuthInterceptor', () => {
     req.flush([]);
   });
 });
+
+function createInMemoryStorage(): AuthStorage {
+  const map = new Map<string, string>();
+  return {
+    read: (key) => (map.has(key) ? (map.get(key) as string) : null),
+    write: (key, value) => {
+      map.set(key, value);
+    },
+    remove: (key) => {
+      map.delete(key);
+    }
+  };
+}

@@ -1,0 +1,70 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "Staff Engagement" [ref=e5] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e6]: 
+      - text: Staff Engagement
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Employees" [ref=e9] [cursor=pointer]:
+        - /url: /employees
+      - link "Interactions" [ref=e10] [cursor=pointer]:
+        - /url: /interactions
+      - link "Tasks" [ref=e11] [cursor=pointer]:
+        - /url: /tasks
+      - link "Portfolio" [active] [ref=e12] [cursor=pointer]:
+        - /url: /portfolio
+      - link "Skills" [ref=e13] [cursor=pointer]:
+        - /url: /skills
+    - generic [ref=e14]:
+      - generic [ref=e30]: admin@staff.eng
+      - button "Sign out" [ref=e31] [cursor=pointer]
+  - main [ref=e16]:
+    - generic [ref=e91]:
+      - generic [ref=e92]:
+        - heading "Portfolio" [level=1] [ref=e93]
+        - generic [ref=e94]:
+          - generic [ref=e95]: Employee ID
+          - textbox "Employee ID" [ref=e96]: "1"
+          - button "Load" [ref=e97] [cursor=pointer]
+      - generic [ref=e98]:
+        - heading "Skills" [level=2] [ref=e99]
+        - list [ref=e100]:
+          - listitem [ref=e101]:
+            - strong [ref=e102]: Angular
+            - text: — 6 yrs, 4 projects
+            - button "remove" [ref=e103] [cursor=pointer]
+        - generic [ref=e104]:
+          - textbox "Skill (e.g. Angular)" [ref=e105]
+          - spinbutton [ref=e106]
+          - spinbutton [ref=e107]
+          - button "Add skill" [disabled] [ref=e108]
+      - generic [ref=e109]:
+        - heading "Education" [level=2] [ref=e110]
+        - list [ref=e111]:
+          - listitem [ref=e112]: No education entries.
+        - generic [ref=e113]:
+          - textbox "Institution" [ref=e114]
+          - textbox "Qualification" [ref=e115]
+          - spinbutton [ref=e116]
+          - spinbutton [ref=e117]
+          - button "Add education" [disabled] [ref=e118]
+      - generic [ref=e119]:
+        - heading "Projects" [level=2] [ref=e120]
+        - list [ref=e121]:
+          - listitem [ref=e122]: No projects.
+        - generic [ref=e123]:
+          - textbox "Project name" [ref=e124]
+          - textbox "Description" [ref=e125]
+          - spinbutton [ref=e126]
+          - spinbutton [ref=e127]
+          - button "Add project" [disabled] [ref=e128]
+      - generic [ref=e129]:
+        - heading "Public links" [level=2] [ref=e130]
+        - list [ref=e131]:
+          - listitem [ref=e132]: No links.
+        - generic [ref=e133]:
+          - textbox "Label (optional)" [ref=e134]
+          - textbox "https://…" [ref=e135]
+          - button "Add link" [disabled] [ref=e136]

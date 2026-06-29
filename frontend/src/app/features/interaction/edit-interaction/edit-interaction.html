@@ -1,0 +1,49 @@
+@if (isOpen) {
+  <div class="edit-interaction__overlay"
+       role="dialog"
+       aria-modal="true"
+       tabindex="-1"
+       (click)="onOverlayClick($event)"
+       (keydown.escape)="close()">
+    <div class="edit-interaction__panel">
+      <header class="edit-interaction__header">
+        <h2>Edit interaction</h2>
+        <button type="button" class="edit-interaction__close" aria-label="Close" (click)="close()">&times;</button>
+      </header>
+
+      @if (editing) {
+        <form (ngSubmit)="submit()" class="edit-interaction__form">
+          <p class="edit-interaction__hint">
+            Subject, facilitator, and recorded date are part of the audit trail and cannot be changed.
+          </p>
+
+          <div class="edit-interaction__field">
+            <label for="edit-type">Type</label>
+            <select id="edit-type" name="type" [(ngModel)]="type" required>
+              @for (option of types; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="edit-interaction__field">
+            <label for="edit-note">Note</label>
+            <textarea id="edit-note" name="note" [(ngModel)]="note" rows="4" placeholder="Update the note…"></textarea>
+          </div>
+
+          <div class="edit-interaction__actions">
+            <button type="button" class="edit-interaction__btn edit-interaction__btn--secondary" (click)="close()">
+              Cancel
+            </button>
+            <button type="submit" class="edit-interaction__btn edit-interaction__btn--primary" [disabled]="state.isLoading()">
+              @if (state.isLoading()) {
+                <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+              }
+              Save changes
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+}

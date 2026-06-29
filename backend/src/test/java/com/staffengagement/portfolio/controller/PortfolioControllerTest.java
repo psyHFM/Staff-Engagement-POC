@@ -11,13 +11,18 @@ import static org.mockito.Mockito.verify;
 import com.staffengagement.portfolio.service.EmployeeNotFoundException;
 import com.staffengagement.portfolio.service.PortfolioService;
 import com.staffengagement.portfolio.service.PortfolioView;
+import com.staffengagement.shared.kernel.Caller;
 import com.staffengagement.shared.kernel.EmployeeId;
+import com.staffengagement.shared.kernel.EmployeeRole;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
  * BDD unit tests for {@link PortfolioController} (Phase 4 / testing-strategy.yaml).
@@ -37,13 +42,31 @@ class PortfolioControllerTest {
     private PortfolioController controller;
 
     private static PortfolioView emptyView() {
-        return new PortfolioView(1L, List.of(), List.of(), List.of(), List.of());
+        return new PortfolioView(1L, null, List.of(), List.of(), List.of(), List.of());
+    }
+
+    /** Authenticated caller used for the mutating endpoints (employee role, fixed email). */
+    private static final String OWNER_EMAIL = "ada@staff.eng";
+    private static final Caller OWNER = new Caller(OWNER_EMAIL, EmployeeRole.EMPLOYEE);
+
+    private static Authentication authOf(String email, EmployeeRole role) {
+        return new UsernamePasswordAuthenticationToken(
+                email, "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_" + role.name())));
+    }
+
+    private static Authentication employeeAuth() {
+        return authOf(OWNER_EMAIL, EmployeeRole.EMPLOYEE);
+    }
+
+    private static Authentication adminAuth() {
+        return authOf("admin@staff.eng", EmployeeRole.ADMIN);
     }
 
     @Test
     void getPortfolioBindsPathIdAndReturnsServiceView() {
         // Given — the service returns the portfolio view for employee 1
-        PortfolioView view = new PortfolioView(1L,
+        PortfolioView view = new PortfolioView(1L, OWNER_EMAIL,
                 List.of(new PortfolioView.SkillView(10L, "Angular", 5, 9)),
                 List.of(), List.of(), List.of());
         given(portfolioService.getPortfolio(new EmployeeId(1L))).willReturn(view);
@@ -71,31 +94,31 @@ class PortfolioControllerTest {
     @Test
     void replacePortfolioPinsEmployeeIdToPathAndForwardsBody() {
         // Given — the service returns the replaced view
-        PortfolioView body = new PortfolioView(999L, // deliberately mismatched; the path wins
+        PortfolioView body = new PortfolioView(999L, null, // deliberately mismatched; the path wins
                 List.of(new PortfolioView.SkillView(null, "Angular", 1, 1)),
                 List.of(), List.of(), List.of());
         PortfolioView replaced = emptyView();
-        given(portfolioService.replacePortfolio(eq(new EmployeeId(1L)), any(PortfolioView.class)))
+        given(portfolioService.replacePortfolio(eq(new EmployeeId(1L)), any(PortfolioView.class), eq(OWNER)))
                 .willReturn(replaced);
 
         // When
-        PortfolioView result = controller.replacePortfolio(1L, body);
+        PortfolioView result = controller.replacePortfolio(1L, body, OWNER_EMAIL, employeeAuth());
 
         // Then — the employeeId in the forwarded view is pinned to the path (1), not the body (999)
-        then(portfolioService).should().replacePortfolio(eq(new EmployeeId(1L)), any(PortfolioView.class));
+        then(portfolioService).should().replacePortfolio(eq(new EmployeeId(1L)), any(PortfolioView.class), eq(OWNER));
         assertThat(result).isEqualTo(replaced);
         verify(portfolioService).replacePortfolio(eq(new EmployeeId(1L)),
-                org.mockito.ArgumentMatchers.argThat(v -> v.employeeId().equals(1L)));
+                org.mockito.ArgumentMatchers.argThat(v -> v.employeeId().equals(1L)), eq(OWNER));
     }
 
     @Test
     void addSkillReturns201WithCreatedEntry() {
         // Given — the service persists and returns the created skill with an id
         PortfolioView.SkillView created = new PortfolioView.SkillView(100L, "Angular", 5, 9);
-        given(portfolioService.addSkill(eq(new EmployeeId(1L)), any())).willReturn(created);
+        given(portfolioService.addSkill(eq(new EmployeeId(1L)), any(), eq(OWNER))).willReturn(created);
 
         // When
-        var response = controller.addSkill(1L, new PortfolioView.SkillView(null, "Angular", 5, 9));
+        var response = controller.addSkill(1L, new PortfolioView.SkillView(null, "Angular", 5, 9), OWNER_EMAIL, employeeAuth());
 
         // Then
         assertThat(response.getStatusCode().value()).isEqualTo(201);
@@ -106,55 +129,55 @@ class PortfolioControllerTest {
     void updateSkillForwardsIdsAndEntry() {
         // Given
         PortfolioView.SkillView updated = new PortfolioView.SkillView(7L, "Angular", 6, 10);
-        given(portfolioService.updateSkill(new EmployeeId(1L), 7L, new PortfolioView.SkillView(7L, "Angular", 6, 10)))
+        given(portfolioService.updateSkill(new EmployeeId(1L), 7L, new PortfolioView.SkillView(7L, "Angular", 6, 10), OWNER))
                 .willReturn(updated);
 
         // When
-        PortfolioView.SkillView result = controller.updateSkill(1L, 7L, new PortfolioView.SkillView(7L, "Angular", 6, 10));
+        PortfolioView.SkillView result = controller.updateSkill(1L, 7L, new PortfolioView.SkillView(7L, "Angular", 6, 10), OWNER_EMAIL, employeeAuth());
 
         // Then
         assertThat(result).isEqualTo(updated);
-        then(portfolioService).should().updateSkill(new EmployeeId(1L), 7L, new PortfolioView.SkillView(7L, "Angular", 6, 10));
+        then(portfolioService).should().updateSkill(new EmployeeId(1L), 7L, new PortfolioView.SkillView(7L, "Angular", 6, 10), OWNER);
     }
 
     @Test
     void deleteSkillReturns204() {
         // When
-        var response = controller.deleteSkill(1L, 7L);
+        var response = controller.deleteSkill(1L, 7L, OWNER_EMAIL, employeeAuth());
 
         // Then
         assertThat(response.getStatusCode().value()).isEqualTo(204);
-        then(portfolioService).should().deleteSkill(new EmployeeId(1L), 7L);
+        then(portfolioService).should().deleteSkill(new EmployeeId(1L), 7L, OWNER);
     }
 
     @Test
     void addEducationAddProjectAddLinkReturn201() {
         // Given
-        given(portfolioService.addEducation(eq(new EmployeeId(1L)), any()))
+        given(portfolioService.addEducation(eq(new EmployeeId(1L)), any(), eq(OWNER)))
                 .willReturn(new PortfolioView.EducationView(1L, "Uni", null, null, null));
-        given(portfolioService.addProject(eq(new EmployeeId(1L)), any()))
+        given(portfolioService.addProject(eq(new EmployeeId(1L)), any(), eq(OWNER)))
                 .willReturn(new PortfolioView.ProjectView(2L, "Portal", null, null, null));
-        given(portfolioService.addLink(eq(new EmployeeId(1L)), any()))
+        given(portfolioService.addLink(eq(new EmployeeId(1L)), any(), eq(OWNER)))
                 .willReturn(new PortfolioView.LinkView(3L, "GitHub", "https://gh"));
 
         // When / Then — each add returns 201
-        assertThat(controller.addEducation(1L, new PortfolioView.EducationView(null, "Uni", null, null, null))
+        assertThat(controller.addEducation(1L, new PortfolioView.EducationView(null, "Uni", null, null, null), OWNER_EMAIL, employeeAuth())
                 .getStatusCode().value()).isEqualTo(201);
-        assertThat(controller.addProject(1L, new PortfolioView.ProjectView(null, "Portal", null, null, null))
+        assertThat(controller.addProject(1L, new PortfolioView.ProjectView(null, "Portal", null, null, null), OWNER_EMAIL, employeeAuth())
                 .getStatusCode().value()).isEqualTo(201);
-        assertThat(controller.addLink(1L, new PortfolioView.LinkView(null, "GitHub", "https://gh"))
+        assertThat(controller.addLink(1L, new PortfolioView.LinkView(null, "GitHub", "https://gh"), OWNER_EMAIL, employeeAuth())
                 .getStatusCode().value()).isEqualTo(201);
     }
 
     @Test
     void deleteEducationDeleteProjectDeleteLinkReturn204() {
         // When / Then — each delete returns 204 and forwards the ids
-        assertThat(controller.deleteEducation(1L, 1L).getStatusCode().value()).isEqualTo(204);
-        assertThat(controller.deleteProject(1L, 2L).getStatusCode().value()).isEqualTo(204);
-        assertThat(controller.deleteLink(1L, 3L).getStatusCode().value()).isEqualTo(204);
-        then(portfolioService).should().deleteEducation(new EmployeeId(1L), 1L);
-        then(portfolioService).should().deleteProject(new EmployeeId(1L), 2L);
-        then(portfolioService).should().deleteLink(new EmployeeId(1L), 3L);
+        assertThat(controller.deleteEducation(1L, 1L, OWNER_EMAIL, employeeAuth()).getStatusCode().value()).isEqualTo(204);
+        assertThat(controller.deleteProject(1L, 2L, OWNER_EMAIL, employeeAuth()).getStatusCode().value()).isEqualTo(204);
+        assertThat(controller.deleteLink(1L, 3L, OWNER_EMAIL, employeeAuth()).getStatusCode().value()).isEqualTo(204);
+        then(portfolioService).should().deleteEducation(new EmployeeId(1L), 1L, OWNER);
+        then(portfolioService).should().deleteProject(new EmployeeId(1L), 2L, OWNER);
+        then(portfolioService).should().deleteLink(new EmployeeId(1L), 3L, OWNER);
     }
 
     @Test
@@ -162,14 +185,14 @@ class PortfolioControllerTest {
         // Given
         PortfolioView.EducationView updated = new PortfolioView.EducationView(7L, "New", "PhD", 2010, 2014);
         PortfolioView.EducationView entry = new PortfolioView.EducationView(7L, "New", "PhD", 2010, 2014);
-        given(portfolioService.updateEducation(new EmployeeId(1L), 7L, entry)).willReturn(updated);
+        given(portfolioService.updateEducation(new EmployeeId(1L), 7L, entry, OWNER)).willReturn(updated);
 
         // When
-        PortfolioView.EducationView result = controller.updateEducation(1L, 7L, entry);
+        PortfolioView.EducationView result = controller.updateEducation(1L, 7L, entry, OWNER_EMAIL, employeeAuth());
 
         // Then
         assertThat(result).isEqualTo(updated);
-        then(portfolioService).should().updateEducation(new EmployeeId(1L), 7L, entry);
+        then(portfolioService).should().updateEducation(new EmployeeId(1L), 7L, entry, OWNER);
     }
 
     @Test
@@ -177,14 +200,14 @@ class PortfolioControllerTest {
         // Given
         PortfolioView.ProjectView updated = new PortfolioView.ProjectView(8L, "New", "d", 2020, 2021);
         PortfolioView.ProjectView entry = new PortfolioView.ProjectView(8L, "New", "d", 2020, 2021);
-        given(portfolioService.updateProject(new EmployeeId(1L), 8L, entry)).willReturn(updated);
+        given(portfolioService.updateProject(new EmployeeId(1L), 8L, entry, OWNER)).willReturn(updated);
 
         // When
-        PortfolioView.ProjectView result = controller.updateProject(1L, 8L, entry);
+        PortfolioView.ProjectView result = controller.updateProject(1L, 8L, entry, OWNER_EMAIL, employeeAuth());
 
         // Then
         assertThat(result).isEqualTo(updated);
-        then(portfolioService).should().updateProject(new EmployeeId(1L), 8L, entry);
+        then(portfolioService).should().updateProject(new EmployeeId(1L), 8L, entry, OWNER);
     }
 
     @Test
@@ -192,13 +215,30 @@ class PortfolioControllerTest {
         // Given
         PortfolioView.LinkView updated = new PortfolioView.LinkView(9L, "GitHub", "https://gh");
         PortfolioView.LinkView entry = new PortfolioView.LinkView(9L, "GitHub", "https://gh");
-        given(portfolioService.updateLink(new EmployeeId(1L), 9L, entry)).willReturn(updated);
+        given(portfolioService.updateLink(new EmployeeId(1L), 9L, entry, OWNER)).willReturn(updated);
 
         // When
-        PortfolioView.LinkView result = controller.updateLink(1L, 9L, entry);
+        PortfolioView.LinkView result = controller.updateLink(1L, 9L, entry, OWNER_EMAIL, employeeAuth());
 
         // Then
         assertThat(result).isEqualTo(updated);
-        then(portfolioService).should().updateLink(new EmployeeId(1L), 9L, entry);
+        then(portfolioService).should().updateLink(new EmployeeId(1L), 9L, entry, OWNER);
+    }
+
+    @Test
+    void mutatingEndpointsExtractCallerFromAuthentication() {
+        // Given — an ADMIN principal is constructed with the ROLE_ADMIN authority
+        Authentication adminAuth = adminAuth();
+        given(portfolioService.addSkill(eq(new EmployeeId(1L)), any(),
+                eq(new Caller("admin@staff.eng", EmployeeRole.ADMIN))))
+                .willReturn(new PortfolioView.SkillView(1L, "Angular", 1, 1));
+
+        // When — the controller receives the admin's principal
+        controller.addSkill(1L, new PortfolioView.SkillView(null, "Angular", 1, 1),
+                "admin@staff.eng", adminAuth);
+
+        // Then — the controller resolved the role to ADMIN and forwarded it as a Caller
+        then(portfolioService).should().addSkill(eq(new EmployeeId(1L)), any(),
+                eq(new Caller("admin@staff.eng", EmployeeRole.ADMIN)));
     }
 }

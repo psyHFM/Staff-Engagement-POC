@@ -1,0 +1,34 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "Staff Engagement" [ref=e5] [cursor=pointer]:
+      - /url: /dashboard
+      - generic [ref=e6]: 
+      - text: Staff Engagement
+    - navigation [ref=e7]:
+      - link "Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+      - link "Employees" [ref=e9] [cursor=pointer]:
+        - /url: /employees
+      - link "Interactions" [ref=e10] [cursor=pointer]:
+        - /url: /interactions
+      - link "Tasks" [ref=e11] [cursor=pointer]:
+        - /url: /tasks
+      - link "Portfolio" [ref=e12] [cursor=pointer]:
+        - /url: /portfolio
+      - link "Skills" [ref=e13] [cursor=pointer]:
+        - /url: /skills
+    - link "Sign in" [ref=e295] [cursor=pointer]:
+      - /url: /login
+  - main [ref=e16]:
+    - generic [ref=e298]:
+      - heading "Sign in" [level=1] [ref=e299]:
+        - generic [ref=e300]: 
+        - text: Sign in
+      - generic [ref=e301]:
+        - generic [ref=e302]: Username
+        - textbox "Username" [ref=e303]: admin@staff.eng
+      - generic [ref=e304]:
+        - generic [ref=e305]: Password
+        - textbox "Password" [ref=e306]: staffeng
+      - button "Sign in" [ref=e307] [cursor=pointer]
+      - paragraph [ref=e308]: POC stub — employee@staff.eng / staffeng or admin@staff.eng / staffeng.

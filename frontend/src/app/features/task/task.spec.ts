@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { Task } from './task';
-import { Task as TaskModel } from './task.model';
+import { Task as TaskModel, TaskItem } from './task.model';
 
 describe('Task (My Tasks view)', () => {
   let httpMock: HttpTestingController;
@@ -16,6 +16,16 @@ describe('Task (My Tasks view)', () => {
     subjectId: '7',
     title: 'Test task',
     description: 'desc',
+    completed: false,
+    createdAt: '2026-01-01T00:00:00Z',
+    ...overrides
+  });
+
+  const item = (overrides: Partial<TaskItem> = {}): TaskItem => ({
+    id: '10',
+    taskId: '1',
+    ordinal: 0,
+    title: 'Sub-task',
     completed: false,
     createdAt: '2026-01-01T00:00:00Z',
     ...overrides
@@ -88,5 +98,205 @@ describe('Task (My Tasks view)', () => {
     fixture.detectChanges();
     const checkbox = fixture.nativeElement.querySelector('.task-checkbox') as HTMLInputElement;
     expect(checkbox.checked).toBe(true);
+  });
+
+  // --- §8.8 — sub-tasks (ATSE1-34) -----------------------------------------
+
+  it('WHEN the user expands a card THEN GET /api/v1/tasks/{id} fires once and the items render', () => {
+    // Given
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    fixture.detectChanges();
+
+    // No items rendered yet — the card is collapsed by default.
+    expect(fixture.nativeElement.querySelector('.task-items')).toBeNull();
+
+    // When — clicking the sub-tasks toggle on the first card
+    const component = fixture.componentInstance as unknown as {
+      toggleExpand: (t: TaskModel) => void;
+    };
+    component.toggleExpand(task({ id: '1' }));
+    const get = httpMock.expectOne('/api/v1/tasks/1');
+    expect(get.request.method).toBe('GET');
+    get.flush({ base: task({ id: '1' }), items: [item({ id: '10', title: 'Write tests' })] });
+    fixture.detectChanges();
+
+    // Then
+    const rendered = fixture.nativeElement.querySelectorAll('.task-items__row');
+    expect(rendered).toHaveLength(1);
+    expect(fixture.nativeElement.textContent).toContain('Write tests');
+  });
+
+  it('WHEN the same card is expanded twice THEN GET /api/v1/tasks/{id} fires only once', () => {
+    // Given — card already expanded and items loaded
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      toggleExpand: (t: TaskModel) => void;
+    };
+    component.toggleExpand(task({ id: '1' }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({ base: task({ id: '1' }), items: [] });
+    fixture.detectChanges();
+
+    // When — collapse and re-expand the same card
+    component.toggleExpand(task({ id: '1' }));
+    fixture.detectChanges();
+    component.toggleExpand(task({ id: '1' }));
+
+    // Then — no second GET fires
+    httpMock.expectNone('/api/v1/tasks/1');
+  });
+
+  it('WHEN a sub-task checkbox is toggled THEN PATCH /api/v1/tasks/{taskId}/items/{itemId} fires with { completed } and the row reflects the change', () => {
+    // Given — expanded card with one item
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      toggleExpand: (t: TaskModel) => void;
+      toggleItem: (t: TaskModel, i: TaskItem, completed: boolean) => void;
+    };
+    component.toggleExpand(task({ id: '1' }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({
+      base: task({ id: '1' }),
+      items: [item({ id: '10', completed: false })]
+    });
+    fixture.detectChanges();
+
+    // When — checking the sub-task box
+    component.toggleItem(task({ id: '1' }), item({ id: '10' }), true);
+    const patch = httpMock.expectOne('/api/v1/tasks/1/items/10');
+    expect(patch.request.method).toBe('PATCH');
+    expect(patch.request.body).toEqual({ completed: true });
+    patch.flush(item({ id: '10', completed: true }));
+    fixture.detectChanges();
+
+    // Then — the row renders with the strikethrough class
+    const title = fixture.nativeElement.querySelector('.task-items__title');
+    expect(title.classList.contains('completed')).toBe(true);
+  });
+
+  it('WHEN the trash icon is clicked on a sub-task THEN DELETE /api/v1/tasks/{taskId}/items/{itemId} fires and the row disappears', () => {
+    // Given — expanded card with two items
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      toggleExpand: (t: TaskModel) => void;
+      removeItem: (t: TaskModel, i: TaskItem) => void;
+    };
+    component.toggleExpand(task({ id: '1' }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({
+      base: task({ id: '1' }),
+      items: [item({ id: '10' }), item({ id: '11', ordinal: 1, title: 'Other' })]
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.task-items__row')).toHaveLength(2);
+
+    // When — clicking trash on item 10
+    component.removeItem(task({ id: '1' }), item({ id: '10' }));
+    const del = httpMock.expectOne('/api/v1/tasks/1/items/10');
+    expect(del.request.method).toBe('DELETE');
+    del.flush(null);
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.querySelectorAll('.task-items__row')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelector('[data-item-id="10"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-item-id="11"]')).toBeTruthy();
+  });
+
+  it('WHEN the user submits the inline add form with a non-blank title THEN POST /items fires with { title } and the form resets', () => {
+    // Given — expanded card with one item already
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      toggleExpand: (t: TaskModel) => void;
+      addItem: (t: TaskModel) => void;
+      newItemTitle: string;
+    };
+    component.toggleExpand(task({ id: '1' }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({
+      base: task({ id: '1' }),
+      items: [item({ id: '10' })]
+    });
+    fixture.detectChanges();
+
+    // When — typing into the bound model and calling addItem
+    component.newItemTitle = 'Write tests';
+    component.addItem(task({ id: '1' }));
+    const post = httpMock.expectOne('/api/v1/tasks/1/items');
+    expect(post.request.method).toBe('POST');
+    expect(post.request.body).toEqual({ title: 'Write tests' });
+    post.flush(item({ id: '12', ordinal: 1, title: 'Write tests' }));
+    fixture.detectChanges();
+
+    // Then — the new item appears and the input model is reset
+    expect(fixture.nativeElement.querySelectorAll('.task-items__row')).toHaveLength(2);
+    expect(component.newItemTitle).toBe('');
+  });
+
+  it('WHEN the user clicks down-arrow on the first of two items THEN PUT /items/reorder fires with the swapped id order', () => {
+    // Given — expanded card with two items
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      toggleExpand: (t: TaskModel) => void;
+      moveItem: (t: TaskModel, i: TaskItem, delta: -1 | 1) => void;
+    };
+    component.toggleExpand(task({ id: '1' }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({
+      base: task({ id: '1' }),
+      items: [item({ id: '10' }), item({ id: '11', ordinal: 1, title: 'Other' })]
+    });
+    fixture.detectChanges();
+
+    // When — clicking down on item 10
+    component.moveItem(task({ id: '1' }), item({ id: '10' }), +1);
+    const put = httpMock.expectOne('/api/v1/tasks/1/items/reorder');
+    expect(put.request.method).toBe('PUT');
+    expect(put.request.body).toEqual(['11', '10']);
+    put.flush([item({ id: '11', ordinal: 0 }), item({ id: '10', ordinal: 1 })]);
+    fixture.detectChanges();
+
+    // Then — the DOM order reflects the swap
+    const rows = fixture.nativeElement.querySelectorAll('.task-items__row');
+    expect(rows[0]!.getAttribute('data-item-id')).toBe('11');
+    expect(rows[1]!.getAttribute('data-item-id')).toBe('10');
+  });
+
+  it('WHEN a task has zero items THEN the empty-state placeholder is visible', () => {
+    // Given — expanded card with no items
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      toggleExpand: (t: TaskModel) => void;
+    };
+    component.toggleExpand(task({ id: '1' }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({ base: task({ id: '1' }), items: [] });
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.querySelector('.task-items__empty')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.task-items__empty')!.textContent)
+      .toContain('No sub-tasks yet.');
+    expect(fixture.nativeElement.querySelectorAll('.task-items__row')).toHaveLength(0);
   });
 });

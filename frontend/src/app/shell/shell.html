@@ -15,13 +15,23 @@
 
   <div class="shell__auth">
     @if (auth.isAuthenticated()) {
-      <span class="shell__user">{{ auth.currentUser() }}</span>
+      @if (profileLink()) {
+        <a
+          class="shell__user"
+          [routerLink]="profileLink()"
+          aria-label="View your profile"
+          tabindex="0">
+          {{ auth.currentUser() }}
+        </a>
+      } @else {
+        <span class="shell__user">{{ auth.currentUser() }}</span>
+      }
       <button type="button" class="shell__logout" (click)="logout()">Sign out</button>
     } @else {
       <a routerLink="/login" class="shell__login">Sign in</a>
     }
-  </div
-></header>
+  </div>
+</header>
 
 <main class="shell__main">
   <router-outlet />
