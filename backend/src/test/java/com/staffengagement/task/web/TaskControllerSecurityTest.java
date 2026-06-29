@@ -123,7 +123,7 @@ class TaskControllerSecurityTest {
     void create_persistsTitleOnEntity() {
         // Given — a request whose title and description are distinct
         TaskController.TaskRequest request =
-                new TaskController.TaskRequest(1L, null, "Follow up", "Send the email");
+                new TaskController.TaskRequest("Follow up", 1L, null, "Send the email");
         given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(taskRepository.save(org.mockito.ArgumentMatchers.any(Task.class)))
                 .willAnswer(inv -> {
@@ -133,7 +133,7 @@ class TaskControllerSecurityTest {
                 });
 
         // When
-        ResponseEntity<com.staffengagement.shared.kernel.TaskId> response =
+        ResponseEntity<com.staffengagement.shared.api.TaskSummary> response =
                 controller.create(request);
 
         // Then — the entity carried title="Follow up", description="Send the email"
@@ -151,7 +151,7 @@ class TaskControllerSecurityTest {
     void create_nullTitleIsCoercedToEmptyString() {
         // Given — request with explicit null title
         TaskController.TaskRequest request =
-                new TaskController.TaskRequest(1L, null, null, "Body");
+                new TaskController.TaskRequest(null, 1L, null, "Body");
         given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(taskRepository.save(org.mockito.ArgumentMatchers.any(Task.class)))
                 .willAnswer(inv -> {
@@ -173,7 +173,7 @@ class TaskControllerSecurityTest {
     void create_rejectsUnknownSubject() {
         // Given — admin token, but the supplied subject does not exist
         TaskController.TaskRequest request =
-                new TaskController.TaskRequest(99L, null, "Orphan", "Body");
+                new TaskController.TaskRequest("Orphan", 99L, null, "Body");
         given(employeeContract.exists(new EmployeeId(99L))).willReturn(false);
 
         // When / Then — illegal argument bubbles up; no save happens

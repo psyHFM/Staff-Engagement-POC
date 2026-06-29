@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { TaskStateService } from './task-state.service';
 import { TaskCreateForm } from './task-create-form';
 import { Task as TaskModel, TaskItem } from './task.model';
@@ -18,17 +18,47 @@ import { Task as TaskModel, TaskItem } from './task.model';
         </button>
       </header>
 
-      <div *ngIf="state.loading() && state.tasks().length === 0" class="loading-overlay">
+      <div *ngIf="state.loading()" class="loading-overlay">
         <i class="pi pi-spin pi-spinner"></i> Loading tasks...
       </div>
 
-      <div class="task-list" *ngIf="state.tasks().length > 0 || !state.loading()">
+      <div class="task-container" *ngIf="!state.loading()">
         <div *ngIf="state.tasks().length === 0" class="empty-state">
           <i class="pi pi-list"></i>
           <p>No tasks assigned to you. Take a break!</p>
         </div>
 
-        <div class="task-grid">
+        <table class="task-table" *ngIf="state.tasks().length > 0">
+          <thead>
+            <tr>
+              <th (click)="state.setSort('title')" class="sortable">
+                Title <i class="pi pi-sort-alt"></i>
+              </th>
+              <th>Description</th>
+              <th (click)="state.setSort('createdAt')" class="sortable">
+                Created <i class="pi pi-sort-alt"></i>
+              </th>
+              <th class="text-center">Done</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of state.tasks()" [class.completed]="task.completed">
+              <td class="font-bold">{{ task.title }}</td>
+              <td>{{ task.description }}</td>
+              <td>{{ task.createdAt | date:'shortDate' }}</td>
+              <td class="text-center">
+                <input
+                  type="checkbox"
+                  [checked]="task.completed"
+                  (change)="toggleTask(task)"
+                  class="task-checkbox"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="state.itemsByTaskId().size > 0" class="task-list">
           <div *ngFor="let task of state.tasks()" class="task-card">
             <div class="task-card-main">
               <div class="task-status">
@@ -175,33 +205,53 @@ import { Task as TaskModel, TaskItem } from './task.model';
     }
     .empty-state i { font-size: 3rem; }
 
-    .task-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-    .task-card {
-      border: 1px solid #e5e7eb;
-      border-radius: 0.75rem;
-      padding: 1.25rem;
+    .task-table {
+      width: 100%;
+      border-collapse: collapse;
       background: white;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      border-radius: 0.75rem;
+      overflow: hidden;
     }
-    .task-card-main { margin-bottom: 1rem; }
-    .task-status {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.5rem;
+    .task-table th, .task-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .task-table th {
+      background: #f9fafb;
+      color: #4b5563;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .task-table .sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+    .task-table .sortable:hover {
+      background: #f3f4f6;
+    }
+    .task-table tr.completed td {
+      color: #9ca3af;
+    }
+    .task-table tr.completed .font-bold {
+      text-decoration: line-through;
+    }
+    .font-bold {
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .text-center {
+      text-align: center;
     }
     .task-checkbox {
       width: 1.2rem;
       height: 1.2rem;
       cursor: pointer;
     }
+
     .task-title {
       font-weight: 600;
       font-size: 1.1rem;
@@ -327,26 +377,24 @@ export class Task implements OnInit {
   /** Bound to the inline add form via {@code [(ngModel)]}. */
   protected newItemTitle = '';
 
-  @ViewChild('itemForm') protected itemForm?: NgForm;
-
   ngOnInit() {
     this.state.loadMyTasks();
   }
 
   toggleTask(task: TaskModel) {
-    this.state.toggleCompletion(task.id, !task.completed);
+    this.state.toggleCompletion(task.id.value, !task.completed);
   }
 
   protected isExpanded(task: TaskModel): boolean {
-    return this.expandedTaskId() === task.id;
+    return this.expandedTaskId() === task.id.value.toString();
   }
 
   protected itemsRegionId(task: TaskModel): string {
-    return `task-items-${task.id}`;
+    return `task-items-${task.id.value}`;
   }
 
   protected itemsFor(task: TaskModel): readonly TaskItem[] {
-    return this.state.itemsFor(task.id)();
+    return this.state.itemsFor(task.id.value.toString())();
   }
 
   protected toggleExpand(task: TaskModel): void {
@@ -354,19 +402,19 @@ export class Task implements OnInit {
       this.expandedTaskId.set(null);
       return;
     }
-    this.expandedTaskId.set(task.id);
+    this.expandedTaskId.set(task.id.value.toString());
     // Lazy first-load: fetch items the first time the card is opened.
-    if (!this.state.itemsByTaskId().has(task.id)) {
-      this.state.loadTaskItems(task.id);
+    if (!this.state.itemsByTaskId().has(task.id.value.toString())) {
+      this.state.loadTaskItems(task.id.value.toString());
     }
   }
 
   protected toggleItem(task: TaskModel, item: TaskItem, completed: boolean): void {
-    this.state.patchTaskItem(task.id, item.id, { completed });
+    this.state.patchTaskItem(task.id.value.toString(), item.id, { completed });
   }
 
   protected removeItem(task: TaskModel, item: TaskItem): void {
-    this.state.removeTaskItem(task.id, item.id);
+    this.state.removeTaskItem(task.id.value.toString(), item.id);
   }
 
   protected moveItem(task: TaskModel, item: TaskItem, delta: -1 | 1): void {
@@ -382,7 +430,7 @@ export class Task implements OnInit {
     const reordered = [...current];
     const [moved] = reordered.splice(index, 1);
     reordered.splice(target, 0, moved!);
-    this.state.reorderTaskItems(task.id, reordered.map(existing => existing.id));
+    this.state.reorderTaskItems(task.id.value.toString(), reordered.map(existing => existing.id));
   }
 
   protected addItem(task: TaskModel): void {
@@ -390,8 +438,7 @@ export class Task implements OnInit {
     if (title.length === 0) {
       return;
     }
-    this.state.addTaskItem(task.id, title);
+    this.state.addTaskItem(task.id.value.toString(), title);
     this.newItemTitle = '';
-    this.itemForm?.resetForm();
   }
 }

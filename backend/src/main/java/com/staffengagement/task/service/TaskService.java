@@ -224,14 +224,16 @@ public class TaskService implements TaskContract {
         return item;
     }
 
-    private TaskSummary toSummary(Task task) {
+    /** Returns a summary representation of a task. */
+    public TaskSummary toSummary(Task task) {
         return new TaskSummary(
                 task.getId(),
                 task.getSubjectId(),
                 task.getTitle(),
                 task.getSourceInteractionId(),
                 task.isCompleted(),
-                task.getDescription()
+                task.getDescription(),
+                task.getCreatedAt()
         );
     }
 

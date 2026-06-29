@@ -47,7 +47,7 @@ export class TaskCreateForm implements OnInit {
 
   ngOnInit(): void {
     if (this.interactionId) {
-      this.request.sourceInteractionId = this.interactionId;
+      this.request.sourceInteractionId = Number(this.interactionId);
     }
   }
 

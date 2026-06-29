@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: task-004
+      author: psyTayobHarrison
+      changes:
+        - addDefaultValue:
+            tableName: task
+            columnName: description
+            columnType: VARCHAR(1000)
+            defaultValue: ''
+      comment: Add default value for description column to fix NOT NULL constraint

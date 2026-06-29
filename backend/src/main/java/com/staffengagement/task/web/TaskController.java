@@ -20,6 +20,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
 
 /**
@@ -47,7 +50,7 @@ public class TaskController {
 
     @PostMapping("/api/v1/tasks")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<TaskId> create(@RequestBody TaskRequest request) {
+    public ResponseEntity<TaskSummary> create(@RequestBody TaskRequest request) {
         // 2.3 Validation for subject existence via EmployeeContract (skipped only
         // while the employee module is absent).
         EmployeeContract employeeContract = employeeContractProvider.getIfAvailable();
@@ -81,7 +84,7 @@ public class TaskController {
                 .build();
 
         Task saved = taskRepository.save(task);
-        return ResponseEntity.ok(saved.getId());
+        return ResponseEntity.ok(taskService.toSummary(saved));
     }
 
     @PutMapping("/api/v1/tasks/{id}")
@@ -177,9 +180,11 @@ public class TaskController {
      * Spring Boot 3.x.
      */
     public record TaskRequest(
+            @NotBlank
+            @Size(max = 120)
+            String title,
             Long subjectId,
             Long sourceInteractionId,
-            String title,
             String description) {}
 
     public record CompletionRequest(boolean completed) {}

@@ -20,15 +20,49 @@ export class TaskStateService extends StateService {
   // is treated as immutable (replace on every update) so the `computed()`
   // graph re-runs deterministically.
   private readonly _itemsByTask = signal<ReadonlyMap<string, readonly TaskItem[]>>(new Map());
+  // Sorting state
+  private readonly _sortField = signal<string>('createdAt');
+  private readonly _sortAsc = signal<boolean>(true);
 
   // Public Read-only Signals
-  readonly tasks = computed(() => this._tasks());
+  readonly tasks = computed(() => {
+    const tasks = this._tasks();
+    const field = this._sortField();
+    const asc = this._sortAsc();
+
+    return [...tasks].sort((a, b) => {
+      // Type assertion: convert to unknown first, then access with bracket notation
+      const valA = (a as unknown as Record<string, unknown>)[field];
+      const valB = (b as unknown as Record<string, unknown>)[field];
+
+      // Compare as strings or numbers - TypeScript cannot infer runtime type
+      if (valA === valB) return 0;
+      if (valA == null) return 1;
+      if (valB == null) return -1;
+      // String coerce for comparison
+      const strA = String(valA);
+      const strB = String(valB);
+      if (strA < strB) return asc ? -1 : 1;
+      if (strA > strB) return asc ? 1 : -1;
+      return 0;
+    });
+  });
   readonly itemsByTaskId = computed(() => this._itemsByTask());
   override readonly loading = signal(false);
 
   /** Returns a `computed()` view of the items for a single task, or `[]` when none loaded. */
   itemsFor(taskId: string): Signal<readonly TaskItem[]> {
     return computed(() => this._itemsByTask().get(taskId) ?? []);
+  }
+
+  /** Update sorting field and direction */
+  setSort(field: string): void {
+    if (this._sortField() === field) {
+      this._sortAsc.update(v => !v);
+    } else {
+      this._sortField.set(field);
+      this._sortAsc.set(true);
+    }
   }
 
   /**
@@ -71,7 +105,7 @@ export class TaskStateService extends StateService {
    * assuming a PUT or PATCH to /api/v1/tasks/{id} or similar.
    * For the POC, I will implement it as a call to a hypothetical update endpoint.
    */
-  toggleCompletion(taskId: string, completed: boolean): void {
+  toggleCompletion(taskId: number, completed: boolean): void {
     // Assuming PUT /api/v1/tasks/{id} for completion update
     this.beginLoad();
     this.api.put<Task>(`tasks/${taskId}`, { completed })
@@ -82,7 +116,7 @@ export class TaskStateService extends StateService {
       .subscribe({
         next: (updatedTask) => {
           this._tasks.update(tasks =>
-            tasks.map(t => t.id === taskId ? updatedTask : t)
+            tasks.map(t => t.id.value === taskId ? updatedTask : t)
           );
         },
         error: (err) => console.error('Failed to toggle task completion:', err)

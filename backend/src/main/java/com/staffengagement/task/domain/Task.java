@@ -29,12 +29,14 @@ public class Task {
     private String title = "";
 
     @Column(name = "description", nullable = false, length = 1000)
-    private String description;
+    private String description = "";
 
     @Column(name = "completed", nullable = false)
-    private boolean completed;
+    @Builder.Default
+    private boolean completed = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
     private Instant createdAt = Instant.now();
 
     @Column(name = "completed_at")

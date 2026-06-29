@@ -23,6 +23,30 @@
 #
 # Optional ENV vars
 # -----------------
+
+# Force JAVA_HOME to Java 21 to ensure correct version is used.
+# On Windows (dev), use the local JDK. On Docker/Linux, use the system JDK.
+
+# Windows Java 21 locations (checked first for Git Bash on Windows)
+if [ -d "C:/Program Files/Java/jdk-21.0.10" ]; then
+  JAVA_HOME="C:/Program Files/Java/jdk-21.0.10"
+elif [ -d "C:/myprograms/java/jdk-21.0.10" ]; then
+  JAVA_HOME="C:/myprograms/java/jdk-21.0.10"
+# Linux Docker path
+elif [ -d "/usr/local/jdk-21.0.10" ]; then
+  JAVA_HOME="/usr/local/jdk-21.0.10"
+# Homebrew on macOS
+elif [ -d "/opt/homebrew/opt/openjdk@21" ]; then
+  JAVA_HOME="/opt/homebrew/opt/openjdk@21"
+elif [ -n "${JAVA_HOME-}" ]; then
+  # JAVA_HOME already set by user/environment, use it
+  :
+else
+  # Fallback: let system find Java automatically
+  unset JAVA_HOME
+fi
+export JAVA_HOME
+
 #   JAVA_HOME - location of a JDK home dir, required when download maven via java source
 #   MVNW_REPOURL - repo url base for downloading maven distribution
 #   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven

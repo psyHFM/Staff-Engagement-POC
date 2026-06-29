@@ -6,14 +6,17 @@ import {
 } from '@angular/common/http/testing';
 
 import { Task } from './task';
-import { Task as TaskModel, TaskItem } from './task.model';
+import { Task as TaskModel, TaskId, EmployeeId, TaskItem } from './task.model';
 
 describe('Task (My Tasks view)', () => {
   let httpMock: HttpTestingController;
 
+  const taskId = (value: number): TaskId => ({ value });
+  const employeeId = (value: number): EmployeeId => ({ value });
+
   const task = (overrides: Partial<TaskModel> = {}): TaskModel => ({
-    id: '1',
-    subjectId: '7',
+    id: taskId(1),
+    subject: employeeId(7),
     title: 'Test task',
     description: 'desc',
     completed: false,
@@ -41,21 +44,21 @@ describe('Task (My Tasks view)', () => {
 
   afterEach(() => httpMock.verify());
 
-  it('renders the loaded tasks as cards', async () => {
+  it('renders the loaded tasks in a table', async () => {
     // Given — the component loads my tasks on init
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
     httpMock.expectOne('/api/v1/me/tasks').flush([
-      task({ id: '1', title: 'Write tests', description: 'BDD first' }),
-      task({ id: '2', title: 'Ship it', description: 'Done' })
+      task({ id: taskId(1), title: 'Write tests', description: 'BDD first' }),
+      task({ id: taskId(2), title: 'Ship it', description: 'Done' })
     ]);
 
     // When
     fixture.detectChanges();
 
     // Then
-    const cards = fixture.nativeElement.querySelectorAll('.task-card');
-    expect(cards).toHaveLength(2);
+    const rows = fixture.nativeElement.querySelectorAll('.task-table tbody tr');
+    expect(rows).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('Write tests');
     expect(fixture.nativeElement.textContent).toContain('Ship it');
     // The create-form modal is hidden until the user asks for it
@@ -80,19 +83,19 @@ describe('Task (My Tasks view)', () => {
     // Given
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1', completed: false })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1), completed: false })]);
     fixture.detectChanges();
 
     // When — toggling the first task's checkbox
     const component = fixture.componentInstance as unknown as {
       toggleTask: (t: TaskModel) => void;
-      state: { toggleCompletion: (id: string, completed: boolean) => void };
+      state: { toggleCompletion: (id: number, completed: boolean) => void };
     };
-    component.toggleTask(task({ id: '1', completed: false }));
+    component.toggleTask(task({ id: taskId(1), completed: false }));
     const put = httpMock.expectOne('/api/v1/tasks/1');
     expect(put.request.method).toBe('PUT');
     expect(put.request.body).toEqual({ completed: true });
-    put.flush(task({ id: '1', completed: true }));
+    put.flush(task({ id: taskId(1), completed: true }));
 
     // Then
     fixture.detectChanges();
@@ -106,7 +109,7 @@ describe('Task (My Tasks view)', () => {
     // Given
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     fixture.detectChanges();
 
     // No items rendered yet — the card is collapsed by default.
@@ -116,7 +119,7 @@ describe('Task (My Tasks view)', () => {
     const component = fixture.componentInstance as unknown as {
       toggleExpand: (t: TaskModel) => void;
     };
-    component.toggleExpand(task({ id: '1' }));
+    component.toggleExpand(task({ id: taskId(1) }));
     const get = httpMock.expectOne('/api/v1/tasks/1');
     expect(get.request.method).toBe('GET');
     get.flush({ base: task({ id: '1' }), items: [item({ id: '10', title: 'Write tests' })] });
@@ -132,20 +135,20 @@ describe('Task (My Tasks view)', () => {
     // Given — card already expanded and items loaded
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     fixture.detectChanges();
 
     const component = fixture.componentInstance as unknown as {
       toggleExpand: (t: TaskModel) => void;
     };
-    component.toggleExpand(task({ id: '1' }));
-    httpMock.expectOne('/api/v1/tasks/1').flush({ base: task({ id: '1' }), items: [] });
+    component.toggleExpand(task({ id: taskId(1) }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({ base: task({ id: taskId(1) }), items: [] });
     fixture.detectChanges();
 
     // When — collapse and re-expand the same card
-    component.toggleExpand(task({ id: '1' }));
+    component.toggleExpand(task({ id: taskId(1) }));
     fixture.detectChanges();
-    component.toggleExpand(task({ id: '1' }));
+    component.toggleExpand(task({ id: taskId(1) }));
 
     // Then — no second GET fires
     httpMock.expectNone('/api/v1/tasks/1');
@@ -155,22 +158,22 @@ describe('Task (My Tasks view)', () => {
     // Given — expanded card with one item
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     fixture.detectChanges();
 
     const component = fixture.componentInstance as unknown as {
       toggleExpand: (t: TaskModel) => void;
       toggleItem: (t: TaskModel, i: TaskItem, completed: boolean) => void;
     };
-    component.toggleExpand(task({ id: '1' }));
+    component.toggleExpand(task({ id: taskId(1) }));
     httpMock.expectOne('/api/v1/tasks/1').flush({
-      base: task({ id: '1' }),
+      base: task({ id: taskId(1) }),
       items: [item({ id: '10', completed: false })]
     });
     fixture.detectChanges();
 
     // When — checking the sub-task box
-    component.toggleItem(task({ id: '1' }), item({ id: '10' }), true);
+    component.toggleItem(task({ id: taskId(1) }), item({ id: '10' }), true);
     const patch = httpMock.expectOne('/api/v1/tasks/1/items/10');
     expect(patch.request.method).toBe('PATCH');
     expect(patch.request.body).toEqual({ completed: true });
@@ -186,23 +189,23 @@ describe('Task (My Tasks view)', () => {
     // Given — expanded card with two items
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     fixture.detectChanges();
 
     const component = fixture.componentInstance as unknown as {
       toggleExpand: (t: TaskModel) => void;
       removeItem: (t: TaskModel, i: TaskItem) => void;
     };
-    component.toggleExpand(task({ id: '1' }));
+    component.toggleExpand(task({ id: taskId(1) }));
     httpMock.expectOne('/api/v1/tasks/1').flush({
-      base: task({ id: '1' }),
+      base: task({ id: taskId(1) }),
       items: [item({ id: '10' }), item({ id: '11', ordinal: 1, title: 'Other' })]
     });
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('.task-items__row')).toHaveLength(2);
 
     // When — clicking trash on item 10
-    component.removeItem(task({ id: '1' }), item({ id: '10' }));
+    component.removeItem(task({ id: taskId(1) }), item({ id: '10' }));
     const del = httpMock.expectOne('/api/v1/tasks/1/items/10');
     expect(del.request.method).toBe('DELETE');
     del.flush(null);
@@ -218,7 +221,7 @@ describe('Task (My Tasks view)', () => {
     // Given — expanded card with one item already
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     fixture.detectChanges();
 
     const component = fixture.componentInstance as unknown as {
@@ -226,16 +229,16 @@ describe('Task (My Tasks view)', () => {
       addItem: (t: TaskModel) => void;
       newItemTitle: string;
     };
-    component.toggleExpand(task({ id: '1' }));
+    component.toggleExpand(task({ id: taskId(1) }));
     httpMock.expectOne('/api/v1/tasks/1').flush({
-      base: task({ id: '1' }),
+      base: task({ id: taskId(1) }),
       items: [item({ id: '10' })]
     });
     fixture.detectChanges();
 
     // When — typing into the bound model and calling addItem
     component.newItemTitle = 'Write tests';
-    component.addItem(task({ id: '1' }));
+    component.addItem(task({ id: taskId(1) }));
     const post = httpMock.expectOne('/api/v1/tasks/1/items');
     expect(post.request.method).toBe('POST');
     expect(post.request.body).toEqual({ title: 'Write tests' });
@@ -251,22 +254,22 @@ describe('Task (My Tasks view)', () => {
     // Given — expanded card with two items
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     fixture.detectChanges();
 
     const component = fixture.componentInstance as unknown as {
       toggleExpand: (t: TaskModel) => void;
       moveItem: (t: TaskModel, i: TaskItem, delta: -1 | 1) => void;
     };
-    component.toggleExpand(task({ id: '1' }));
+    component.toggleExpand(task({ id: taskId(1) }));
     httpMock.expectOne('/api/v1/tasks/1').flush({
-      base: task({ id: '1' }),
+      base: task({ id: taskId(1) }),
       items: [item({ id: '10' }), item({ id: '11', ordinal: 1, title: 'Other' })]
     });
     fixture.detectChanges();
 
     // When — clicking down on item 10
-    component.moveItem(task({ id: '1' }), item({ id: '10' }), +1);
+    component.moveItem(task({ id: taskId(1) }), item({ id: '10' }), +1);
     const put = httpMock.expectOne('/api/v1/tasks/1/items/reorder');
     expect(put.request.method).toBe('PUT');
     expect(put.request.body).toEqual(['11', '10']);
@@ -283,14 +286,14 @@ describe('Task (My Tasks view)', () => {
     // Given — expanded card with no items
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
-    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: '1' })]);
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     fixture.detectChanges();
 
     const component = fixture.componentInstance as unknown as {
       toggleExpand: (t: TaskModel) => void;
     };
-    component.toggleExpand(task({ id: '1' }));
-    httpMock.expectOne('/api/v1/tasks/1').flush({ base: task({ id: '1' }), items: [] });
+    component.toggleExpand(task({ id: taskId(1) }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({ base: task({ id: taskId(1) }), items: [] });
     fixture.detectChanges();
 
     // Then

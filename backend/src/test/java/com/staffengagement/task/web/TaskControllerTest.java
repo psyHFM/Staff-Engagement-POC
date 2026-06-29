@@ -73,7 +73,7 @@ class TaskControllerTest {
     @DisplayName("Should persist and return the new task id when the subject exists")
     void create_persistsAndReturnsId_whenSubjectExists() {
         // Given — the subject exists and the source interaction belongs to them
-        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, 42L, "Follow up", "Send the email");
+        TaskController.TaskRequest request = new TaskController.TaskRequest("Follow up", 1L, 42L, "Send the email");
         given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
@@ -89,23 +89,25 @@ class TaskControllerTest {
                 .completed(false)
                 .build();
         given(taskRepository.save(any(Task.class))).willReturn(persisted);
+        given(taskService.toSummary(any(Task.class))).willReturn(new TaskSummary(
+                new TaskId(777L), new EmployeeId(1L), "Follow up", new InteractionId(42L), false, "Send the email", Instant.now()));
 
         // When
-        ResponseEntity<TaskId> response = controller.create(request);
+        ResponseEntity<TaskSummary> response = controller.create(request);
 
         // Then
         then(employeeContract).should().exists(new EmployeeId(1L));
         then(interactionContract).should().findBySubject(new EmployeeId(1L));
         then(taskRepository).should().save(any(Task.class));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(new TaskId(777L));
+        assertThat(response.getBody().id()).isEqualTo(new TaskId(777L));
     }
 
     @Test
     @DisplayName("Should create a standalone task when no source interaction is supplied")
     void create_allowsStandaloneTask_withoutInteractionCheck() {
         // Given — no sourceInteractionId, so interaction validation is skipped
-        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, null, "Standalone", "Standalone");
+        TaskController.TaskRequest request = new TaskController.TaskRequest("Standalone", 1L, null, "Standalone");
         given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         Task persisted = Task.builder()
                 .id(5L)
@@ -115,20 +117,22 @@ class TaskControllerTest {
                 .completed(false)
                 .build();
         given(taskRepository.save(any(Task.class))).willReturn(persisted);
+        given(taskService.toSummary(any(Task.class))).willReturn(new TaskSummary(
+                new TaskId(5L), new EmployeeId(1L), "Standalone", null, false, "Standalone", Instant.now()));
 
         // When
-        ResponseEntity<TaskId> response = controller.create(request);
+        ResponseEntity<TaskSummary> response = controller.create(request);
 
         // Then
         then(interactionContract).shouldHaveNoInteractions();
-        assertThat(response.getBody()).isEqualTo(new TaskId(5L));
+        assertThat(response.getBody().id()).isEqualTo(new TaskId(5L));
     }
 
     @Test
     @DisplayName("Should reject creation when the subject employee does not exist")
     void create_rejects_whenSubjectMissing() {
         // Given
-        TaskController.TaskRequest request = new TaskController.TaskRequest(99L, null, "Orphan", "Orphan body");
+        TaskController.TaskRequest request = new TaskController.TaskRequest("Orphan", 99L, null, "Orphan body");
         given(employeeContract.exists(new EmployeeId(99L))).willReturn(false);
 
         // When / Then
@@ -143,7 +147,7 @@ class TaskControllerTest {
     @DisplayName("Should reject creation when the source interaction does not belong to the subject")
     void create_rejects_whenSourceInteractionNotForSubject() {
         // Given — the subject has interaction 42, but the request references 99
-        TaskController.TaskRequest request = new TaskController.TaskRequest(1L, 99L, "From interaction", "Body");
+        TaskController.TaskRequest request = new TaskController.TaskRequest("From interaction", 1L, 99L, "Body");
         given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
@@ -163,7 +167,7 @@ class TaskControllerTest {
     void updateCompletion_delegatesToService() {
         // Given
         TaskSummary summary = new TaskSummary(
-                new TaskId(10L), subject, "Read", new InteractionId(42L), true, "Read");
+                new TaskId(10L), subject, "Read", new InteractionId(42L), true, "Read", Instant.now());
         given(taskService.toggleCompletion(10L, true)).willReturn(summary);
 
         // When
@@ -181,7 +185,7 @@ class TaskControllerTest {
     void getForEmployee_delegatesToService() {
         // Given
         TaskSummary summary = new TaskSummary(
-                new TaskId(10L), subject, "Read", new InteractionId(42L), false, "Read design doc");
+                new TaskId(10L), subject, "Read", new InteractionId(42L), false, "Read design doc", Instant.now());
         given(taskService.tasksForEmployee(subject)).willReturn(List.of(summary));
 
         // When
@@ -200,7 +204,7 @@ class TaskControllerTest {
         UserDetails principal = org.mockito.Mockito.mock(UserDetails.class);
         given(principal.getUsername()).willReturn("7");
         TaskSummary summary = new TaskSummary(
-                new TaskId(11L), new EmployeeId(7L), "Mine", null, true, "Mine");
+                new TaskId(11L), new EmployeeId(7L), "Mine", null, true, "Mine", Instant.now());
         given(taskService.myTasks(new EmployeeId(7L))).willReturn(List.of(summary));
 
         // When

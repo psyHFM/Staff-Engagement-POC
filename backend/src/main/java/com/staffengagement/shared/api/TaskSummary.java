@@ -19,5 +19,6 @@ public record TaskSummary(
         String title,
         InteractionId sourceInteractionId,
         boolean completed,
-        String description) {
+        String description,
+        java.time.Instant createdAt) {
 }
