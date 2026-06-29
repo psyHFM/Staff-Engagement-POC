@@ -11,11 +11,13 @@ import com.staffengagement.shared.kernel.InteractionType;
  * and facilitator are the typed {@link EmployeeId} (wire form {@code {"value":N}}),
  * matching the frozen {@code InteractionSummary} read model for consistency.
  * {@code facilitator} is required in this splice (design D3); {@code note} is
- * optional free-text.
+ * optional free-text. {@code subjectText} is a brief free-text subject/summary
+ * (ATSE1-45).
  */
 public record CreateInteractionRequest(
         InteractionType type,
         EmployeeId subject,
         EmployeeId facilitator,
+        String subjectText,
         String note) {
 }

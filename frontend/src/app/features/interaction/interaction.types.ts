@@ -34,6 +34,7 @@ export interface InteractionSummary {
   readonly type: InteractionType;
   readonly subject: EmployeeId;
   readonly facilitator: EmployeeId;
+  readonly facilitatorName: string;
   readonly note: string;
   readonly createdAt: string;
 }
@@ -57,5 +58,6 @@ export interface CreateInteractionRequest {
   readonly type: InteractionType;
   readonly subject: EmployeeId;
   readonly facilitator: EmployeeId;
+  readonly subjectText: string;
   readonly note: string;
 }

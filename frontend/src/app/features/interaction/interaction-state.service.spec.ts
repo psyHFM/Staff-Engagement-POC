@@ -51,7 +51,7 @@ describe('InteractionStateService', () => {
 
   beforeEach(() => {
     apiClientSpy = { get: jest.fn(), post: jest.fn(), patch: jest.fn() };
-    authStateMock = { currentUser: signal(null) };
+    authStateMock = { currentUser: signal(null), currentEmployeeId: jest.fn() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -166,13 +166,14 @@ describe('InteractionStateService', () => {
     service.selectSubject(employee(1));
 
     // When
-    service.createInteraction('mentoring', employee(1), employee(2), 'Mentoring note').subscribe();
+    service.createInteraction('mentoring', employee(1), employee(2), '', 'Mentoring note').subscribe();
 
     // Then
     const expectedRequest: CreateInteractionRequest = {
       type: 'mentoring',
       subject: employee(1),
       facilitator: employee(2),
+      subjectText: '',
       note: 'Mentoring note'
     };
     expect(apiClientSpy.post).toHaveBeenCalledWith('interactions', expectedRequest);
@@ -187,7 +188,7 @@ describe('InteractionStateService', () => {
     service.selectSubject(employee(1));
 
     // When
-    service.createInteraction('check-in', employee(1), employee(2), 'Note').subscribe();
+    service.createInteraction('check-in', employee(1), employee(2), '', 'Note').subscribe();
 
     // Then
     expect(apiClientSpy.get).toHaveBeenCalled();
@@ -200,7 +201,7 @@ describe('InteractionStateService', () => {
     service.selectSubject(employee(1));
 
     // When
-    service.createInteraction('check-in', employee(2), employee(2), 'Note').subscribe();
+    service.createInteraction('check-in', employee(2), employee(2), '', 'Note').subscribe();
 
     // Then
     expect(apiClientSpy.get).not.toHaveBeenCalled();
@@ -211,7 +212,7 @@ describe('InteractionStateService', () => {
     apiClientSpy.post.mockReturnValue(throwError(() => apiError(400)));
 
     // When
-    service.createInteraction('check-in', employee(1), employee(2), 'Note').subscribe({ error: () => {} });
+    service.createInteraction('check-in', employee(1), employee(2), '', 'Note').subscribe({ error: () => {} });
 
     // Then
     expect(service.created()).toBeNull();
@@ -222,6 +223,7 @@ describe('InteractionStateService', () => {
   it('defaultFacilitator maps admin@staff.eng to employee id 1', () => {
     // Given
     authStateMock.currentUser.set('admin@staff.eng');
+    (authStateMock.currentEmployeeId as jest.Mock).mockReturnValue(1);
 
     // Then
     expect(service.defaultFacilitator()).toEqual(employee(1));
@@ -230,23 +232,25 @@ describe('InteractionStateService', () => {
   it('defaultFacilitator maps employee@staff.eng to employee id 2', () => {
     // Given
     authStateMock.currentUser.set('employee@staff.eng');
+    (authStateMock.currentEmployeeId as jest.Mock).mockReturnValue(2);
 
     // Then
     expect(service.defaultFacilitator()).toEqual(employee(2));
   });
 
-  it('defaultFacilitator falls back to employee id 2 for unknown users', () => {
+  it('defaultFacilitator falls back to admin (id 1) for unknown users', () => {
     // Given
     authStateMock.currentUser.set('unknown@staff.eng');
+    (authStateMock.currentEmployeeId as jest.Mock).mockReturnValue(null);
 
     // Then
-    expect(service.defaultFacilitator()).toEqual(employee(2));
+    expect(service.defaultFacilitator()).toEqual(employee(1));
   });
 
   it('clearTransient resets created and error signals', () => {
     // Given
     apiClientSpy.post.mockReturnValue(of(interaction()));
-    service.createInteraction('check-in', employee(1), employee(2), 'Note').subscribe();
+    service.createInteraction('check-in', employee(1), employee(2), '', 'Note').subscribe();
     expect(service.created()).not.toBeNull();
 
     // When

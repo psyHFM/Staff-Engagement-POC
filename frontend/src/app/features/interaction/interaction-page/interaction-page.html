@@ -4,18 +4,6 @@
     <a routerLink="/dashboard" class="interaction-page__back">← Dashboard</a>
   </header>
 
-  <div class="interaction-page__subject">
-    <label for="subject">Employee</label>
-    <select id="subject" (change)="onSubjectSelected($event)">
-      @for (subject of state.subjects(); track subject.id.value) {
-        <option [value]="subject.id.value"
-                [selected]="state.subject()?.value === subject.id.value">
-          {{ subject.fullName }}
-        </option>
-      }
-    </select>
-  </div>
-
   @if (state.error()) {
     <div class="interaction-page__error" role="alert">
       {{ state.error()?.message }}

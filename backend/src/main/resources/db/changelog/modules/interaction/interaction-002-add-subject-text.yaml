@@ -1,0 +1,12 @@
+databaseChangeLog:
+  # ATSE1-45: Add subject_text column for brief free-text subject/summary
+  - changeSet:
+      id: interaction-002
+      author: atse1-45
+      changes:
+        - addColumn:
+            tableName: interaction
+            columns:
+              - column:
+                  name: subject_text
+                  type: varchar(100)

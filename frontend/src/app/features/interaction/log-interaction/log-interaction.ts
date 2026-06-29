@@ -29,6 +29,7 @@ export class LogInteraction implements OnInit {
 
   protected type: InteractionType = 'check-in';
   protected subjectId: number | null = null;
+  protected subjectText = '';
   protected facilitatorId: number | null = null;
   protected note = '';
 
@@ -42,7 +43,7 @@ export class LogInteraction implements OnInit {
     }
     const requestSubject: EmployeeId = { value: this.subjectId };
     const facilitator: EmployeeId = { value: this.facilitatorId };
-    this.state.createInteraction(this.type, requestSubject, facilitator, this.note).subscribe({
+    this.state.createInteraction(this.type, requestSubject, facilitator, this.subjectText, this.note).subscribe({
       next: () => {
         this.resetForm();
         this.logged.emit();
@@ -53,6 +54,7 @@ export class LogInteraction implements OnInit {
   private resetForm(): void {
     this.type = 'check-in';
     this.subjectId = this.subject?.value ?? (this.subjects[0]?.id.value ?? null);
+    this.subjectText = '';
     this.facilitatorId = this.state.defaultFacilitator().value;
     this.note = '';
   }

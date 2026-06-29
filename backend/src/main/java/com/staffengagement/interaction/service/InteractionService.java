@@ -45,7 +45,7 @@ public class InteractionService implements InteractionContract {
     public List<InteractionSummary> findBySubject(EmployeeId subject) {
         return repository.findBySubjectIdOrderByCreatedAtDesc(subject.value())
                 .stream()
-                .map(InteractionService::toSummary)
+                .map(this::toSummary)
                 .toList();
     }
 
@@ -60,7 +60,7 @@ public class InteractionService implements InteractionContract {
         Pageable pageable = new OffsetPageRequest(request.offset(), request.limit(), sort);
         Page<Interaction> page = repository.findBySubjectId(subject.value(), pageable);
         List<InteractionSummary> content = page.getContent().stream()
-                .map(InteractionService::toSummary)
+                .map(this::toSummary)
                 .toList();
         return new Paged<>(content, request.offset(), request.limit(), page.getTotalElements());
     }
@@ -72,8 +72,9 @@ public class InteractionService implements InteractionContract {
      * (404 via {@link SubjectNotFoundException}/{@link FacilitatorNotFoundException}).
      * {@code type} is already constrained to the frozen vocabulary by Jackson
      * deserialization before reaching this method.
+     * {@code subjectText} is an optional brief subject/summary (ATSE1-45).
      */
-    public InteractionSummary create(InteractionType type, EmployeeId subject, EmployeeId facilitator, String note) {
+    public InteractionSummary create(InteractionType type, EmployeeId subject, EmployeeId facilitator, String subjectText, String note) {
         if (type == null) {
             throw new IllegalArgumentException("type is required");
         }
@@ -94,6 +95,7 @@ public class InteractionService implements InteractionContract {
         entity.setType(type);
         entity.setSubjectId(subject.value());
         entity.setFacilitatorId(facilitator.value());
+        entity.setSubjectText(subjectText);
         entity.setNote(note);
         Instant now = Instant.now();
         entity.setCreatedAt(now);
@@ -104,7 +106,7 @@ public class InteractionService implements InteractionContract {
     }
 
     public Optional<InteractionSummary> findById(InteractionId id) {
-        return repository.findById(id.value()).map(InteractionService::toSummary);
+        return repository.findById(id.value()).map(this::toSummary);
     }
 
     /**
@@ -154,12 +156,22 @@ public class InteractionService implements InteractionContract {
                 .map(entity -> id);
     }
 
-    private static InteractionSummary toSummary(Interaction entity) {
+    /**
+     * Convert domain entity to read-model summary. Includes denormalised
+     * {@code facilitatorName} so the UI can render history without extra lookup.
+     * {@code subjectText} is the brief subject/summary from the form.
+     */
+    private InteractionSummary toSummary(Interaction entity) {
+        EmployeeId facilitatorId = new EmployeeId(entity.getFacilitatorId());
+        String facilitatorName = employeeContract.getFullName(facilitatorId)
+                .orElse("Unknown");
         return new InteractionSummary(
                 new InteractionId(entity.getId()),
                 entity.getType(),
                 new EmployeeId(entity.getSubjectId()),
-                new EmployeeId(entity.getFacilitatorId()),
+                facilitatorId,
+                facilitatorName,
+                entity.getSubjectText() != null ? entity.getSubjectText() : "",
                 entity.getNote(),
                 entity.getCreatedAt());
     }
