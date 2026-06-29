@@ -6,11 +6,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { Task } from './task';
-<<<<<<< HEAD
-import { Task as TaskModel, TaskId, EmployeeId } from './task.model';
-=======
-import { Task as TaskModel, TaskItem } from './task.model';
->>>>>>> origin/main
+import { Task as TaskModel, TaskId, EmployeeId, TaskItem } from './task.model';
 
 describe('Task (My Tasks view)', () => {
   let httpMock: HttpTestingController;

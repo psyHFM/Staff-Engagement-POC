@@ -6,11 +6,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { TaskStateService } from './task-state.service';
-<<<<<<< HEAD
-import { Task, CreateTaskRequest, TaskId, EmployeeId } from './task.model';
-=======
-import { Task, CreateTaskRequest, TaskItem } from './task.model';
->>>>>>> origin/main
+import { Task, CreateTaskRequest, TaskId, EmployeeId, TaskItem } from './task.model';
 
 describe('TaskStateService', () => {
   let service: TaskStateService;

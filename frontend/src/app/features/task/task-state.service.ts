@@ -3,8 +3,7 @@ import { ApiClient, catchApiError } from '../../shared/api/api-client';
 import { StateService } from '../../shared/state/state.service';
 import {
   Task,
-  CreateTaskRequest,
-  TaskId
+  CreateTaskRequest
 } from './task.model';
 import { finalize } from 'rxjs';
 
@@ -30,8 +29,9 @@ export class TaskStateService extends StateService {
     const asc = this._sortAsc();
 
     return [...tasks].sort((a, b) => {
-      const valA = (a as any)[field];
-      const valB = (b as any)[field];
+      // Type assertion is safe here since we know tasks have all fields from the API
+      const valA = (a as Record<string, unknown>)[field];
+      const valB = (b as Record<string, unknown>)[field];
 
       if (valA < valB) return asc ? -1 : 1;
       if (valA > valB) return asc ? 1 : -1;
