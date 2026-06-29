@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TaskStateService } from './task-state.service';
 import { TaskCreateForm } from './task-create-form';
 import { Task as TaskModel, TaskItem } from './task.model';
@@ -7,7 +8,7 @@ import { Task as TaskModel, TaskItem } from './task.model';
 @Component({
   selector: 'app-task',
   standalone: true,
-  imports: [CommonModule, TaskCreateForm],
+  imports: [CommonModule, FormsModule, TaskCreateForm],
   template: `
     <div class="task-page">
       <header class="task-header">

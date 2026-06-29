@@ -3,7 +3,9 @@ import { ApiClient, catchApiError } from '../../shared/api/api-client';
 import { StateService } from '../../shared/state/state.service';
 import {
   Task,
-  CreateTaskRequest
+  CreateTaskRequest,
+  TaskItem,
+  TaskWithItems
 } from './task.model';
 import { finalize } from 'rxjs';
 
@@ -29,12 +31,19 @@ export class TaskStateService extends StateService {
     const asc = this._sortAsc();
 
     return [...tasks].sort((a, b) => {
-      // Type assertion is safe here since we know tasks have all fields from the API
-      const valA = (a as Record<string, unknown>)[field];
-      const valB = (b as Record<string, unknown>)[field];
+      // Type assertion: convert to unknown first, then access with bracket notation
+      const valA = (a as unknown as Record<string, unknown>)[field];
+      const valB = (b as unknown as Record<string, unknown>)[field];
 
-      if (valA < valB) return asc ? -1 : 1;
-      if (valA > valB) return asc ? 1 : -1;
+      // Compare as strings or numbers - TypeScript cannot infer runtime type
+      if (valA === valB) return 0;
+      if (valA == null) return 1;
+      if (valB == null) return -1;
+      // String coerce for comparison
+      const strA = String(valA);
+      const strB = String(valB);
+      if (strA < strB) return asc ? -1 : 1;
+      if (strA > strB) return asc ? 1 : -1;
       return 0;
     });
   });
