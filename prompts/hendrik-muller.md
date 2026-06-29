@@ -346,3 +346,10 @@ when did persona review enter the workflow
 
 so why are persona review still ongoing
 
+### Hendrik Muller — 2026-06-29 10:06:58
+
+> **Model:** `qwen3.5`  
+> **Tokens:** `120,276` in / `703` out · cache read `0` / write `0` · **120,979 total**
+
+Remove the persona review step from the workflow entirely. I believe it currently occurs after openspec is applied with personas. Keep the functionality that allows personas to review code — just remove the step where the personas themselves are reviewed.
+
