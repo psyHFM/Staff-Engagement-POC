@@ -2,11 +2,11 @@ package com.staffengagement.employee.controller;
 
 import com.staffengagement.employee.controller.dto.CreateEmployeeRequest;
 import com.staffengagement.employee.controller.dto.UpdateEmployeeRequest;
-import com.staffengagement.employee.service.Caller;
 import com.staffengagement.employee.service.EmployeeException;
 import com.staffengagement.employee.service.EmployeeResponse;
 import com.staffengagement.employee.service.EmployeeService;
 import com.staffengagement.shared.api.Paged;
+import com.staffengagement.shared.kernel.Caller;
 import com.staffengagement.shared.kernel.EmployeeRole;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

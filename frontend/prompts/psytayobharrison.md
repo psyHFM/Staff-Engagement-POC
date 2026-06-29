@@ -16,6 +16,7 @@ Auto-appended by the `log-prompts` Stop hook. Each developer has their own file 
 
 there is a duplicate "Employe Directory heading"  section title h2 and a list heading h2, remove the list heading one
 
+<<<<<<< HEAD
 ### psyTayobHarrison — 2026-06-26 15:28:16
 
 > **Model:** `qwen3-coder-next`  
@@ -23,3 +24,5 @@ there is a duplicate "Employe Directory heading"  section title h2 and a list he
 
 yes
 
+=======
+>>>>>>> origin/main

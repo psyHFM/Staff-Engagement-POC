@@ -16,6 +16,7 @@ on the employees page, the following should not be there: the employee detail ar
 
 yes
 
+<<<<<<< HEAD
 ### psyTayobHarrison — 2026-06-26 12:33:20
 
 > **Model:** `gemma4:31b`  
@@ -66,3 +67,5 @@ ok thats sorted now
 
 how do i run docker ina way that when the docker image changes i dint need to build it everytime?
 
+=======
+>>>>>>> origin/main

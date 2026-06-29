@@ -55,7 +55,8 @@ describe('LogInteraction', () => {
     component.logged.subscribe(loggedSpy);
 
     component.type = 'mentoring';
-    component.note = 'Mentoring session';
+    component.subjectText = 'Mentoring session';
+    component.note = '';
 
     // When
     component.submit();
@@ -65,7 +66,8 @@ describe('LogInteraction', () => {
       'mentoring',
       { value: 1 },
       { value: 2 },
-      'Mentoring session'
+      'Mentoring session',
+      ''
     );
     expect(loggedSpy).toHaveBeenCalled();
   });
@@ -74,13 +76,15 @@ describe('LogInteraction', () => {
     // Given
     fixture.detectChanges();
     component.type = 'performance';
-    component.note = 'Performance review';
+    component.subjectText = 'Performance review';
+    component.note = 'Some note';
 
     // When
     component.submit();
 
     // Then
     expect(component.type).toBe('check-in');
+    expect(component.subjectText).toBe('');
     expect(component.note).toBe('');
   });
 

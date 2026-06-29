@@ -56,6 +56,9 @@ public class Interaction {
     @Column(name = "facilitator_id", nullable = false)
     private Long facilitatorId;
 
+    @Column(name = "subject_text", length = 100)
+    private String subjectText;
+
     @Column(name = "note", columnDefinition = "text")
     private String note;
 

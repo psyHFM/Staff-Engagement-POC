@@ -51,7 +51,7 @@ public class InteractionController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InteractionSummary> create(@RequestBody CreateInteractionRequest body) {
         InteractionSummary created = interactionService.create(
-                body.type(), body.subject(), body.facilitator(), body.note());
+                body.type(), body.subject(), body.facilitator(), body.subjectText(), body.note());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

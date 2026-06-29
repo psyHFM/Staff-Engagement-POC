@@ -7,7 +7,9 @@ import com.staffengagement.shared.api.EmployeeSummary;
 import com.staffengagement.shared.api.PortfolioContract;
 import com.staffengagement.shared.api.PortfolioSummary;
 import com.staffengagement.shared.api.SkillStrength;
+import com.staffengagement.shared.kernel.Caller;
 import com.staffengagement.shared.kernel.EmployeeId;
+import com.staffengagement.shared.kernel.EmployeeRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
@@ -24,12 +26,19 @@ import java.util.List;
  *
  * <p>Cross-module access is exclusively through the frozen {@link EmployeeContract}
  * ({@code exists} for owner validation, {@code findById} to resolve the display name on
- * {@link SkillStrength}). No Employee module impl/repository/domain is imported
- * (ArchUnit-enforced). The {@link EmployeeContract} is injected via
- * {@link ObjectProvider} so the monolith stays bootable on its own splice before the
- * Employee module's {@code EmployeeContract} implementor lands (ROADMAP §parallel
- * phases — same defensive pattern as the Task controller). Validation and
- * name-resolution activate automatically once the Employee module is merged.
+ * {@link SkillStrength}, {@code findByEmail} for the ATSE1-39 owner check). No Employee
+ * module impl/repository/domain is imported (ArchUnit-enforced). The
+ * {@link EmployeeContract} is injected via {@link ObjectProvider} so the monolith stays
+ * bootable on its own splice before the Employee module's {@code EmployeeContract}
+ * implementor lands (ROADMAP §parallel phases — same defensive pattern as the Task
+ * controller). Validation and name-resolution activate automatically once the Employee
+ * module is merged.
+ *
+ * <p>RBAC (ATSE1-39): every mutating method receives a {@link Caller} (email + role)
+ * and enforces "owner or ADMIN" — a non-owner non-admin caller raises
+ * {@link PortfolioException} of kind {@link PortfolioException.Kind#ACCESS_DENIED}
+ * (→ 403 via {@code PortfolioErrorHandler}). An ADMIN may edit any portfolio; the
+ * record's owner (matched by email-shaped identity key) may edit only their own.
  */
 @Service
 @RequiredArgsConstructor
@@ -96,7 +105,7 @@ public class PortfolioService implements PortfolioContract {
                 .orElseGet(() -> emptyView(employeeId));
     }
 
-    // ---- Module writes ----
+    // ---- Module writes (RBAC enforced: owner or ADMIN, ATSE1-39) ----
 
     /**
      * Replaces the whole portfolio (delete + reinsert child rows) for an existing
@@ -104,8 +113,9 @@ public class PortfolioService implements PortfolioContract {
      * the resulting view.
      */
     @Transactional
-    public PortfolioView replacePortfolio(EmployeeId employeeId, PortfolioView view) {
+    public PortfolioView replacePortfolio(EmployeeId employeeId, PortfolioView view, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         Portfolio portfolio = findOrCreate(employeeId);
         replaceChildren(portfolio, view);
         portfolio.setUpdatedAt(Instant.now());
@@ -113,8 +123,9 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public PortfolioView.SkillView addSkill(EmployeeId employeeId, PortfolioView.SkillView entry) {
+    public PortfolioView.SkillView addSkill(EmployeeId employeeId, PortfolioView.SkillView entry, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         validateSkill(entry);
         Portfolio portfolio = findOrCreate(employeeId);
         PortfolioSkill saved = skillRepository.save(PortfolioSkill.builder()
@@ -127,8 +138,9 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public PortfolioView.SkillView updateSkill(EmployeeId employeeId, Long entryId, PortfolioView.SkillView entry) {
+    public PortfolioView.SkillView updateSkill(EmployeeId employeeId, Long entryId, PortfolioView.SkillView entry, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         validateSkill(entry);
         PortfolioSkill skill = skillOf(employeeId, entryId);
         skill.setSkill(entry.skill());
@@ -138,15 +150,17 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public void deleteSkill(EmployeeId employeeId, Long entryId) {
+    public void deleteSkill(EmployeeId employeeId, Long entryId, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         PortfolioSkill skill = skillOf(employeeId, entryId);
         skillRepository.delete(skill);
     }
 
     @Transactional
-    public PortfolioView.EducationView addEducation(EmployeeId employeeId, PortfolioView.EducationView entry) {
+    public PortfolioView.EducationView addEducation(EmployeeId employeeId, PortfolioView.EducationView entry, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         validateEducation(entry);
         Portfolio portfolio = findOrCreate(employeeId);
         PortfolioEducation saved = educationRepository.save(PortfolioEducation.builder()
@@ -160,8 +174,9 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public PortfolioView.EducationView updateEducation(EmployeeId employeeId, Long entryId, PortfolioView.EducationView entry) {
+    public PortfolioView.EducationView updateEducation(EmployeeId employeeId, Long entryId, PortfolioView.EducationView entry, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         validateEducation(entry);
         PortfolioEducation education = educationOf(employeeId, entryId);
         education.setInstitution(entry.institution());
@@ -172,15 +187,17 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public void deleteEducation(EmployeeId employeeId, Long entryId) {
+    public void deleteEducation(EmployeeId employeeId, Long entryId, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         PortfolioEducation education = educationOf(employeeId, entryId);
         educationRepository.delete(education);
     }
 
     @Transactional
-    public PortfolioView.ProjectView addProject(EmployeeId employeeId, PortfolioView.ProjectView entry) {
+    public PortfolioView.ProjectView addProject(EmployeeId employeeId, PortfolioView.ProjectView entry, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         validateProject(entry);
         Portfolio portfolio = findOrCreate(employeeId);
         PortfolioProject saved = projectRepository.save(PortfolioProject.builder()
@@ -194,8 +211,9 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public PortfolioView.ProjectView updateProject(EmployeeId employeeId, Long entryId, PortfolioView.ProjectView entry) {
+    public PortfolioView.ProjectView updateProject(EmployeeId employeeId, Long entryId, PortfolioView.ProjectView entry, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         validateProject(entry);
         PortfolioProject project = projectOf(employeeId, entryId);
         project.setName(entry.name());
@@ -206,15 +224,17 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public void deleteProject(EmployeeId employeeId, Long entryId) {
+    public void deleteProject(EmployeeId employeeId, Long entryId, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         PortfolioProject project = projectOf(employeeId, entryId);
         projectRepository.delete(project);
     }
 
     @Transactional
-    public PortfolioView.LinkView addLink(EmployeeId employeeId, PortfolioView.LinkView entry) {
+    public PortfolioView.LinkView addLink(EmployeeId employeeId, PortfolioView.LinkView entry, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         validateLink(entry);
         Portfolio portfolio = findOrCreate(employeeId);
         PortfolioLink saved = linkRepository.save(PortfolioLink.builder()
@@ -226,8 +246,9 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public PortfolioView.LinkView updateLink(EmployeeId employeeId, Long entryId, PortfolioView.LinkView entry) {
+    public PortfolioView.LinkView updateLink(EmployeeId employeeId, Long entryId, PortfolioView.LinkView entry, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         validateLink(entry);
         PortfolioLink link = linkOf(employeeId, entryId);
         link.setLabel(entry.label());
@@ -236,8 +257,9 @@ public class PortfolioService implements PortfolioContract {
     }
 
     @Transactional
-    public void deleteLink(EmployeeId employeeId, Long entryId) {
+    public void deleteLink(EmployeeId employeeId, Long entryId, Caller caller) {
         requireEmployeeExists(employeeId);
+        requireOwnerOrAdmin(employeeId, caller);
         PortfolioLink link = linkOf(employeeId, entryId);
         linkRepository.delete(link);
     }
@@ -271,6 +293,46 @@ public class PortfolioService implements PortfolioContract {
     private static void validateLink(PortfolioView.LinkView entry) {
         if (entry == null || entry.url() == null || entry.url().isBlank()) {
             throw new IllegalArgumentException("url is required");
+        }
+    }
+
+    // ---- RBAC (ATSE1-39) ----
+
+    /**
+     * Owner-or-admin gate. Resolves the employee record's email via the frozen
+     * {@link EmployeeContract} and compares against {@code caller.email()}; an ADMIN
+     * may edit any portfolio. Anyone else is rejected with 403.
+     *
+     * <p>The {@code EmployeeContract} is optional (see {@link #employeeContractProvider}).
+     * When it is unavailable, the owner check degrades to a no-op (the request goes
+     * through) — the same defensive pattern the rest of the service uses to keep the
+     * monolith bootable on the portfolio-only splice. This is acceptable here because
+     * no production code path runs without the Employee module; the gate activates
+     * automatically once {@code EmployeeContract} is wired in (Phase 1 landing).
+     */
+    private void requireOwnerOrAdmin(EmployeeId employeeId, Caller caller) {
+        if (caller == null) {
+            return; // Defensive: missing caller (should never happen post-JWT-filter).
+        }
+        if (caller.role() == EmployeeRole.ADMIN) {
+            return;
+        }
+        EmployeeContract contract = employeeContractProvider.getIfAvailable();
+        if (contract == null) {
+            return; // Contract unavailable → degrade gracefully (see Javadoc).
+        }
+        String ownerEmail = contract.findById(employeeId)
+                .map(EmployeeSummary::email)
+                .orElse(null);
+        if (ownerEmail == null) {
+            // No employee record means nobody "owns" it; an admin is the only legal
+            // editor (handled above) — non-admin gets rejected.
+            throw new PortfolioException(PortfolioException.Kind.ACCESS_DENIED,
+                    "Not allowed to modify portfolio: " + employeeId.value());
+        }
+        if (!ownerEmail.equals(caller.email())) {
+            throw new PortfolioException(PortfolioException.Kind.ACCESS_DENIED,
+                    "Not allowed to modify portfolio: " + employeeId.value());
         }
     }
 
@@ -376,12 +438,23 @@ public class PortfolioService implements PortfolioContract {
         return contract.findById(employeeId).map(EmployeeSummary::fullName).orElse("");
     }
 
+    /** ATSE1-39: resolve the owner email for the {@code ownerEmail} field on {@link PortfolioView}. */
+    private String resolveOwnerEmail(EmployeeId employeeId) {
+        EmployeeContract contract = employeeContractProvider.getIfAvailable();
+        if (contract == null) {
+            return null;
+        }
+        return contract.findById(employeeId).map(EmployeeSummary::email).orElse(null);
+    }
+
     // ---- Mapping ----
 
     private PortfolioView toView(EmployeeId employeeId, Portfolio portfolio) {
         Long pid = portfolio.getId();
+        String ownerEmail = resolveOwnerEmail(employeeId);
         return new PortfolioView(
                 employeeId.value(),
+                ownerEmail,
                 skillRepository.findByPortfolioId(pid).stream().map(PortfolioService::toSkillView).toList(),
                 educationRepository.findByPortfolioId(pid).stream().map(PortfolioService::toEducationView).toList(),
                 projectRepository.findByPortfolioId(pid).stream().map(PortfolioService::toProjectView).toList(),
@@ -389,7 +462,7 @@ public class PortfolioService implements PortfolioContract {
     }
 
     private static PortfolioView emptyView(EmployeeId employeeId) {
-        return new PortfolioView(employeeId.value(), List.of(), List.of(), List.of(), List.of());
+        return new PortfolioView(employeeId.value(), null, List.of(), List.of(), List.of(), List.of());
     }
 
     private static PortfolioSummary emptySummary(EmployeeId employeeId) {

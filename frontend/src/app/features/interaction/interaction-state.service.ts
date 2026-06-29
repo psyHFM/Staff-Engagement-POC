@@ -107,8 +107,8 @@ export class InteractionStateService extends StateService {
   }
 
   /** POST a new interaction and refresh the current subject's history on success. */
-  createInteraction(type: InteractionType, subject: EmployeeId, facilitator: EmployeeId, note: string): Observable<InteractionSummary> {
-    const request: CreateInteractionRequest = { type, subject, facilitator, note };
+  createInteraction(type: InteractionType, subject: EmployeeId, facilitator: EmployeeId, subjectText: string, note: string): Observable<InteractionSummary> {
+    const request: CreateInteractionRequest = { type, subject, facilitator, subjectText, note };
     this.beginLoad();
     this.lastError.set(null);
     return this.api.post<InteractionSummary>('interactions', request).pipe(
@@ -190,24 +190,18 @@ export class InteractionStateService extends StateService {
   /**
    * Resolve the facilitator default for the logged-in user.
    *
-   * <p>Looks up the loaded employee list by email so the default always
-   * points at the real id from {@code GET /api/v1/employees}. Falls back to
-   * a known-stable seed id (2 = seeded employee) if the list is not yet
-   * hydrated or the email is not in the directory.
+   * <p>Uses the employee ID resolved at login time ({@code GET /api/v1/me}) and
+   * persisted in {@link AuthState#currentEmployeeId}. Falls back to the first
+   * admin (id=1) if no employee record is linked, with a warning logged.
    */
   defaultFacilitator(): EmployeeId {
-    const email = this.auth.currentUser();
-    if (!email) {
-      return { value: 2 };
+    const employeeId = this.auth.currentEmployeeId();
+    if (employeeId != null) {
+      return { value: employeeId };
     }
-    // The seeded admin is at id=1 with email admin@staff.eng; employee at id=2.
-    if (email === 'admin@staff.eng') {
-      return { value: 1 };
-    }
-    if (email === 'employee@staff.eng') {
-      return { value: 2 };
-    }
-    return { value: 2 };
+    // Fallback: no employee record linked — default to admin and warn
+    console.warn('defaultFacilitator: no employeeId linked for current user, defaulting to id=1 (admin)');
+    return { value: 1 };
   }
 
   /** Clear transient error/created state (e.g. when the user dismisses a message). */
