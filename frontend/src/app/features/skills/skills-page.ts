@@ -32,16 +32,16 @@ export class SkillsPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    // ATSE1-40: pre-populate the browseable grid so the page shows tiles even
-    // before the user types. A blank search leaves `results()` as null.
-    this.state.loadPopular();
-
     // ATSE1-48: Read :name param from route for deep-link support (/skills/Angular)
+    // Handle route param FIRST so deep-linked searches take priority over popular grid
     this.route.params.subscribe((params) => {
       const skillName = params['name'];
       if (skillName) {
         this.searchTerm.set(skillName);
         this.state.search(skillName);
+      } else {
+        // ATSE1-40: Only load popular grid when no specific skill requested
+        this.state.loadPopular();
       }
     });
   }

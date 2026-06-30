@@ -4,6 +4,7 @@ import { provideRouter, Routes } from '@angular/router';
 
 import { Shell } from './shell';
 import { AuthState } from '../shared/auth/auth-state';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({ template: '', standalone: true })
 class StubPage {}
@@ -16,6 +17,7 @@ const testRoutes: Routes = [
 describe('Shell', () => {
   let fixture: ComponentFixture<Shell>;
   let authMock: AuthState;
+  let toastServiceMock: ToastService;
 
   const isAuthenticated = signal(false);
   const currentUser = signal<string | null>(null);
@@ -35,10 +37,21 @@ describe('Shell', () => {
       logout: jest.fn()
     } as unknown as AuthState;
 
+    toastServiceMock = {
+      show: jest.fn(),
+      dismiss: jest.fn(),
+      clear: jest.fn(),
+      toasts: signal([])
+    } as unknown as ToastService;
+
     await TestBed
       .configureTestingModule({
         imports: [Shell],
-        providers: [provideRouter(testRoutes), { provide: AuthState, useValue: authMock }]
+        providers: [
+          provideRouter(testRoutes),
+          { provide: AuthState, useValue: authMock },
+          { provide: ToastService, useValue: toastServiceMock }
+        ]
       })
       .compileComponents();
 
@@ -68,11 +81,10 @@ describe('Shell', () => {
 
     // Then
     expect(fixture.nativeElement.querySelector('.shell__login')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('.shell__logout')).toBeFalsy();
-    expect(fixture.nativeElement.querySelector('.shell__user')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('.auth-menu')).toBeFalsy();
   });
 
-  it('shows the username chip and sign-out button when authenticated', () => {
+  it('shows the auth dropdown menu when authenticated', () => {
     // Given
     isAuthenticated.set(true);
     currentUser.set('jane@staff.eng');
@@ -81,55 +93,79 @@ describe('Shell', () => {
     fixture.detectChanges();
 
     // Then
-    expect(fixture.nativeElement.querySelector('.shell__user')?.textContent?.trim()).toBe('jane@staff.eng');
-    expect(fixture.nativeElement.querySelector('.shell__logout')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.auth-menu')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.auth-menu-trigger')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('.shell__login')).toBeFalsy();
   });
 
-  it('makes the username chip a link to the current user profile when an employee id is available', () => {
+  it('displays the username in the menu trigger', () => {
+    // Given
+    isAuthenticated.set(true);
+    currentUser.set('jane@staff.eng');
+
+    // When
+    fixture.detectChanges();
+
+    // Then
+    const trigger = fixture.nativeElement.querySelector('.auth-menu-trigger');
+    expect(trigger?.textContent?.trim()).toContain('jane@staff.eng');
+  });
+
+  it('opens the dropdown menu when trigger is clicked', () => {
+    // Given
+    isAuthenticated.set(true);
+    currentUser.set('jane@staff.eng');
+
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('.auth-menu-trigger');
+
+    // When
+    trigger.click();
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.querySelector('.auth-menu-dropdown')).toBeTruthy();
+  });
+
+  it('makes the profile link go to the user profile when employee id is available', () => {
     // Given
     isAuthenticated.set(true);
     currentUser.set('jane@staff.eng');
     currentEmployeeId.set(42);
 
-    // When
+    fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('.auth-menu-trigger');
+    trigger.click();
     fixture.detectChanges();
 
-    // Then
-    const chip = fixture.nativeElement.querySelector('.shell__user');
-    expect(chip).toBeTruthy();
-    expect(chip.tagName.toLowerCase()).toBe('a');
-    expect(chip.getAttribute('href')).toBe('/employees/42/profile');
-    expect(chip.getAttribute('aria-label')).toBe('View your profile');
-  });
-
-  it('renders the username as a static span when no employee id is available', () => {
-    // Given
-    isAuthenticated.set(true);
-    currentUser.set('jane@staff.eng');
-    currentEmployeeId.set(null);
-
     // When
-    fixture.detectChanges();
+    const profileLink = fixture.nativeElement.querySelector('.auth-menu-items a');
 
     // Then
-    const chip = fixture.nativeElement.querySelector('.shell__user');
-    expect(chip).toBeTruthy();
-    expect(chip.tagName.toLowerCase()).toBe('span');
+    expect(profileLink).toBeTruthy();
+    expect(profileLink.getAttribute('href')).toBe('/employees/42/profile');
+    expect(profileLink.textContent?.trim()).toBe('Profile');
   });
 
-  it('calls logout when sign out is clicked', () => {
+  it('calls logout when sign out button is clicked', () => {
     // Given
     isAuthenticated.set(true);
     currentUser.set('jane@staff.eng');
 
     fixture.detectChanges();
+    const trigger = fixture.nativeElement.querySelector('.auth-menu-trigger');
+    trigger.click();
+    fixture.detectChanges();
+
     const logoutSpy = jest.spyOn(authMock, 'logout');
 
     // When
-    fixture.nativeElement.querySelector('.shell__logout').click();
+    const signOutBtn = fixture.nativeElement.querySelector('.auth-menu-items button');
+    signOutBtn.click();
+    fixture.detectChanges();
 
     // Then
     expect(logoutSpy).toHaveBeenCalled();
+    expect(toastServiceMock.show).toHaveBeenCalledWith('You have been signed out', { type: 'success' });
   });
 });

@@ -78,3 +78,108 @@
 .shell__main {
   padding: 1.5rem;
 }
+
+/* ==========================================================================
+   ATSE1-52: Auth dropdown menu styles
+   ========================================================================== */
+
+.auth-menu {
+  position: relative;
+  display: inline-block;
+
+  &.open .auth-menu-trigger {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background: transparent;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 0.875rem;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #60a5fa;
+      outline-offset: 2px;
+    }
+
+    i {
+      font-size: 0.75rem;
+      transition: transform 0.2s;
+    }
+  }
+
+  &-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    min-width: 160px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    animation: dropdown-fade 0.15s ease-out;
+  }
+
+  &-items {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+
+    li {
+      a, button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.625rem 1rem;
+        border: none;
+        background: transparent;
+        color: #374151;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: background-color 0.15s;
+
+        &:hover {
+          background: #f3f4f6;
+        }
+
+        &:focus-visible {
+          outline: 2px solid #3b82f6;
+          outline-offset: -2px;
+          background: #eff6ff;
+        }
+
+        i {
+          font-size: 0.875rem;
+          color: #6b7280;
+        }
+      }
+    }
+  }
+}
+
+@keyframes dropdown-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
