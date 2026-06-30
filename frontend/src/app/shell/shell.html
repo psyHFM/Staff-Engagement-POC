@@ -22,6 +22,7 @@
           (click)="toggleMenu()"
           [attr.aria-expanded]="isMenuOpen()"
           [attr.aria-haspopup]="true"
+          [attr.aria-label]="'User menu for ' + auth.currentUser()"
           #triggerBtn>
 
           <span class="user-greeting">{{ auth.currentUser() }}</span>
