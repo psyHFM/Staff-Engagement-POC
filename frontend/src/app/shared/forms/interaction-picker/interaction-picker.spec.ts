@@ -34,7 +34,17 @@ describe('InteractionPicker', () => {
     component = fixture.componentInstance;
   });
 
-  it('loads GET /api/v1/interactions on first paint and exposes the options', () => {
+  it('does not load interactions when no subjectId is provided', () => {
+    // When
+    fixture.detectChanges();
+
+    // Then — no API calls should be made
+    expect(apiClientSpy.get).not.toHaveBeenCalled();
+    expect(component.options()).toEqual([]);
+    expect(component.isLoading()).toBe(false);
+  });
+
+  it('loads filtered interactions when subjectId is provided', () => {
     // Given
     apiClientSpy.get.mockReturnValue(
       of({
@@ -64,11 +74,12 @@ describe('InteractionPicker', () => {
       })
     );
 
-    // When
+    // When — subjectId=2 supplied before the directory GET resolves
+    fixture.componentRef.setInput('subjectId', 2);
     fixture.detectChanges();
 
-    // Then — the fetch fires once with a wide page
-    expect(apiClientSpy.get).toHaveBeenCalledWith('interactions', { offset: 0, limit: 100 });
+    // Then — fetches filtered endpoint
+    expect(apiClientSpy.get).toHaveBeenCalledWith('employees/2/interactions', { offset: 0, limit: 100 });
     expect(component.options()).toHaveLength(2);
     expect(component.options()[0].note).toBe('Regular check-in');
     expect(component.isLoading()).toBe(false);
@@ -103,7 +114,7 @@ describe('InteractionPicker', () => {
     expect(apiClientSpy.get).toHaveBeenCalledWith('employees/2/interactions', { offset: 0, limit: 100 });
   });
 
-  it('renders one <option> per interaction plus the placeholder', () => {
+  it('renders one <option> per interaction plus the placeholder when subjectId is provided', () => {
     // Given
     apiClientSpy.get.mockReturnValue(
       of({
@@ -132,6 +143,7 @@ describe('InteractionPicker', () => {
         total: 2
       })
     );
+    fixture.componentRef.setInput('subjectId', 2);
     fixture.detectChanges();
     const select = fixture.nativeElement.querySelector('select.interaction-picker__select') as HTMLSelectElement;
 
@@ -163,6 +175,7 @@ describe('InteractionPicker', () => {
         total: 1
       })
     );
+    fixture.componentRef.setInput('subjectId', 2);
     fixture.detectChanges();
     const select = fixture.nativeElement.querySelector('select.interaction-picker__select') as HTMLSelectElement;
 
@@ -201,6 +214,7 @@ describe('InteractionPicker', () => {
     );
 
     // When — value=2 supplied before the directory GET resolves
+    fixture.componentRef.setInput('subjectId', 2);
     fixture.componentRef.setInput('value', 2);
     fixture.detectChanges();
     fixture.detectChanges();
@@ -240,6 +254,7 @@ describe('InteractionPicker', () => {
         total: 2
       })
     );
+    fixture.componentRef.setInput('subjectId', 2);
     fixture.detectChanges();
     const emitted: Array<number | null> = [];
     component.valueChange.subscribe((id) => emitted.push(id));
@@ -273,6 +288,7 @@ describe('InteractionPicker', () => {
         total: 1
       })
     );
+    fixture.componentRef.setInput('subjectId', 2);
     fixture.detectChanges();
     const emitted: Array<number | null> = [];
     component.valueChange.subscribe((id) => emitted.push(id));
@@ -315,6 +331,7 @@ describe('InteractionPicker', () => {
         total: 2
       })
     );
+    fixture.componentRef.setInput('subjectId', 2);
     fixture.detectChanges();
     const emitted: Array<number | null> = [];
     component.subjectIdChange.subscribe((id) => emitted.push(id));
@@ -348,6 +365,7 @@ describe('InteractionPicker', () => {
         total: 1
       })
     );
+    fixture.componentRef.setInput('subjectId', 2);
     fixture.detectChanges();
     const emitted: Array<number | null> = [];
     component.subjectIdChange.subscribe((id) => emitted.push(id));
@@ -364,6 +382,7 @@ describe('InteractionPicker', () => {
   it('surfaces directory failures via the error signal and keeps isLoading false', () => {
     // Given
     apiClientSpy.get.mockReturnValue(throwError(() => apiError(503)));
+    fixture.componentRef.setInput('subjectId', 2);
 
     // When
     fixture.detectChanges();
