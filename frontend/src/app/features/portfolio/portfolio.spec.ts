@@ -44,13 +44,15 @@ const nonAdminToken = `header.${btoa(JSON.stringify({ sub: OTHER_EMAIL, roles: [
 describe('Portfolio (editor)', () => {
   let httpMock: HttpTestingController;
 
-  const configureAuth = (overrides: Partial<{ currentUser: string | null; bearerToken: string | null }> = {}) => {
+  const configureAuth = (overrides: Partial<{ currentUser: string | null; bearerToken: string | null; currentEmployeeId: number | null }> = {}) => {
     const authSpy = {
       // Default: the caller is the owner of the test portfolio, so the RBAC
       // guard is satisfied. Individual tests override this to exercise the
       // non-owner / no-auth / admin paths.
       currentUser: jest.fn(() => overrides.currentUser ?? OWNER_EMAIL),
-      bearerToken: jest.fn(() => overrides.bearerToken ?? null)
+      bearerToken: jest.fn(() => overrides.bearerToken ?? null),
+      // ATSE1-49: currentEmployeeId is used to default the employee picker
+      currentEmployeeId: jest.fn(() => overrides.currentEmployeeId ?? null)
     };
     TestBed.configureTestingModule({
       imports: [Portfolio],
