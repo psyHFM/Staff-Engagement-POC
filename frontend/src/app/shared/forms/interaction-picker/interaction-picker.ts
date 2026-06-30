@@ -5,7 +5,6 @@ import { ApiClient, catchApiError } from '../../api/api-client';
 import { ApiError } from '../../api/error-envelope';
 import { StateService } from '../../state/state.service';
 import { InteractionSummary, Paged } from '../../../features/interaction/interaction.types';
-import { EmployeeId } from '../../../features/interaction/interaction.types';
 
 /**
  * Lightweight interaction selector for forms (ATSE1-38).

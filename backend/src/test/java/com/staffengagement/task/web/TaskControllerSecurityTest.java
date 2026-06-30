@@ -108,8 +108,7 @@ class TaskControllerSecurityTest {
     @Test
     @DisplayName("getMyTasks() must accept USER and ADMIN")
     void getMyTasks_annotationAcceptsAdminAndUser() throws Exception {
-        Method method = TaskController.class.getMethod(
-                "getMyTasks", org.springframework.security.core.userdetails.UserDetails.class);
+        Method method = TaskController.class.getMethod("getMyTasks");
         PreAuthorize annotation = method.getAnnotation(PreAuthorize.class);
 
         assertThat(annotation).isNotNull();
