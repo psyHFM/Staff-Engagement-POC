@@ -22,7 +22,7 @@
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.75rem;
 
     button {
       background: none;
@@ -35,6 +35,45 @@
   &__error {
     background: #fee2e2;
     color: #b91c1c;
+  }
+
+  &__error-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+
+    .btn-retry {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.375rem 0.75rem;
+      background: #b91c1c;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+
+      &:hover {
+        background: #991b1b;
+      }
+    }
+
+    .btn-dismiss {
+      padding: 0.375rem 0.75rem;
+      background: transparent;
+      color: #b91c1c;
+      border: 1px solid #b91c1c;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+
+      &:hover {
+        background: #fee2e2;
+      }
+    }
   }
 
   &__success {
