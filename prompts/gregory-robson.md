@@ -1418,3 +1418,32 @@ Target archive directory already exists.
 - If sync is requested, use the Skill tool to invoke `openspec-sync-specs` (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
 
+### Gregory Robson — 2026-06-30 09:19:48
+
+> **Model:** `qwen3.5:397b`  
+> **Tokens:** `45,795` in / `163` out · cache read `0` / write `0` · **45,958 total**
+
+It's on https://psybergate.atlassian.net/jira/software/projects/ATSE1/boards/1441
+
+### Gregory Robson — 2026-06-30 09:25:41
+
+> **Model:** `qwen3.5:397b`  
+> **Tokens:** `61,824` in / `352` out · cache read `0` / write `0` · **62,176 total**
+
+Title: Show a friendly "session expired" banner on /login when redirected from 401
+
+Description:
+Source: UX walkthrough 2026-06-25 (ticket #12).
+
+Problem: When the JWT is expired (or otherwise invalid) the user sees the same generic "Sign in" redirect, no clear "your session expired" message. They might wonder what just happened.
+
+Acceptance:
+
+On 401 the user is redirected to /login?reason=session_expired.
+
+Login page reads the reason and shows an info banner: "Your session has ended — please sign in again."
+
+Other reasons (e.g. reason=unauthorised) show their own banner.
+
+Files: frontend/src/app/shared/auth/auth.interceptor.ts, frontend/src/app/features/auth/login/login.html, frontend/src/app/features/auth/login/login.ts.
+
