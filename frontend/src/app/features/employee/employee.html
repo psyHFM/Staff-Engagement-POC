@@ -6,8 +6,14 @@
 
   @if (state.error()) {
     <div class="employee-page__error" role="alert">
-      {{ state.error()?.message }}
-      <button type="button" (click)="state.clearTransient()">Dismiss</button>
+      <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+      <span>{{ state.error()?.message }}</span>
+      <div class="employee-page__error-actions">
+        <button type="button" class="btn-retry" (click)="onRetry()">
+          <i class="pi pi-refresh" aria-hidden="true"></i> Retry
+        </button>
+        <button type="button" class="btn-dismiss" (click)="state.clearTransient()">Dismiss</button>
+      </div>
     </div>
   }
 
