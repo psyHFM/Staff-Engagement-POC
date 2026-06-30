@@ -23,5 +23,9 @@ export default tseslint.config(
       ...angular.configs.templateRecommended,
       ...angular.configs.templateAccessibility
     ],
+    rules: {
+      // Enforce unique IDs in templates (accessibility requirement)
+      'no-duplicate-id': 'error',
+    },
   }
 );
