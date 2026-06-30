@@ -5,6 +5,20 @@
       Sign in
     </h1>
 
+    @if (showSessionExpiredBanner()) {
+      <p class="login__banner login__banner--info" role="alert">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        Your session has ended — please sign in again.
+      </p>
+    }
+
+    @if (showUnauthorisedBanner()) {
+      <p class="login__banner login__banner--warning" role="alert">
+        <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+        You are not authorised to access that page.
+      </p>
+    }
+
     @if (error()) {
       <p class="login__error" role="alert">{{ error() }}</p>
     }

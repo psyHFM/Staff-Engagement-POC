@@ -9,6 +9,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting
 } from '@angular/common/http/testing';
+import { Router } from '@angular/router';
 
 import { AuthState } from './auth-state';
 import { AUTH_STORAGE, AUTH_STORAGE_KEY, AUTH_USERNAME_KEY, AuthStorage } from './auth-storage';
@@ -19,21 +20,29 @@ describe('authErrorInterceptor', () => {
   let httpMock: HttpTestingController;
   let auth: AuthState;
   let storage: AuthStorage;
+  let navigateSpy: jest.SpyInstance;
 
   beforeEach(() => {
     storage = createInMemoryStorage();
+
+    // Stub Router to prevent actual navigation in tests
+    const routerStub = {
+      navigate: jest.fn().mockResolvedValue(true)
+    };
 
     TestBed.configureTestingModule({
       providers: [
         AuthState,
         provideHttpClient(withInterceptors([authErrorInterceptor])),
         provideHttpClientTesting(),
-        { provide: AUTH_STORAGE, useValue: storage }
+        { provide: AUTH_STORAGE, useValue: storage },
+        { provide: Router, useValue: routerStub }
       ]
     });
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
     auth = TestBed.inject(AuthState);
+    navigateSpy = routerStub.navigate;
   });
 
   afterEach(() => httpMock.verify());
@@ -47,17 +56,23 @@ describe('authErrorInterceptor', () => {
     storage.write(AUTH_STORAGE_KEY, token);
     storage.write(AUTH_USERNAME_KEY, username);
     TestBed.resetTestingModule();
+    // Stub Router to prevent actual navigation in tests
+    const routerStub = {
+      navigate: jest.fn().mockResolvedValue(true)
+    };
     TestBed.configureTestingModule({
       providers: [
         AuthState,
         provideHttpClient(withInterceptors([authErrorInterceptor])),
         provideHttpClientTesting(),
-        { provide: AUTH_STORAGE, useValue: storage }
+        { provide: AUTH_STORAGE, useValue: storage },
+        { provide: Router, useValue: routerStub }
       ]
     });
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
     auth = TestBed.inject(AuthState);
+    navigateSpy = routerStub.navigate;
   }
 
   it('clears the persisted token on a 401 response', () => {
@@ -83,6 +98,7 @@ describe('authErrorInterceptor', () => {
     expect(auth.isAuthenticated()).toBe(false);
     expect(storage.read(AUTH_STORAGE_KEY)).toBeNull();
     expect(storage.read(AUTH_USERNAME_KEY)).toBeNull();
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], { queryParams: { reason: 'session_expired' } });
   });
 
   it('leaves the session intact on a 403 response', () => {
