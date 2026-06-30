@@ -3,8 +3,8 @@
 
   <form (ngSubmit)="submit()" class="log-interaction__form">
     <div class="log-interaction__field">
-      <label for="type">Type</label>
-      <select id="type" [(ngModel)]="type" name="type" required>
+      <label for="log-type">Type</label>
+      <select id="log-type" [(ngModel)]="type" name="type" required>
         @for (t of types; track t.value) {
           <option [value]="t.value">{{ t.label }}</option>
         }
@@ -12,8 +12,8 @@
     </div>
 
     <div class="log-interaction__field">
-      <label for="employee">Employee</label>
-      <select id="employee" [(ngModel)]="subjectId" name="employee" required>
+      <label for="log-employee">Employee</label>
+      <select id="log-employee" [(ngModel)]="subjectId" name="employee" required>
         @for (s of subjects; track s.id.value) {
           <option [value]="s.id.value">{{ s.fullName }}</option>
         }
@@ -21,13 +21,13 @@
     </div>
 
     <div class="log-interaction__field">
-      <label for="subjectText">Subject</label>
-      <input type="text" id="subjectText" [(ngModel)]="subjectText" name="subjectText" maxlength="100" placeholder="Brief subject/summary" />
+      <label for="log-subjectText">Subject</label>
+      <input type="text" id="log-subjectText" [(ngModel)]="subjectText" name="subjectText" maxlength="100" placeholder="Brief subject/summary" />
     </div>
 
     <div class="log-interaction__field">
-      <label for="facilitator">Facilitator</label>
-      <select id="facilitator" [(ngModel)]="facilitatorId" name="facilitator" required>
+      <label for="log-facilitator">Facilitator</label>
+      <select id="log-facilitator" [(ngModel)]="facilitatorId" name="facilitator" required>
         @for (s of subjects; track s.id.value) {
           <option [value]="s.id.value">{{ s.fullName }}</option>
         }
@@ -35,8 +35,8 @@
     </div>
 
     <div class="log-interaction__field">
-      <label for="note">Note</label>
-      <textarea id="note" [(ngModel)]="note" name="note" rows="4"></textarea>
+      <label for="log-note">Note</label>
+      <textarea id="log-note" [(ngModel)]="note" name="note" rows="4"></textarea>
     </div>
 
     <button type="submit" class="log-interaction__submit" [disabled]="!subjectId || !facilitatorId">

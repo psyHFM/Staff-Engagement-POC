@@ -41,23 +41,23 @@
         <h3 class="employee-detail__form-title">Edit profile</h3>
 
         <div class="employee-detail__input">
-          <label for="fullName">Full name</label>
-          <input id="fullName" name="fullName" [(ngModel)]="fullName" required maxlength="255" />
+          <label for="profile-fullName">Full name</label>
+          <input id="profile-fullName" name="fullName" [(ngModel)]="fullName" required maxlength="255" />
         </div>
 
         <div class="employee-detail__input">
-          <label for="jobTitle">Job title</label>
-          <input id="jobTitle" name="jobTitle" [(ngModel)]="jobTitle" maxlength="255" />
+          <label for="profile-jobTitle">Job title</label>
+          <input id="profile-jobTitle" name="jobTitle" [(ngModel)]="jobTitle" maxlength="255" />
         </div>
 
         <div class="employee-detail__input">
-          <label for="department">Department</label>
-          <input id="department" name="department" [(ngModel)]="department" maxlength="255" />
+          <label for="profile-department">Department</label>
+          <input id="profile-department" name="department" [(ngModel)]="department" maxlength="255" />
         </div>
 
         <div class="employee-detail__input">
-          <label for="level">Level</label>
-          <select id="level" name="level" [(ngModel)]="level">
+          <label for="profile-level">Level</label>
+          <select id="profile-level" name="level" [(ngModel)]="level">
             <option [ngValue]="null">—</option>
             @for (option of levels; track option.value) {
               <option [value]="option.value">{{ option.label }}</option>
@@ -67,8 +67,8 @@
 
         @if (canEditRole) {
           <div class="employee-detail__input">
-            <label for="role">Role</label>
-            <select id="role" name="role" [(ngModel)]="role">
+            <label for="profile-role">Role</label>
+            <select id="profile-role" name="role" [(ngModel)]="role">
               @for (option of roles; track option.value) {
                 <option [value]="option.value">{{ option.label }}</option>
               }

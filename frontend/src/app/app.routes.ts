@@ -43,6 +43,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/skills/skills-page').then((m) => m.SkillsPage),
     canActivate: [authGuard]
   },
+  // ATSE1-48: Deep-linkable skill detail route — same component, reads :name param
+  {
+    path: 'skills/:name',
+    loadComponent: () => import('./features/skills/skills-page').then((m) => m.SkillsPage),
+    canActivate: [authGuard]
+  },
   {
     path: 'employees/:id/profile',
     loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { ApiClient } from '../../shared/api/api-client';
 import { SkillsPage } from './skills-page';
@@ -46,10 +47,15 @@ describe('SkillsPage', () => {
       return of(page());
     });
 
+    const routerSpy = { navigate: jest.fn() };
+    const routeSpy = { params: of({}) };
+
     TestBed.configureTestingModule({
       imports: [SkillsPage],
       providers: [
-        { provide: ApiClient, useValue: apiClientSpy as unknown as ApiClient }
+        { provide: ApiClient, useValue: apiClientSpy as unknown as ApiClient },
+        { provide: Router, useValue: routerSpy as unknown as Router },
+        { provide: ActivatedRoute, useValue: routeSpy as unknown as ActivatedRoute }
       ]
     });
 
@@ -166,7 +172,7 @@ describe('SkillsPage', () => {
     expect(tiles[0].textContent).toContain('Alice');
   });
 
-  it('clicking a popular tile seeds the search box and triggers a search', () => {
+  it('clicking a popular tile navigates to the deep-linked detail view', () => {
     // Given — first call returns popular tiles; subsequent calls return search pages.
     const summaries = [summary()];
     apiClientSpy.get.mockImplementation((path: string) =>
@@ -174,14 +180,14 @@ describe('SkillsPage', () => {
     );
     fixture.detectChanges();
     apiClientSpy.get.mockClear();
+    const router = TestBed.inject(Router);
 
     // When
     fixture.componentInstance.onTileClick('Angular');
     fixture.detectChanges();
 
-    // Then
-    expect(fixture.componentInstance.searchTerm()).toBe('Angular');
-    expect(apiClientSpy.get).toHaveBeenCalledWith('skills', { name: 'Angular' });
+    // Then — ATSE1-48: navigate to /skills/:name route instead of just searching
+    expect(router.navigate).toHaveBeenCalledWith(['/skills', 'Angular']);
   });
 
   it('renders the sort dropdown with the persisted option selected', () => {

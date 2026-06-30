@@ -25,6 +25,26 @@
   font-size: 1.25rem;
 }
 
+.login__banner {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.login__banner--info {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.login__banner--warning {
+  background: #fef3c7;
+  color: #b45309;
+}
+
 .login__error {
   margin: 0;
   padding: 0.5rem 0.75rem;
