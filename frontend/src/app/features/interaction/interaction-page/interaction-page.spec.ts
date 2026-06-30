@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { InteractionPage } from './interaction-page';
 import { InteractionStateService } from '../interaction-state.service';
 import { InteractionSummary } from '../interaction.types';
+import { AUTH_STORAGE, AuthStorage } from '../../../shared/auth/auth-storage';
 
 describe('InteractionPage', () => {
   let fixture: ComponentFixture<InteractionPage>;
@@ -31,6 +32,17 @@ describe('InteractionPage', () => {
   });
 
   beforeEach(async () => {
+    // In-memory AuthStorage — see auth-state.spec.ts for the same pattern.
+    const storage: AuthStorage = {
+      read: () => null,
+      write: () => {
+        /* no-op */
+      },
+      remove: () => {
+        /* no-op */
+      }
+    };
+
     stateMock = {
       loadSubjects: jest.fn(),
       selectSubject: jest.fn(),
@@ -50,7 +62,7 @@ describe('InteractionPage', () => {
     await TestBed
       .configureTestingModule({
         imports: [InteractionPage],
-        providers: [provideRouter([])]
+        providers: [provideRouter([]), { provide: AUTH_STORAGE, useValue: storage }]
       })
       .overrideComponent(InteractionPage, {
         set: { providers: [{ provide: InteractionStateService, useValue: stateMock }] }
