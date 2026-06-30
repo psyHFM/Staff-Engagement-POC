@@ -46,8 +46,20 @@ export class InteractionList {
     return this.history?.offset ?? 0;
   }
 
+  protected get contentLength(): number {
+    return this.history?.content?.length ?? 0;
+  }
+
+  /** Debug info for troubleshooting - only shows when debug mode is enabled */
+  protected debugInfo(): string {
+    if (typeof ngDevMode === 'undefined' || !ngDevMode) {
+      return '';
+    }
+    return `history: ${this.history ? 'SET' : 'NULL'} | content.length: ${this.contentLength} | total: ${this.history?.total ?? 'N/A'} | loading: ${this.loading}`;
+  }
+
   protected get hasNext(): boolean {
-    if (!this.history) {
+    if (!this.history || !this.history.content) {
       return false;
     }
     return this.history.offset + this.history.content.length < this.history.total;

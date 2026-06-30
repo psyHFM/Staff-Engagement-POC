@@ -70,14 +70,18 @@ export class TaskStateService extends StateService {
    */
   loadMyTasks(): void {
     this.beginLoad();
+    console.log('[TaskStateService] Loading tasks from me/tasks');
     this.api.get<Task[]>('me/tasks')
       .pipe(
         catchApiError(),
         finalize(() => this.endLoad())
       )
       .subscribe({
-        next: (tasks) => this._tasks.set(tasks),
-        error: (err) => console.error('Failed to load tasks:', err)
+        next: (tasks) => {
+          console.log('[TaskStateService] Loaded tasks:', tasks.length, 'tasks');
+          this._tasks.set(tasks);
+        },
+        error: (err) => console.error('[TaskStateService] Failed to load tasks:', err)
       });
   }
 

@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { AuthState } from '../../../shared/auth/auth-state';
 import { EditInteraction } from '../edit-interaction/edit-interaction';
 import { InteractionList } from '../interaction-list/interaction-list';
 import { InteractionStateService } from '../interaction-state.service';
@@ -35,21 +36,38 @@ import { TaskCreateForm } from '../../task/task-create-form';
 })
 export class InteractionPage implements OnInit {
   protected readonly state = inject(InteractionStateService);
+  private readonly auth = inject(AuthState);
 
   /** The interaction currently being edited, or null when the modal is closed. */
   protected readonly editing = signal<InteractionSummary | null>(null);
   /** The interaction whose Create-task modal is open, or null when closed. */
   protected readonly creatingTaskFor = signal<InteractionSummary | null>(null);
 
-  ngOnInit(): void {
-    this.state.loadSubjects();
+  /** Track whether we've already pre-selected a subject to avoid re-triggering. */
+  private readonly preSelected = signal<boolean>(false);
 
-    // Pre-select the first stub subject so the page is not empty on arrival.
-    const first = this.state.subjects()[0];
-    if (first) {
-      this.state.selectSubject(first.id);
-      this.state.loadHistory();
-    }
+  constructor() {
+    // Set up effect to automatically select the logged-in user's subject when subjects become available
+    effect(() => {
+      const subjects = this.state.subjects();
+      const preSelected = this.preSelected();
+      const currentEmployeeId = this.auth.currentEmployeeId();
+
+      if (subjects.length > 0 && !preSelected && currentEmployeeId != null) {
+        // Find the logged-in user in the subjects list and select them
+        const mySubject = subjects.find(s => s.id.value === currentEmployeeId);
+        if (mySubject) {
+          this.preSelected.set(true);
+          this.state.selectSubject(mySubject.id);
+          this.state.loadHistory();
+        }
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    // Load subjects first
+    this.state.loadSubjects();
   }
 
   protected onSubjectSelected(event: Event): void {

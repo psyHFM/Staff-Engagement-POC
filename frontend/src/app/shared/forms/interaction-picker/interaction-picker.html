@@ -1,0 +1,19 @@
+<label class="interaction-picker">
+  <span class="interaction-picker__label">Interaction</span>
+  <select
+    class="interaction-picker__select"
+    (change)="onSelectChange($event)"
+    [disabled]="isLoading()">
+    <option value="" disabled [selected]="value() === null">
+      {{ isLoading() ? 'Loading interactions…' : 'Select an interaction' }}
+    </option>
+    @for (interaction of options(); track interaction.id.value) {
+      <option [value]="interaction.id.value" [selected]="value() === interaction.id.value">
+        {{ interaction.facilitatorName }} — {{ interaction.note | slice:0:60 }}{{ interaction.note.length > 60 ? '…' : '' }}
+      </option>
+    }
+  </select>
+  @if (error()) {
+    <span class="interaction-picker__error">{{ error()?.message ?? 'Failed to load interactions' }}</span>
+  }
+</label>

@@ -8,14 +8,14 @@
     </div>
   }
 
-  @if (!loading && (!history || history.content.length === 0)) {
+  @if (!loading && (!history || contentLength === 0)) {
     <div class="interaction-list__empty" role="status">
       <i class="pi pi-inbox" aria-hidden="true"></i>
       <p>No interactions recorded for this employee yet.</p>
     </div>
   }
 
-  @if (!loading && history && history.content.length > 0) {
+  @if (!loading && history && contentLength > 0) {
     <ul class="interaction-list__items" role="list">
       @for (interaction of history.content; track interaction.id.value) {
         <li class="interaction-list__item">
@@ -66,7 +66,7 @@
       </button>
 
       <span class="interaction-list__page-info" aria-live="polite">
-        {{ currentOffset + 1 }} – {{ currentOffset + history.content.length }} of {{ history.total }}
+        {{ currentOffset + 1 }} – {{ currentOffset + contentLength }} of {{ history.total }}
       </span>
 
       <button

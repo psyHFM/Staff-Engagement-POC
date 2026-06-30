@@ -1,0 +1,29 @@
+.interaction-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.interaction-picker__label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.interaction-picker__select {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.4rem;
+  font-size: 1rem;
+  background-color: white;
+}
+
+.interaction-picker__select:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+.interaction-picker__error {
+  color: #b91c1c;
+  font-size: 0.85rem;
+}

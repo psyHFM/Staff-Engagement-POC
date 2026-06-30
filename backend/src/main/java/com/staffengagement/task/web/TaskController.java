@@ -16,7 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,11 +31,10 @@ import java.util.List;
  *
  * <p>URLs follow api-standards.yaml: kebab-case under {@code /api/v1}. The create
  * endpoint lives under {@code /api/v1/tasks}; the read endpoints are person-centric
- * ({@code /api/v1/employees/{id}/tasks} and {@code /api/v1/me/tasks}) and are therefore
- * mapped with absolute paths rather than a class-level base, so all three resolve to
- * their frozen contract paths.
+ * ({@code /api/v1/employees/{id}/tasks} and {@code /api/v1/me/tasks}).
  */
 @RestController
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class TaskController {
 
@@ -48,7 +48,7 @@ public class TaskController {
     private final ObjectProvider<EmployeeContract> employeeContractProvider;
     private final InteractionContract interactionContract;
 
-    @PostMapping("/api/v1/tasks")
+    @PostMapping("/tasks")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskSummary> create(@RequestBody TaskRequest request) {
         // 2.3 Validation for subject existence via EmployeeContract (skipped only
@@ -87,26 +87,45 @@ public class TaskController {
         return ResponseEntity.ok(taskService.toSummary(saved));
     }
 
-    @PutMapping("/api/v1/tasks/{id}")
+    @PutMapping("/tasks/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskSummary> updateCompletion(@PathVariable Long id,
                                                          @RequestBody CompletionRequest request) {
         return ResponseEntity.ok(taskService.toggleCompletion(id, request.completed()));
     }
 
-    @GetMapping("/api/v1/employees/{id}/tasks")
+    @GetMapping("/employees/{id}/tasks")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<TaskSummary>> getForEmployee(@PathVariable Long id) {
         return ResponseEntity.ok(taskService.tasksForEmployee(new EmployeeId(id)));
     }
 
-    @GetMapping("/api/v1/me/tasks")
+    @GetMapping("/me/tasks")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<List<TaskSummary>> getMyTasks(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<TaskSummary>> getMyTasks() {
         // 2.2 Implement GET /api/v1/me/tasks utilizing the security context to resolve the current employee
-        // Assuming the subject in JWT is the Employee ID
-        EmployeeId currentEmployeeId = new EmployeeId(Long.parseLong(userDetails.getUsername()));
-        return ResponseEntity.ok(taskService.myTasks(currentEmployeeId));
+        // Get the authentication from SecurityContextHolder - it's set by JwtAuthFilter
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new IllegalStateException("No authentication found in security context");
+        }
+        String username = authentication.getName();
+        System.out.println("[TaskController] getMyTasks called for username: " + username);
+        EmployeeContract employeeContract = employeeContractProvider.getIfAvailable();
+        if (employeeContract == null) {
+            throw new IllegalStateException("EmployeeContract not available to resolve employeeId");
+        }
+        return employeeContract.findByEmail(username)
+                .map(emp -> {
+                    System.out.println("[TaskController] Found employee: " + emp.id().value() + " (" + emp.email() + ")");
+                    List<TaskSummary> tasks = taskService.myTasks(emp.id());
+                    System.out.println("[TaskController] Found " + tasks.size() + " tasks for employee " + emp.id().value());
+                    return ResponseEntity.ok(tasks);
+                })
+                .orElseThrow(() -> {
+                    System.out.println("[TaskController] Employee not found for username: " + username);
+                    return new IllegalStateException("Employee not found for username: " + username);
+                });
     }
 
     // --- Task sub-items (ATSE1-34, v1.1.0) ----------------------------------
@@ -116,7 +135,7 @@ public class TaskController {
      * {@link TaskSummaryWithItems}, or 404 if no task with the given id
      * exists.
      */
-    @GetMapping("/api/v1/tasks/{id}")
+    @GetMapping("/tasks/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskSummaryWithItems> getWithItems(@PathVariable Long id) {
         return taskService.taskWithItems(new TaskId(id))
@@ -128,7 +147,7 @@ public class TaskController {
      * Appends a new sub-item to a task's checklist. The ordinal is
      * assigned automatically as {@code max(existing) + 1}.
      */
-    @PostMapping("/api/v1/tasks/{id}/items")
+    @PostMapping("/tasks/{id}/items")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskItemSummary> addItem(@PathVariable Long id,
                                                    @RequestBody ItemRequest request) {
@@ -139,7 +158,7 @@ public class TaskController {
      * Patches an existing sub-item. {@code title} and {@code completed}
      * are optional; null leaves the existing value untouched.
      */
-    @PatchMapping("/api/v1/tasks/{taskId}/items/{itemId}")
+    @PatchMapping("/tasks/{taskId}/items/{itemId}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskItemSummary> updateItem(@PathVariable Long taskId,
                                                       @PathVariable Long itemId,
@@ -152,7 +171,7 @@ public class TaskController {
      * Removes a sub-item from the task's checklist. The remaining items
      * are re-numbered so ordinals stay contiguous starting at 0.
      */
-    @DeleteMapping("/api/v1/tasks/{taskId}/items/{itemId}")
+    @DeleteMapping("/tasks/{taskId}/items/{itemId}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<Void> deleteItem(@PathVariable Long taskId,
                                             @PathVariable Long itemId) {
@@ -165,7 +184,7 @@ public class TaskController {
      * ids in the desired order; items not present in the list are
      * appended in their existing order.
      */
-    @PutMapping("/api/v1/tasks/{taskId}/items/reorder")
+    @PutMapping("/tasks/{taskId}/items/reorder")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<TaskItemSummary>> reorderItems(@PathVariable Long taskId,
                                                                @RequestBody ReorderRequest request) {
