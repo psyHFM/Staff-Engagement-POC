@@ -66,14 +66,14 @@ describe('EmployeeDetail', () => {
     // Given — admin may change role
     fixture.componentRef.setInput('canEditRole', true);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('#role')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('#profile-role')).toBeTruthy();
 
     // When — a non-admin (owner) editing their own profile
     fixture.componentRef.setInput('canEditRole', false);
     fixture.detectChanges();
 
     // Then
-    expect(fixture.nativeElement.querySelector('#role')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('#profile-role')).toBeFalsy();
   });
 
   it('pre-fills the form with the selected employee on changes', () => {
