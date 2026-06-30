@@ -8,6 +8,7 @@ import { TaskStateService } from './task-state.service';
 import { CreateTaskRequest } from './task.model';
 import { ApiClient } from '../../shared/api/api-client';
 import { InteractionSummary } from '../interaction/interaction.types';
+import { ToastService } from '../../shared/toast/toast.service';
 
 /**
  * Task-create modal (Phase 3 + ATSE1-29/ATSE1-30/ATSE1-37/ATSE1-38).
@@ -39,6 +40,7 @@ import { InteractionSummary } from '../interaction/interaction.types';
 export class TaskCreateForm implements OnInit {
   private readonly api = inject(ApiClient);
   protected readonly state = inject(TaskStateService);
+  protected readonly toast = inject(ToastService);
 
   /** Source interaction id when this form is opened from an interaction row. */
   @Input() interactionId?: string;
@@ -62,7 +64,6 @@ export class TaskCreateForm implements OnInit {
 
   /** Flag to indicate if form is opened from an interaction. */
   protected isFromInteraction = false;
-
   ngOnInit(): void {
     if (this.interactionId) {
       const interactionId = Number(this.interactionId);
@@ -92,11 +93,11 @@ export class TaskCreateForm implements OnInit {
 
   /** Dropdown change bridge — receives the numeric id from the picker. */
   protected onSubjectChange(id: number | null): void {
-    // Only allow subject change when not created from an interaction
+    this.request.subjectId = id ?? 0;
+    this._currentSubjectId = id;
+    // Clear interaction when employee changes (cascading reset)
+    // Only if not from interaction, since interaction is fixed
     if (!this.isFromInteraction) {
-      this.request.subjectId = id ?? 0;
-      this._currentSubjectId = id;
-      // Clear interaction when employee changes (cascading reset)
       this.request.sourceInteractionId = undefined;
     }
   }
@@ -111,7 +112,7 @@ export class TaskCreateForm implements OnInit {
 
   /** When interaction selection changes, also receive the subject id for cascading. */
   protected onInteractionSubjectChange(subjectId: number | null): void {
-    // Only allow subject change when not created from an interaction
+    // Only allow subject change from interaction when not created from an interaction
     if (!this.isFromInteraction && subjectId !== null) {
       // Pin the employee to the interaction's subject (read-only behavior)
       this.request.subjectId = subjectId;
@@ -133,8 +134,22 @@ export class TaskCreateForm implements OnInit {
     this.formClosed.emit();
   }
 
+  /**
+   * Submit the create task form.
+   *
+   * <p>Subscribes to the server response and shows a success toast.
+   * The state is updated from the server response (ATSE1-65).
+   */
   submit(): void {
-    this.state.createTask(this.request);
-    this.closeForm();
+    this.state.createTask(this.request).subscribe({
+      next: () => {
+        this.toast.show('Task created successfully', { type: 'success' });
+        this.closeForm();
+      },
+      error: () => {
+        // Error already shown by authErrorInterceptor
+        this.closeForm();
+      }
+    });
   }
 }

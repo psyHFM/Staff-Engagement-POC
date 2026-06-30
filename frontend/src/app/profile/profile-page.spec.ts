@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { ProfilePage } from './profile-page';
 import { ProfileStateService } from './profile-state.service';
 import { PersonProfile } from './profile.types';
+import { ApiError, ErrorEnvelope } from '../shared/api/error-envelope';
 
 @Component({ template: '', standalone: true })
 class StubPage {}
@@ -146,15 +147,22 @@ describe('ProfilePage', () => {
   });
 
   it('shows an error banner when the profile cannot be loaded', () => {
-    // Given
-    fakeState.error.set({ message: 'Employee profile not found: 99' });
+    // Given — 404 error with proper ApiError envelope structure
+    const errorEnvelope: ErrorEnvelope = {
+      timestamp: '2026-06-30T10:00:00Z',
+      status: 404,
+      error: 'Not Found',
+      message: 'Employee profile not found: 99',
+      path: '/api/v1/employees/99/profile'
+    };
+    fakeState.error.set(new ApiError(errorEnvelope, 404));
 
     // When
     fixture.detectChanges();
 
     // Then
-    expect(fixture.nativeElement.querySelector('.profile-page__error')).toBeTruthy();
-    expect(fixture.nativeElement.textContent).toContain('Employee profile not found: 99');
+    expect(fixture.nativeElement.querySelector('.profile-page__not-found')).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain('Employee Not Found');
   });
 
   it('allows the owner to edit their profile', () => {

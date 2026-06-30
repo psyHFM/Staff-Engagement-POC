@@ -15,18 +15,41 @@
 
   <div class="shell__auth">
     @if (auth.isAuthenticated()) {
-      @if (profileLink()) {
-        <a
-          class="shell__user"
-          [routerLink]="profileLink()"
-          aria-label="View your profile"
-          tabindex="0">
-          {{ auth.currentUser() }}
-        </a>
-      } @else {
-        <span class="shell__user">{{ auth.currentUser() }}</span>
-      }
-      <button type="button" class="shell__logout" (click)="logout()">Sign out</button>
+      <div class="auth-menu" [class.open]="isMenuOpen()">
+        <button
+          type="button"
+          class="auth-menu-trigger"
+          (click)="toggleMenu()"
+          [attr.aria-expanded]="isMenuOpen()"
+          [attr.aria-haspopup]="true"
+          [attr.aria-label]="'User menu for ' + auth.currentUser()"
+          #triggerBtn>
+
+          <span class="user-greeting">{{ auth.currentUser() }}</span>
+          <i class="pi" [class.pi-chevron-down]="!isMenuOpen()" [class.pi-chevron-up]="isMenuOpen()"></i>
+        </button>
+
+        @if (isMenuOpen()) {
+          <div class="auth-menu-dropdown" (clickOutside)="closeMenu()">
+            <ul class="auth-menu-items">
+              @if (profileLink()) {
+                <li>
+                  <a [routerLink]="profileLink()" (click)="closeMenu()">
+                    <i class="pi pi-user"></i>
+                    Profile
+                  </a>
+                </li>
+              }
+              <li>
+                <button type="button" (click)="onLogout()">
+                  <i class="pi pi-sign-out"></i>
+                  Sign out
+                </button>
+              </li>
+            </ul>
+          </div>
+        }
+      </div>
     } @else {
       <a routerLink="/login" class="shell__login">Sign in</a>
     }

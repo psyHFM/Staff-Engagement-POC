@@ -46,7 +46,6 @@ export class InteractionPicker extends StateService implements OnInit {
 
   /** Whether the picker is readonly. */
   readonly readonly = input<boolean>(false);
-
   /** Emits the new id whenever the user picks a different interaction. */
   @Output() readonly valueChange = new EventEmitter<number | null>();
 

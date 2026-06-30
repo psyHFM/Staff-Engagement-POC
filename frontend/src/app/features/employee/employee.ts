@@ -46,4 +46,9 @@ export class Employee implements OnInit {
   protected onSelect(employee: EmployeeResponse): void {
     void this.router.navigate(['/employees', employee.id.value, 'profile']);
   }
+
+  /** Retry loading the directory after an error. */
+  protected onRetry(): void {
+    this.state.loadDirectory(0, 20, this.sort());
+  }
 }
