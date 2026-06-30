@@ -70,11 +70,11 @@ export class TaskCreateForm implements OnInit {
    */
   submit(): void {
     this.state.createTask(this.request).subscribe({
-      next: (task) => {
+      next: () => {
         this.toast.show('Task created successfully', { type: 'success' });
         this.closeForm();
       },
-      error: (err) => {
+      error: () => {
         // Error already shown by authErrorInterceptor
         this.closeForm();
       }
