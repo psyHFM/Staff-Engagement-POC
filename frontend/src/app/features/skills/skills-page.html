@@ -114,7 +114,7 @@
       @if (page.content.length > 0) {
         <ol class="skills-list">
           @for (strength of page.content; track strength.employeeId.value + '-' + strength.skill; let i = $index) {
-            <li class="skill-card">
+            <li class="skill-card" (click)="onResultClick(strength.skill)" role="button" tabindex="0">
               <span class="skill-rank">{{ page.offset + i + 1 }}</span>
               <div class="skill-person">
                 <span class="skill-name">{{ strength.employeeName }}</span>
@@ -134,6 +134,33 @@
           }
         </ol>
       }
+    </section>
+  }
+
+  @if (state.query()) {
+    <section class="skill-detail-panel" aria-label="Skill detail">
+      <header class="detail-header">
+        <h2>{{ state.query() }}</h2>
+        <button type="button" class="detail-close" (click)="clear()" aria-label="Close detail">
+          <i class="pi pi-times"></i>
+        </button>
+      </header>
+      <div class="detail-content">
+        @if (state.results(); as page) {
+          <p class="detail-summary">
+            <strong>{{ page.total }}</strong> {{ page.total === 1 ? 'person has' : 'people have' }}
+            this skill across <strong>{{ page.content.length }}</strong> project{{ page.content.length === 1 ? '' : 's' }}.
+          </p>
+          <ul class="detail-list">
+            @for (strength of page.content; track strength.employeeId.value + '-' + strength.skill) {
+              <li class="detail-item">
+                <strong>{{ strength.employeeName }}</strong>
+                <span class="detail-meta">{{ strength.years }} yr{{ strength.years === 1 ? '' : 's' }} | {{ strength.projectCount }} project{{ strength.projectCount === 1 ? '' : 's' }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
     </section>
   }
 </div>

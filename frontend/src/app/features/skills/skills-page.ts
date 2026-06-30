@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { SkillsStateService } from './skills-state.service';
 import { SkillSortOption } from './skills.types';
@@ -27,11 +28,22 @@ import { SkillSortOption } from './skills.types';
 export class SkillsPage implements OnInit {
   protected readonly state = inject(SkillsStateService);
   protected readonly searchTerm = signal('');
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   ngOnInit(): void {
     // ATSE1-40: pre-populate the browseable grid so the page shows tiles even
     // before the user types. A blank search leaves `results()` as null.
     this.state.loadPopular();
+
+    // ATSE1-48: Read :name param from route for deep-link support (/skills/Angular)
+    this.route.params.subscribe((params) => {
+      const skillName = params['name'];
+      if (skillName) {
+        this.searchTerm.set(skillName);
+        this.state.search(skillName);
+      }
+    });
   }
 
   onInput(value: string): void {
@@ -40,13 +52,19 @@ export class SkillsPage implements OnInit {
   }
 
   /**
-   * Tile click on the popular grid (ATSE1-40): jump into search for that skill
-   * name. The skill-detail page is a separate ticket (ATSE1-44) — for now we
-   * treat the grid as a search-launcher.
+   * Tile click on the popular grid (ATSE1-48): navigate to the deep-linked
+   * detail view for that skill. The same component renders the detail panel
+   * when a :name route param is present.
    */
   onTileClick(skill: string): void {
-    this.searchTerm.set(skill);
-    this.state.search(skill);
+    this.router.navigate(['/skills', skill]);
+  }
+
+  /**
+   * Search result row click (ATSE1-48): navigate to the deep-linked detail view.
+   */
+  onResultClick(skill: string): void {
+    this.router.navigate(['/skills', skill]);
   }
 
   /**
