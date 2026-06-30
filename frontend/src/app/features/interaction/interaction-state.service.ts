@@ -209,4 +209,16 @@ export class InteractionStateService extends StateService {
     this.lastError.set(null);
     this.lastCreated.set(null);
   }
+
+  /**
+   * Get interactions filtered by subject (employee) ID.
+   * Returns interactions where `subject.value === employeeId` (ATSE1-37 cascading).
+   */
+  interactionsBySubject(employeeId: number): InteractionSummary[] {
+    const page = this.interactions();
+    if (!page) {
+      return [];
+    }
+    return page.content.filter(i => i.subject.value === employeeId);
+  }
 }

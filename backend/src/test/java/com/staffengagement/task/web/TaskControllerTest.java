@@ -1,10 +1,12 @@
 package com.staffengagement.task.web;
 
 import com.staffengagement.shared.api.EmployeeContract;
+import com.staffengagement.shared.api.EmployeeSummary;
 import com.staffengagement.shared.api.InteractionContract;
 import com.staffengagement.shared.api.InteractionSummary;
 import com.staffengagement.shared.api.TaskSummary;
 import com.staffengagement.shared.kernel.EmployeeId;
+import com.staffengagement.shared.kernel.EmployeeRole;
 import com.staffengagement.shared.kernel.InteractionId;
 import com.staffengagement.shared.kernel.InteractionType;
 import com.staffengagement.shared.kernel.TaskId;
@@ -22,9 +24,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -200,15 +202,15 @@ class TaskControllerTest {
     @Test
     @DisplayName("Should resolve the current employee from the security context")
     void getMyTasks_resolvesCurrentEmployeeFromPrincipal() {
-        // Given
-        UserDetails principal = org.mockito.Mockito.mock(UserDetails.class);
-        given(principal.getUsername()).willReturn("7");
+        // Given - Set the authentication in the security context (simulating JwtAuthFilter)
+        EmployeeSummary emp = new EmployeeSummary(new EmployeeId(7L), "Test User", "test@staff.eng", EmployeeRole.EMPLOYEE, "Engineer", "Eng", "JUNIOR");
+        given(employeeContract.findByEmail("test@staff.eng")).willReturn(Optional.of(emp));
         TaskSummary summary = new TaskSummary(
                 new TaskId(11L), new EmployeeId(7L), "Mine", null, true, "Mine", Instant.now());
         given(taskService.myTasks(new EmployeeId(7L))).willReturn(List.of(summary));
 
-        // When
-        ResponseEntity<List<TaskSummary>> response = controller.getMyTasks(principal);
+        // When - Call without arguments (authentication comes from SecurityContext)
+        ResponseEntity<List<TaskSummary>> response = controller.getMyTasks();
 
         // Then
         then(taskService).should().myTasks(new EmployeeId(7L));

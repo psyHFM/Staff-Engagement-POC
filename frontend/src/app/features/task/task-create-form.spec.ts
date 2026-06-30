@@ -24,6 +24,13 @@ describe('TaskCreateForm', () => {
     req.flush({ content: directory, offset: 0, limit: 100, total: directory.length });
   }
 
+  /** Flush the InteractionPicker's GET /api/v1/interactions request that fires on first paint. */
+  function flushInteractionPicker(directory: unknown[] = []): void {
+    const req = httpMock.expectOne((r) => r.url === '/api/v1/interactions');
+    expect(req.request.method).toBe('GET');
+    req.flush({ content: directory, offset: 0, limit: 100, total: directory.length });
+  }
+
   it('seeds the sourceInteractionId from the interaction context on init', () => {
     // Given — the form is opened from an interaction context
     const fixture = TestBed.createComponent(TaskCreateForm);
@@ -32,6 +39,7 @@ describe('TaskCreateForm', () => {
     // When
     fixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -45,6 +53,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -62,6 +71,7 @@ describe('TaskCreateForm', () => {
     fixture.componentRef.setInput('interactionId', '');
     fixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -78,6 +88,7 @@ describe('TaskCreateForm', () => {
       { id: { value: 1 }, fullName: 'Admin User', email: 'admin@staff.eng', role: 'admin' },
       { id: { value: 2 }, fullName: 'Employee User', email: 'employee@staff.eng', role: 'employee' }
     ]);
+    flushInteractionPicker();
     const picker = fixture.nativeElement.querySelector('app-employee-picker');
     expect(picker).not.toBeNull();
     const component = fixture.componentInstance as unknown as {
@@ -97,6 +108,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
     const component = fixture.componentInstance as unknown as {
       request: { subjectId: number };
       onSubjectChange: (id: number | null) => void;
@@ -112,6 +124,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
     const component = fixture.componentInstance as unknown as {
       request: { subjectId: number; title: string; description: string };
       formClosed: { emit: (v?: void) => void };
@@ -143,6 +156,7 @@ describe('TaskCreateForm', () => {
     fixture.componentRef.setInput('interactionId', '42');
     fixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
     const component = fixture.componentInstance as unknown as {
       request: { subjectId: number; title: string; description: string; sourceInteractionId?: number };
       formClosed: { emit: (v?: void) => void };
@@ -166,6 +180,7 @@ describe('TaskCreateForm', () => {
     const firstFixture = TestBed.createComponent(TaskCreateForm);
     firstFixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
     const firstComponent = firstFixture.componentInstance as unknown as {
       request: { subjectId: number };
       submit: () => void;
@@ -180,6 +195,7 @@ describe('TaskCreateForm', () => {
     const secondFixture = TestBed.createComponent(TaskCreateForm);
     secondFixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
     const secondComponent = secondFixture.componentInstance as unknown as {
       request: { subjectId: number };
     };
@@ -193,6 +209,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     flushPicker();
+    flushInteractionPicker();
     let closed = false;
     (fixture.componentInstance as unknown as { formClosed: { emit: (v?: void) => void } }).formClosed.emit =
       () => (closed = true);

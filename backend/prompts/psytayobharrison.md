@@ -69,3 +69,17 @@ how do i run docker ina way that when the docker image changes i dint need to bu
 
 =======
 >>>>>>> origin/main
+### psyTayobHarrison — 2026-06-30 09:16:12
+
+> **Model:** `qwen3-coder-next`  
+> **Tokens:** `138,847` in / `494` out · cache read `0` / write `0` · **139,341 total**
+
+when creating a new task, underneath the interaction drop down is this i red "Request method 'GET' is not supported". and also there re no interactions in the drop down. investigate why that is and report back. check if th get all interactions is being called to be displayed in the drop down. if it is why isnt it displaying?
+
+### psyTayobHarrison — 2026-06-30 09:18:59
+
+> **Model:** `qwen3-coder-next`  
+> **Tokens:** `140,479` in / `153` out · cache read `0` / write `0` · **140,632 total**
+
+side note: everytime this code is edited, des the docker image update?
+

@@ -51,7 +51,9 @@ public class AuthController {
         var summary = resolveSummary(request.username());
         List<String> roles = summary.map(s -> List.of(s.role().name()))
                 .orElseGet(() -> stubUserRoles(user));
-        String token = tokenProvider.generate(user.username(), roles);
+        // Include employeeId in JWT claims so it can be retrieved later
+        String token = summary.map(s -> tokenProvider.generate(user.username(), roles, s.id().value()))
+                .orElseGet(() -> tokenProvider.generate(user.username(), roles));
         Long employeeId = summary.map(s -> s.id().value()).orElse(null);
         return ResponseEntity.ok(new LoginResponse(token, "Bearer", tokenProvider.expirationSeconds(), employeeId));
     }

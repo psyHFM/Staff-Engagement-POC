@@ -31,15 +31,22 @@ public class JwtTokenProvider {
     }
 
     public String generate(String subject, List<String> roles) {
+        return generate(subject, roles, null);
+    }
+
+    public String generate(String subject, List<String> roles, Long employeeId) {
         Date now = new Date();
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .issuer(issuer)
                 .subject(subject)
                 .claim("roles", roles)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expirationMillis))
-                .signWith(key)
-                .compact();
+                .signWith(key);
+        if (employeeId != null) {
+            builder.claim("employeeId", employeeId);
+        }
+        return builder.compact();
     }
 
     public boolean isValid(String token) {
@@ -62,6 +69,22 @@ public class JwtTokenProvider {
 
     public long expirationSeconds() {
         return expirationMillis / 1000L;
+    }
+
+    /**
+     * Extract the employeeId from the JWT token. Returns null if not present.
+     */
+    public Long employeeId(String token) {
+        try {
+            Jws<Claims> jws = parse(token);
+            Object empIdObj = jws.getPayload().get("employeeId");
+            if (empIdObj instanceof Number) {
+                return ((Number) empIdObj).longValue();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private Jws<Claims> parse(String token) {
