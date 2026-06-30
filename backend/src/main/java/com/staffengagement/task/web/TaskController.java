@@ -54,9 +54,12 @@ public class TaskController {
     @PostMapping("/tasks")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskSummary> create(@RequestBody TaskRequest request) {
-        // When sourceInteractionId is provided, we override the subjectId with the interaction's subject
+        // When sourceInteractionId is provided, we override the subjectId with the interaction's subject.
+        // In that case the interaction already carries the subject context, so we can skip the
+        // employee existence check and rely on the interaction lookup to validate the link.
         Long effectiveSubjectId = request.subjectId();
         Long sourceInteractionId = request.sourceInteractionId();
+        boolean interactionResolved = false;
 
         if (sourceInteractionId != null) {
             // Fetch the interaction to get its subject
@@ -70,6 +73,7 @@ public class TaskController {
             if (interactionOpt.isPresent()) {
                 // Override subjectId with the interaction's subject
                 effectiveSubjectId = interactionOpt.get().subject().value();
+                interactionResolved = true;
             } else {
                 throw new IllegalArgumentException(
                         "Source interaction not found for subject: " + sourceInteractionId);
@@ -77,9 +81,10 @@ public class TaskController {
         }
 
         // 2.3 Validation for subject existence via EmployeeContract (skipped only
-        // while the employee module is absent).
+        // while the employee module is absent). Standalone tasks still need this
+        // check; interaction-backed tasks are already scoped by the interaction.
         EmployeeContract employeeContract = employeeContractProvider.getIfAvailable();
-        if (employeeContract != null
+        if (employeeContract != null && !interactionResolved
                 && !employeeContract.exists(new EmployeeId(effectiveSubjectId))) {
             throw new IllegalArgumentException("Employee not found: " + effectiveSubjectId);
         }

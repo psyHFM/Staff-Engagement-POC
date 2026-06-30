@@ -82,7 +82,6 @@ class TaskControllerTest {
     void create_persistsAndReturnsId_whenSubjectExists() {
         // Given — the subject exists and the source interaction belongs to them
         TaskController.TaskRequest request = new TaskController.TaskRequest("Follow up", 1L, 42L, "Send the email");
-        given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
                         new InteractionId(42L), InteractionType.CHECK_IN,
@@ -104,7 +103,7 @@ class TaskControllerTest {
         ResponseEntity<TaskSummary> response = controller.create(request);
 
         // Then
-        then(employeeContract).should().exists(new EmployeeId(1L));
+        then(employeeContract).shouldHaveNoInteractions();
         then(interactionContract).should().findBySubject(new EmployeeId(1L));
         then(taskRepository).should().save(any(Task.class));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -156,7 +155,6 @@ class TaskControllerTest {
     void create_usesSubjectFromInteraction_whenSourceInteractionProvided() {
         // Given — request has subjectId 1, and interaction belongs to subject 1
         TaskController.TaskRequest request = new TaskController.TaskRequest("From interaction", 1L, 42L, "Body");
-        given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
                         new InteractionId(42L), InteractionType.CHECK_IN,
@@ -178,7 +176,7 @@ class TaskControllerTest {
         ResponseEntity<TaskSummary> response = controller.create(request);
 
         // Then
-        then(employeeContract).should().exists(new EmployeeId(1L));
+        then(employeeContract).shouldHaveNoInteractions();
         then(interactionContract).should().findBySubject(new EmployeeId(1L));
         then(taskRepository).should().save(any(Task.class));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -191,7 +189,6 @@ class TaskControllerTest {
     void create_rejects_whenSourceInteractionNotForSubject() {
         // Given — the subject has interaction 42, but the request references 99
         TaskController.TaskRequest request = new TaskController.TaskRequest("From interaction", 1L, 99L, "Body");
-        given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
         given(interactionContract.findBySubject(new EmployeeId(1L)))
                 .willReturn(List.of(new InteractionSummary(
                         new InteractionId(42L), InteractionType.CHECK_IN,
