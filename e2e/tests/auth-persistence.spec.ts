@@ -36,8 +36,10 @@ test.describe('Auth session persistence (ATSE1-25)', () => {
     // Given — a logged-in session
     await login(page, adminCredentials);
 
-    // When — the user logs out
-    await page.getByRole('button', { name: /sign out|log out/i }).click();
+    // When — the user opens the auth menu and clicks logout
+    // The sign-out button is now inside a dropdown menu (ATSE1-52)
+    await page.getByRole('button', { name: /User menu for/i }).click();
+    await page.getByRole('button', { name: /Sign out/i }).click();
 
     // Then — the persisted token is removed
     const stored = await page.evaluate(() =>
