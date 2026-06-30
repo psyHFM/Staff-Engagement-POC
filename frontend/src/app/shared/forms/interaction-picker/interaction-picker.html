@@ -3,9 +3,9 @@
   <select
     class="interaction-picker__select"
     (change)="onSelectChange($event)"
-    [disabled]="isLoading()">
+    [disabled]="isLoading() || readonly()">
     <option value="" disabled [selected]="value() === null">
-      {{ isLoading() ? 'Loading interactions…' : 'Select an interaction' }}
+      {{ isLoading() ? 'Loading interactions…' : (readonly() ? 'Interaction selected from task source' : 'Select an interaction') }}
     </option>
     @for (interaction of options(); track interaction.id.value) {
       <option [value]="interaction.id.value" [selected]="value() === interaction.id.value">

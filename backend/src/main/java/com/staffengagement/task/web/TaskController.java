@@ -2,6 +2,7 @@ package com.staffengagement.task.web;
 
 import com.staffengagement.shared.api.EmployeeContract;
 import com.staffengagement.shared.api.InteractionContract;
+import com.staffengagement.shared.api.InteractionSummary;
 import com.staffengagement.shared.api.TaskContract;
 import com.staffengagement.shared.api.TaskItemSummary;
 import com.staffengagement.shared.api.TaskSummary;
@@ -20,6 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -51,33 +54,44 @@ public class TaskController {
     @PostMapping("/tasks")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<TaskSummary> create(@RequestBody TaskRequest request) {
-        // 2.3 Validation for subject existence via EmployeeContract (skipped only
-        // while the employee module is absent).
-        EmployeeContract employeeContract = employeeContractProvider.getIfAvailable();
-        if (employeeContract != null
-                && !employeeContract.exists(new EmployeeId(request.subjectId()))) {
-            throw new IllegalArgumentException("Employee not found: " + request.subjectId());
-        }
+        // When sourceInteractionId is provided, we override the subjectId with the interaction's subject.
+        // In that case the interaction already carries the subject context, so we can skip the
+        // employee existence check and rely on the interaction lookup to validate the link.
+        Long effectiveSubjectId = request.subjectId();
+        Long sourceInteractionId = request.sourceInteractionId();
+        boolean interactionResolved = false;
 
-        // 2.4 Validation for sourceInteractionId via the frozen InteractionContract.
-        // The contract only exposes findBySubject, so we confirm the supplied
-        // interaction belongs to the task's subject — standalone tasks (null source)
-        // skip this check.
-        if (request.sourceInteractionId() != null) {
-            InteractionId sourceId = new InteractionId(request.sourceInteractionId());
-            boolean interactionBelongsToSubject = interactionContract
+        if (sourceInteractionId != null) {
+            // Fetch the interaction to get its subject
+            InteractionId interactionId = new InteractionId(sourceInteractionId);
+            Optional<InteractionSummary> interactionOpt = interactionContract
                     .findBySubject(new EmployeeId(request.subjectId()))
                     .stream()
-                    .anyMatch(interaction -> interaction.id().equals(sourceId));
-            if (!interactionBelongsToSubject) {
+                    .filter(interaction -> interaction.id().equals(interactionId))
+                    .findFirst();
+
+            if (interactionOpt.isPresent()) {
+                // Override subjectId with the interaction's subject
+                effectiveSubjectId = interactionOpt.get().subject().value();
+                interactionResolved = true;
+            } else {
                 throw new IllegalArgumentException(
-                        "Source interaction not found for subject: " + request.sourceInteractionId());
+                        "Source interaction not found for subject: " + sourceInteractionId);
             }
         }
 
+        // 2.3 Validation for subject existence via EmployeeContract (skipped only
+        // while the employee module is absent). Standalone tasks still need this
+        // check; interaction-backed tasks are already scoped by the interaction.
+        EmployeeContract employeeContract = employeeContractProvider.getIfAvailable();
+        if (employeeContract != null && !interactionResolved
+                && !employeeContract.exists(new EmployeeId(effectiveSubjectId))) {
+            throw new IllegalArgumentException("Employee not found: " + effectiveSubjectId);
+        }
+
         Task task = Task.builder()
-                .subjectId(request.subjectId())
-                .sourceInteractionId(request.sourceInteractionId())
+                .subjectId(effectiveSubjectId)
+                .sourceInteractionId(sourceInteractionId)
                 .title(request.title() == null ? "" : request.title())
                 .description(request.description())
                 .completed(false)

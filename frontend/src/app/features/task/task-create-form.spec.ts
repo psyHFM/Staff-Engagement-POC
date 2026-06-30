@@ -24,6 +24,13 @@ describe('TaskCreateForm', () => {
     req.flush({ content: directory, offset: 0, limit: 100, total: directory.length });
   }
 
+  /** Flush the GET /api/v1/interactions/{id} request that fires when interactionId is set. */
+  function flushInteractionDetails(interactionId: number, body: unknown = {}): void {
+    const req = httpMock.expectOne(`/api/v1/interactions/${interactionId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(body);
+  }
+
   it('seeds the sourceInteractionId from the interaction context on init', () => {
     // Given — the form is opened from an interaction context
     const fixture = TestBed.createComponent(TaskCreateForm);
@@ -32,7 +39,7 @@ describe('TaskCreateForm', () => {
     // When
     fixture.detectChanges();
     flushPicker();
-    // No flushInteractionPicker call needed since no subjectId is set
+    flushInteractionDetails(42);
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -149,7 +156,7 @@ describe('TaskCreateForm', () => {
     fixture.componentRef.setInput('interactionId', '42');
     fixture.detectChanges();
     flushPicker();
-    // No flushInteractionPicker call needed since no subjectId is set
+    flushInteractionDetails(42);
     const component = fixture.componentInstance as unknown as {
       request: { subjectId: number; title: string; description: string; sourceInteractionId?: number };
       formClosed: { emit: (v?: void) => void };

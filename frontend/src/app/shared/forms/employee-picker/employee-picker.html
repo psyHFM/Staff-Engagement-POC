@@ -3,9 +3,9 @@
   <select
     class="employee-picker__select"
     (change)="onSelectChange($event)"
-    [disabled]="isLoading()">
+    [disabled]="isLoading() || readonly()">
     <option value="" disabled [selected]="value() === null">
-      {{ isLoading() ? 'Loading employees…' : 'Select an employee' }}
+      {{ isLoading() ? 'Loading employees…' : (readonly() ? 'Employee selected from interaction' : 'Select an employee') }}
     </option>
     @for (employee of options(); track employee.id.value) {
       <option [value]="employee.id.value" [selected]="value() === employee.id.value">

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -6,6 +6,8 @@ import { EmployeePicker } from '../../shared/forms/employee-picker/employee-pick
 import { InteractionPicker } from '../../shared/forms/interaction-picker/interaction-picker';
 import { TaskStateService } from './task-state.service';
 import { CreateTaskRequest } from './task.model';
+import { ApiClient } from '../../shared/api/api-client';
+import { InteractionSummary } from '../interaction/interaction.types';
 import { ToastService } from '../../shared/toast/toast.service';
 
 /**
@@ -36,6 +38,7 @@ import { ToastService } from '../../shared/toast/toast.service';
   styleUrls: ['./task-create-form.scss']
 })
 export class TaskCreateForm implements OnInit {
+  private readonly api = inject(ApiClient);
   protected readonly state = inject(TaskStateService);
   protected readonly toast = inject(ToastService);
 
@@ -56,10 +59,36 @@ export class TaskCreateForm implements OnInit {
   /** Current subject id (for cascading - when set, filters interactions). */
   protected _currentSubjectId: number | null = null;
 
+  /** Interaction details when form is opened from an interaction. */
+  protected interactionDetails = signal<InteractionSummary | null>(null);
+
+  /** Flag to indicate if form is opened from an interaction. */
+  protected isFromInteraction = false;
   ngOnInit(): void {
     if (this.interactionId) {
-      this.request.sourceInteractionId = Number(this.interactionId);
+      const interactionId = Number(this.interactionId);
+      this.request.sourceInteractionId = interactionId;
+      this.isFromInteraction = true;
+
+      // Load interaction details
+      this.loadInteractionDetails(interactionId);
     }
+  }
+
+  /** Load interaction details when form is opened from an interaction. */
+  private loadInteractionDetails(interactionId: number): void {
+    this.api.get<InteractionSummary>(`interactions/${interactionId}`)
+      .subscribe({
+        next: (interaction) => {
+          this.interactionDetails.set(interaction);
+          // Set subject to interaction's subject and make it read-only
+          this.request.subjectId = interaction.subject.value;
+          this._currentSubjectId = interaction.subject.value;
+        },
+        error: (err) => {
+          console.error('Failed to load interaction details:', err);
+        }
+      });
   }
 
   /** Dropdown change bridge — receives the numeric id from the picker. */
@@ -67,19 +96,24 @@ export class TaskCreateForm implements OnInit {
     this.request.subjectId = id ?? 0;
     this._currentSubjectId = id;
     // Clear interaction when employee changes (cascading reset)
-    this.request.sourceInteractionId = undefined;
+    // Only if not from interaction, since interaction is fixed
+    if (!this.isFromInteraction) {
+      this.request.sourceInteractionId = undefined;
+    }
   }
 
   /** Dropdown change bridge for interaction — receives the numeric id from the picker. */
   protected onInteractionChange(id: number | null): void {
-    if (id !== null) {
+    // Only allow interaction change when not created from an interaction
+    if (!this.isFromInteraction && id !== null) {
       this.request.sourceInteractionId = id;
     }
   }
 
   /** When interaction selection changes, also receive the subject id for cascading. */
   protected onInteractionSubjectChange(subjectId: number | null): void {
-    if (subjectId !== null) {
+    // Only allow subject change from interaction when not created from an interaction
+    if (!this.isFromInteraction && subjectId !== null) {
       // Pin the employee to the interaction's subject (read-only behavior)
       this.request.subjectId = subjectId;
       this._currentSubjectId = subjectId;
@@ -88,9 +122,12 @@ export class TaskCreateForm implements OnInit {
 
   /** Clear both employee and interaction selections. */
   protected onClear(): void {
-    this.request.subjectId = 0;
-    this.request.sourceInteractionId = undefined;
-    this._currentSubjectId = null;
+    // Only allow clearing when not created from an interaction
+    if (!this.isFromInteraction) {
+      this.request.subjectId = 0;
+      this.request.sourceInteractionId = undefined;
+      this._currentSubjectId = null;
+    }
   }
 
   closeForm(): void {
