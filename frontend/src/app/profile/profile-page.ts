@@ -14,6 +14,8 @@ import { ProfileStateService } from './profile-state.service';
  * the profile, and renders the header, interactions, tasks, and portfolio sections.
  * All data flows through computed signals from the state service; the component never
  * mutates state directly.
+ *
+ * <p>Handles 404 Not Found gracefully with a friendly message and back navigation (ATSE1-64).
  */
 @Component({
   selector: 'app-profile-page',
@@ -46,6 +48,18 @@ export class ProfilePage implements OnInit {
 
   /** Only admins may change a role. */
   protected readonly canEditRole = computed(() => this.isAdmin());
+
+  /** True when the profile failed to load due to 404 (ATSE1-64). */
+  protected readonly isNotFound = computed(() => {
+    const err = this.state.error();
+    return err?.envelope.status === 404;
+  });
+
+  /** True when the profile failed to load due to a non-404 error. */
+  protected readonly hasOtherError = computed(() => {
+    const err = this.state.error();
+    return err != null && err.envelope.status !== 404;
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

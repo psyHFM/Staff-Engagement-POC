@@ -1,4 +1,5 @@
 import { Injectable, signal, computed, inject, Signal } from '@angular/core';
+import { Observable, finalize, tap } from 'rxjs';
 import { ApiClient, catchApiError } from '../../shared/api/api-client';
 import { StateService } from '../../shared/state/state.service';
 import {
@@ -7,7 +8,6 @@ import {
   TaskItem,
   TaskWithItems
 } from './task.model';
-import { finalize } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class TaskStateService extends StateService {
@@ -86,21 +86,34 @@ export class TaskStateService extends StateService {
   }
 
   /**
-   * Create a new task (POST /api/v1/tasks)
+   * Create a new task (POST /api/v1/tasks).
+   *
+   * <p>Returns the server-created task so the caller can react to the response.
+   * State is updated from the server response, not an optimistic copy (ATSE1-65).
+   *
+   * <p>NOTE: Caller must subscribe or the side effect (state update) will not run.
    */
-  createTask(request: CreateTaskRequest): void {
+  createTask(request: CreateTaskRequest): Observable<Task> {
     this.beginLoad();
-    this.api.post<Task>('tasks', request)
-      .pipe(
-        catchApiError(),
-        finalize(() => this.endLoad())
-      )
-      .subscribe({
+    return this.api.post<Task>('tasks', request).pipe(
+      catchApiError(),
+      finalize(() => this.endLoad()),
+      tap({
         next: (newTask) => {
-          this._tasks.update(tasks => [...tasks, newTask]);
+          // Upsert based on server response: replace if ID exists, append if new
+          this._tasks.update(tasks => {
+            const existingIndex = tasks.findIndex(t => t.id.value === newTask.id.value);
+            if (existingIndex >= 0) {
+              const copy = [...tasks];
+              copy[existingIndex] = newTask;
+              return copy;
+            }
+            return [...tasks, newTask];
+          });
         },
         error: (err) => console.error('Failed to create task:', err)
-      });
+      })
+    );
   }
 
   /**
