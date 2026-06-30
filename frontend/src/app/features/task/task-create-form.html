@@ -5,7 +5,7 @@
   tabindex="-1"
   (click)="closeForm()"
   (keydown.escape)="closeForm()">
-  <div class="modal-content" (click)=".stopPropagation()" (keydown.enter)=".stopPropagation()" (keydown.space)=".stopPropagation()" tabindex="0" role="document">
+  <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()" tabindex="0" role="document">
     <header class="modal-header">
       <h2>{{ interactionId ? 'Create Task from Interaction' : 'Create New Task' }}</h2>
       <button type="button" (click)="closeForm()" class="close-btn" aria-label="Close">&times;</button>
@@ -23,7 +23,7 @@
       </div>
 
       @if (isFromInteraction && interactionDetails()) {
-        <div class="form-group interaction-details">
+        <div class="interaction-details">
           <h3>Interaction Details</h3>
           <p><strong>Type:</strong> {{ interactionDetails()!.type }}</p>
           <p><strong>Subject:</strong> {{ interactionDetails()!.subject.value }}</p>
@@ -35,8 +35,7 @@
       <div class="form-group">
         <app-employee-picker
           [value]="request.subjectId || null"
-          (valueChange)="onSubjectChange()"
-          [readonly]="isFromInteraction">
+          (valueChange)="onSubjectChange($event)">
         </app-employee-picker>
       </div>
 
@@ -44,8 +43,8 @@
         <app-interaction-picker
           [value]="request.sourceInteractionId || null"
           [subjectId]="_currentSubjectId"
-          (valueChange)="onInteractionChange()"
-          (subjectIdChange)="onInteractionSubjectChange()"
+          (valueChange)="onInteractionChange($event)"
+          (subjectIdChange)="onInteractionSubjectChange($event)"
           [readonly]="isFromInteraction">
         </app-interaction-picker>
       </div>

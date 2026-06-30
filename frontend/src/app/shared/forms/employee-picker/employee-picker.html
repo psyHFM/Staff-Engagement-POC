@@ -1,19 +1,19 @@
-<label class=\"employee-picker\">
-  <span class=\"employee-picker__label\">Subject</span>
+<label class="employee-picker">
+  <span class="employee-picker__label">Subject</span>
   <select
-    class=\"employee-picker__select\"
-    (change)=\"onSelectChange()\"
-    [disabled]=\"isLoading() || readonly()\">
-    <option value=\"\" disabled [selected]=\"value() === null\">
-      {{ isLoading() ? 'Loading employees…' : (readonly() ? 'Employee selected from interaction' : 'Select an employee') }}
+    class="employee-picker__select"
+    (change)="onSelectChange($event)"
+    [disabled]="isLoading() || readonly()">
+    <option value="" disabled [selected]="value() === null">
+      {{ isLoading() ? 'Loading employeesâ€¦' : (readonly() ? 'Employee selected from interaction' : 'Select an employee') }}
     </option>
     @for (employee of options(); track employee.id.value) {
-      <option [value]=\"employee.id.value\" [selected]=\"value() === employee.id.value\">
+      <option [value]="employee.id.value" [selected]="value() === employee.id.value">
         {{ employee.fullName }}
       </option>
     }
   </select>
   @if (error()) {
-    <span class=\"employee-picker__error\">{{ error()?.message ?? 'Failed to load employees' }}</span>
+    <span class="employee-picker__error">{{ error()?.message ?? 'Failed to load employees' }}</span>
   }
 </label>
