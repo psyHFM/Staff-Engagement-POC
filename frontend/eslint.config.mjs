@@ -22,6 +22,6 @@ export default tseslint.config(
     extends: [
       ...angular.configs.templateRecommended,
       ...angular.configs.templateAccessibility
-    ]
+    ],
   }
 );
