@@ -6,6 +6,7 @@ import { InteractionPage } from './interaction-page';
 import { InteractionStateService } from '../interaction-state.service';
 import { InteractionSummary } from '../interaction.types';
 import { AUTH_STORAGE, AuthStorage } from '../../../shared/auth/auth-storage';
+import { AuthState } from '../../../shared/auth/auth-state';
 
 describe('InteractionPage', () => {
   let fixture: ComponentFixture<InteractionPage>;
@@ -43,6 +44,11 @@ describe('InteractionPage', () => {
       }
     };
 
+    // Mock AuthState service that returns employeeId = 1 (matching the first subject)
+    const authMock = {
+      currentEmployeeId: () => 1
+    } as unknown as AuthState;
+
     stateMock = {
       loadSubjects: jest.fn(),
       selectSubject: jest.fn(),
@@ -62,10 +68,19 @@ describe('InteractionPage', () => {
     await TestBed
       .configureTestingModule({
         imports: [InteractionPage],
-        providers: [provideRouter([]), { provide: AUTH_STORAGE, useValue: storage }]
+        providers: [
+          provideRouter([]),
+          { provide: AUTH_STORAGE, useValue: storage },
+          { provide: AuthState, useValue: authMock }
+        ]
       })
       .overrideComponent(InteractionPage, {
-        set: { providers: [{ provide: InteractionStateService, useValue: stateMock }] }
+        set: {
+          providers: [
+            { provide: InteractionStateService, useValue: stateMock },
+            { provide: AuthState, useValue: authMock }
+          ]
+        }
       })
       .compileComponents();
 
@@ -76,6 +91,9 @@ describe('InteractionPage', () => {
     // When
     fixture.detectChanges();
 
+    // Wait for the effect to run (it's asynchronous)
+    TestBed.flushEffects();
+
     // Then
     expect(stateMock.loadSubjects).toHaveBeenCalled();
     expect(stateMock.selectSubject).toHaveBeenCalledWith({ value: 1 });
@@ -85,12 +103,14 @@ describe('InteractionPage', () => {
   it('selects a new subject and reloads history when the dropdown changes', () => {
     // Given
     fixture.detectChanges();
+    TestBed.flushEffects();
 
     // When
     fixture.componentInstance.onSubjectSelected({ target: { value: '2' } } as unknown as Event);
 
     // Then
     expect(stateMock.selectSubject).toHaveBeenCalledWith({ value: 2 });
+    // The first call is from the automatic selection, the second from the manual selection
     expect(stateMock.loadHistory).toHaveBeenCalledTimes(2);
   });
 

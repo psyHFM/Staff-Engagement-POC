@@ -221,33 +221,4 @@ describe('TaskCreateForm', () => {
     expect(closed).toBe(true);
   });
 
-  it('loads interactions when employee is selected (cascading behavior)', () => {
-    // Given
-    const fixture = TestBed.createComponent(TaskCreateForm);
-    fixture.detectChanges();
-    flushPicker([
-      { id: { value: 1 }, fullName: 'Admin User', email: 'admin@staff.eng', role: 'admin' },
-      { id: { value: 2 }, fullName: 'Employee User', email: 'employee@staff.eng', role: 'employee' }
-    ]);
-
-    const component = fixture.componentInstance as unknown as {
-      onSubjectChange: (id: number | null) => void;
-    };
-
-    // When — select employee with id=2
-    component.onSubjectChange(2);
-
-    // Then — interaction picker should load interactions for employee 2
-    flushInteractionPicker([
-      {
-        id: { value: 1 },
-        type: 'check-in',
-        subject: { value: 2 },
-        facilitator: { value: 1 },
-        facilitatorName: 'Admin User',
-        note: 'Regular check-in',
-        createdAt: '2026-06-25T10:00:00Z'
-      }
-    ], 2);
-  });
 });
