@@ -24,13 +24,6 @@ describe('TaskCreateForm', () => {
     req.flush({ content: directory, offset: 0, limit: 100, total: directory.length });
   }
 
-  /** Flush the InteractionPicker's GET /api/v1/employees/{id}/interactions request that fires on first paint. */
-  function flushInteractionPicker(directory: unknown[] = [], employeeId: number = 1): void {
-    const req = httpMock.expectOne((r) => r.url === `/api/v1/employees/${employeeId}/interactions`);
-    expect(req.request.method).toBe('GET');
-    req.flush({ content: directory, offset: 0, limit: 100, total: directory.length });
-  }
-
   it('seeds the sourceInteractionId from the interaction context on init', () => {
     // Given — the form is opened from an interaction context
     const fixture = TestBed.createComponent(TaskCreateForm);
