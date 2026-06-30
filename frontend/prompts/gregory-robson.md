@@ -153,3 +153,22 @@ This skill supports the "actions on a change" model:
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
 - **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly
 
+### Gregory Robson — 2026-06-30 10:52:14
+
+> **Model:** `qwen3.5:397b`  
+> **Tokens:** `64,845` in / `236` out · cache read `0` / write `0` · **65,081 total**
+
+Source: UX walkthrough 2026-06-25 (ticket #16).
+
+Problem: There's no visual loading indicator on /employees while the directory loads. The first paint shows a blank panel; users think it's broken.
+
+Acceptance:
+
+A skeleton row group (or a spinner) appears while data is loading.
+
+A friendly empty state appears when there are zero results (e.g. "No employees found").
+
+An error state with a retry button appears on load failure.
+
+Files: frontend/src/app/features/employee/employee.html, frontend/src/app/features/employee/employee.ts.
+
