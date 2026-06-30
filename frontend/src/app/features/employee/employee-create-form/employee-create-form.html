@@ -3,23 +3,23 @@
 
   <form (ngSubmit)="submit()" class="employee-create-form__form">
     <div class="employee-create-form__field">
-      <label for="fullName">Full name</label>
-      <input id="fullName" name="fullName" [(ngModel)]="fullName" required maxlength="255" />
+      <label for="create-fullName">Full name</label>
+      <input id="create-fullName" name="fullName" [(ngModel)]="fullName" required maxlength="255" />
     </div>
 
     <div class="employee-create-form__field">
-      <label for="jobTitle">Job title</label>
-      <input id="jobTitle" name="jobTitle" [(ngModel)]="jobTitle" maxlength="255" />
+      <label for="create-jobTitle">Job title</label>
+      <input id="create-jobTitle" name="jobTitle" [(ngModel)]="jobTitle" maxlength="255" />
     </div>
 
     <div class="employee-create-form__field">
-      <label for="department">Department</label>
-      <input id="department" name="department" [(ngModel)]="department" maxlength="255" />
+      <label for="create-department">Department</label>
+      <input id="create-department" name="department" [(ngModel)]="department" maxlength="255" />
     </div>
 
     <div class="employee-create-form__field">
-      <label for="level">Level</label>
-      <select id="level" name="level" [(ngModel)]="level">
+      <label for="create-level">Level</label>
+      <select id="create-level" name="level" [(ngModel)]="level">
         <option [ngValue]="null">—</option>
         @for (option of levels; track option.value) {
           <option [value]="option.value">{{ option.label }}</option>
