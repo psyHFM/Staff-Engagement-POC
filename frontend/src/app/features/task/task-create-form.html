@@ -5,7 +5,7 @@
   tabindex="-1"
   (click)="closeForm()"
   (keydown.escape)="closeForm()">
-  <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()" tabindex="0" role="document">
+  <div class="modal-content" (click)=".stopPropagation()" (keydown.enter)=".stopPropagation()" (keydown.space)=".stopPropagation()" tabindex="0" role="document">
     <header class="modal-header">
       <h2>{{ interactionId ? 'Create Task from Interaction' : 'Create New Task' }}</h2>
       <button type="button" (click)="closeForm()" class="close-btn" aria-label="Close">&times;</button>
@@ -22,10 +22,21 @@
         <textarea id="task-description" name="description" [(ngModel)]="request.description" required placeholder="Enter task details..."></textarea>
       </div>
 
+      @if (isFromInteraction && interactionDetails()) {
+        <div class="form-group interaction-details">
+          <h3>Interaction Details</h3>
+          <p><strong>Type:</strong> {{ interactionDetails()!.type }}</p>
+          <p><strong>Subject:</strong> {{ interactionDetails()!.subject.value }}</p>
+          <p><strong>Facilitator:</strong> {{ interactionDetails()!.facilitator.value }}</p>
+          <p><strong>Date:</strong> {{ interactionDetails()!.createdAt | date }}</p>
+        </div>
+      }
+
       <div class="form-group">
         <app-employee-picker
           [value]="request.subjectId || null"
-          (valueChange)="onSubjectChange($event)">
+          (valueChange)="onSubjectChange()"
+          [readonly]="isFromInteraction">
         </app-employee-picker>
       </div>
 
@@ -33,13 +44,14 @@
         <app-interaction-picker
           [value]="request.sourceInteractionId || null"
           [subjectId]="_currentSubjectId"
-          (valueChange)="onInteractionChange($event)"
-          (subjectIdChange)="onInteractionSubjectChange($event)">
+          (valueChange)="onInteractionChange()"
+          (subjectIdChange)="onInteractionSubjectChange()"
+          [readonly]="isFromInteraction">
         </app-interaction-picker>
       </div>
 
       <div class="form-actions">
-        <button type="button" (click)="onClear()" class="btn-secondary">Clear</button>
+        <button type="button" (click)="onClear()" class="btn-secondary" [disabled]="isFromInteraction">Clear</button>
         <button type="button" (click)="closeForm()" class="btn-secondary">Cancel</button>
         <button type="submit" [disabled]="!taskForm.form.valid || state.loading()" class="btn-primary">
           Create Task

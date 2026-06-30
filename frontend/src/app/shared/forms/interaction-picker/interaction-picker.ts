@@ -44,6 +44,9 @@ export class InteractionPicker extends StateService implements OnInit {
   /** Optional subject (employee) filter for cascading (ATSE1-37). */
   readonly subjectId = input<number | null>(null);
 
+  /** Whether the picker is readonly. */
+  readonly readonly = input<boolean>(false);
+
   /** Emits the new id whenever the user picks a different interaction. */
   @Output() readonly valueChange = new EventEmitter<number | null>();
 

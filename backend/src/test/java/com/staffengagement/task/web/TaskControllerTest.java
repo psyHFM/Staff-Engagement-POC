@@ -152,6 +152,41 @@ class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("Should create task with subject from interaction when source interaction is provided")
+    void create_usesSubjectFromInteraction_whenSourceInteractionProvided() {
+        // Given — request has subjectId 1, and interaction belongs to subject 1
+        TaskController.TaskRequest request = new TaskController.TaskRequest("From interaction", 1L, 42L, "Body");
+        given(employeeContract.exists(new EmployeeId(1L))).willReturn(true);
+        given(interactionContract.findBySubject(new EmployeeId(1L)))
+                .willReturn(List.of(new InteractionSummary(
+                        new InteractionId(42L), InteractionType.CHECK_IN,
+                        new EmployeeId(1L), new EmployeeId(2L), "Facilitator Name", "subject", "note",
+                        Instant.parse("2026-06-25T10:00:00Z"))));
+        Task persisted = Task.builder()
+                .id(777L)
+                .subjectId(1L) // Should use interaction's subject
+                .sourceInteractionId(42L)
+                .title("From interaction")
+                .description("Body")
+                .completed(false)
+                .build();
+        given(taskRepository.save(any(Task.class))).willReturn(persisted);
+        given(taskService.toSummary(any(Task.class))).willReturn(new TaskSummary(
+                new TaskId(777L), new EmployeeId(1L), "From interaction", new InteractionId(42L), false, "Body", Instant.now()));
+
+        // When
+        ResponseEntity<TaskSummary> response = controller.create(request);
+
+        // Then
+        then(employeeContract).should().exists(new EmployeeId(1L));
+        then(interactionContract).should().findBySubject(new EmployeeId(1L));
+        then(taskRepository).should().save(any(Task.class));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().subject().value()).isEqualTo(1L); // Should be interaction's subject
+        assertThat(response.getBody().sourceInteractionId()).isEqualTo(new InteractionId(42L));
+    }
+
+    @Test
     @DisplayName("Should reject creation when the source interaction does not belong to the subject")
     void create_rejects_whenSourceInteractionNotForSubject() {
         // Given — the subject has interaction 42, but the request references 99

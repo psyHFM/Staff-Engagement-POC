@@ -40,6 +40,9 @@ export class EmployeePicker extends StateService implements OnInit {
   /** Currently-selected employee id (numeric). Null = no selection. */
   readonly value = input<number | null>(null);
 
+  /** Whether the picker is readonly. */
+  readonly readonly = input<boolean>(false);
+
   /** Emits the new id whenever the user picks a different employee. */
   @Output() readonly valueChange = new EventEmitter<number | null>();
 
