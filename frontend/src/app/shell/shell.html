@@ -31,12 +31,14 @@
         @if (isMenuOpen()) {
           <div class="auth-menu-dropdown" (clickOutside)="closeMenu()">
             <ul class="auth-menu-items">
-              <li>
-                <a [routerLink]="profileLink()" (click)="closeMenu()" *ngIf="profileLink()">
-                  <i class="pi pi-user"></i>
-                  Profile
-                </a>
-              </li>
+              @if (profileLink()) {
+                <li>
+                  <a [routerLink]="profileLink()" (click)="closeMenu()">
+                    <i class="pi pi-user"></i>
+                    Profile
+                  </a>
+                </li>
+              }
               <li>
                 <button type="button" (click)="onLogout()">
                   <i class="pi pi-sign-out"></i>
