@@ -39,7 +39,7 @@ describe('TaskCreateForm', () => {
     // When
     fixture.detectChanges();
     flushPicker();
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -53,7 +53,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     flushPicker();
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -71,7 +71,7 @@ describe('TaskCreateForm', () => {
     fixture.componentRef.setInput('interactionId', '');
     fixture.detectChanges();
     flushPicker();
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set
 
     // Then
     const component = fixture.componentInstance as unknown as {
@@ -88,7 +88,7 @@ describe('TaskCreateForm', () => {
       { id: { value: 1 }, fullName: 'Admin User', email: 'admin@staff.eng', role: 'admin' },
       { id: { value: 2 }, fullName: 'Employee User', email: 'employee@staff.eng', role: 'employee' }
     ]);
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set initially
     const picker = fixture.nativeElement.querySelector('app-employee-picker');
     expect(picker).not.toBeNull();
     const component = fixture.componentInstance as unknown as {
@@ -108,7 +108,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     flushPicker();
-    flushInteractionPicker();
+    // No flushInteractionPicker call needed since no subjectId is set
     const component = fixture.componentInstance as unknown as {
       request: { subjectId: number };
       onSubjectChange: (id: number | null) => void;
@@ -124,7 +124,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     flushPicker();
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set
     const component = fixture.componentInstance as unknown as {
       request: { subjectId: number; title: string; description: string };
       formClosed: { emit: (v?: void) => void };
@@ -156,7 +156,7 @@ describe('TaskCreateForm', () => {
     fixture.componentRef.setInput('interactionId', '42');
     fixture.detectChanges();
     flushPicker();
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set
     const component = fixture.componentInstance as unknown as {
       request: { subjectId: number; title: string; description: string; sourceInteractionId?: number };
       formClosed: { emit: (v?: void) => void };
@@ -180,7 +180,7 @@ describe('TaskCreateForm', () => {
     const firstFixture = TestBed.createComponent(TaskCreateForm);
     firstFixture.detectChanges();
     flushPicker();
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set
     const firstComponent = firstFixture.componentInstance as unknown as {
       request: { subjectId: number };
       submit: () => void;
@@ -195,7 +195,7 @@ describe('TaskCreateForm', () => {
     const secondFixture = TestBed.createComponent(TaskCreateForm);
     secondFixture.detectChanges();
     flushPicker();
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set
     const secondComponent = secondFixture.componentInstance as unknown as {
       request: { subjectId: number };
     };
@@ -209,7 +209,7 @@ describe('TaskCreateForm', () => {
     const fixture = TestBed.createComponent(TaskCreateForm);
     fixture.detectChanges();
     flushPicker();
-    flushInteractionPicker([], 1);
+    // No flushInteractionPicker call needed since no subjectId is set
     let closed = false;
     (fixture.componentInstance as unknown as { formClosed: { emit: (v?: void) => void } }).formClosed.emit =
       () => (closed = true);
@@ -219,5 +219,35 @@ describe('TaskCreateForm', () => {
 
     // Then
     expect(closed).toBe(true);
+  });
+
+  it('loads interactions when employee is selected (cascading behavior)', () => {
+    // Given
+    const fixture = TestBed.createComponent(TaskCreateForm);
+    fixture.detectChanges();
+    flushPicker([
+      { id: { value: 1 }, fullName: 'Admin User', email: 'admin@staff.eng', role: 'admin' },
+      { id: { value: 2 }, fullName: 'Employee User', email: 'employee@staff.eng', role: 'employee' }
+    ]);
+
+    const component = fixture.componentInstance as unknown as {
+      onSubjectChange: (id: number | null) => void;
+    };
+
+    // When — select employee with id=2
+    component.onSubjectChange(2);
+
+    // Then — interaction picker should load interactions for employee 2
+    flushInteractionPicker([
+      {
+        id: { value: 1 },
+        type: 'check-in',
+        subject: { value: 2 },
+        facilitator: { value: 1 },
+        facilitatorName: 'Admin User',
+        note: 'Regular check-in',
+        createdAt: '2026-06-25T10:00:00Z'
+      }
+    ], 2);
   });
 });
