@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { EmployeePicker } from '../../shared/forms/employee-picker/employee-picker';
 import { TaskStateService } from './task-state.service';
 import { CreateTaskRequest } from './task.model';
+import { ToastService } from '../../shared/toast/toast.service';
 
 /**
  * Task-create modal (Phase 3 + ATSE1-29/ATSE1-30).
@@ -30,6 +31,7 @@ import { CreateTaskRequest } from './task.model';
 })
 export class TaskCreateForm implements OnInit {
   protected readonly state = inject(TaskStateService);
+  protected readonly toast = inject(ToastService);
 
   /** Source interaction id when this form is opened from an interaction row. */
   @Input() interactionId?: string;
@@ -60,8 +62,22 @@ export class TaskCreateForm implements OnInit {
     this.formClosed.emit();
   }
 
+  /**
+   * Submit the create task form.
+   *
+   * <p>Subscribes to the server response and shows a success toast.
+   * The state is updated from the server response (ATSE1-65).
+   */
   submit(): void {
-    this.state.createTask(this.request);
-    this.closeForm();
+    this.state.createTask(this.request).subscribe({
+      next: (task) => {
+        this.toast.show('Task created successfully', { type: 'success' });
+        this.closeForm();
+      },
+      error: (err) => {
+        // Error already shown by authErrorInterceptor
+        this.closeForm();
+      }
+    });
   }
 }

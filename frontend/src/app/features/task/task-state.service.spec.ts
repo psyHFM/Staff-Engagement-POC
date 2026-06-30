@@ -74,8 +74,8 @@ describe('TaskStateService', () => {
       sourceInteractionId: 42
     };
 
-    // When
-    service.createTask(request2);
+    // When — subscribe to trigger the side effect (state update)
+    service.createTask(request2).subscribe();
     const post = httpMock.expectOne('/api/v1/tasks');
     expect(post.request.method).toBe('POST');
     expect(post.request.body).toEqual(request2);
@@ -154,8 +154,8 @@ describe('TaskStateService', () => {
     httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    // When
-    service.createTask({ subjectId: 7, title: 'x', description: 'y' });
+    // When — subscribe to trigger the side effect
+    service.createTask({ subjectId: 7, title: 'x', description: 'y' }).subscribe({ error: () => {} });
     httpMock.expectOne('/api/v1/tasks').flush('boom', {
       status: 400,
       statusText: 'Bad Request'

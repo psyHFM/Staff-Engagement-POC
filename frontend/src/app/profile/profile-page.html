@@ -11,10 +11,19 @@
     </div>
   }
 
-  @if (state.error(); as error) {
-    <div class="profile-page__error" role="alert">
+  @if (isNotFound()) {
+    <div class="profile-page__not-found" role="alert">
       <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
-      <span>{{ error.message }}</span>
+      <h2>Employee Not Found</h2>
+      <p>We can't find that employee. The profile may have been removed or the URL is incorrect.</p>
+      <button class="btn btn-primary" (click)="onBack()">Back to Directory</button>
+    </div>
+  } @else if (hasOtherError()) {
+    <div class="profile-page__error" role="alert">
+      <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+      <h2>Unable to Load Profile</h2>
+      <p>{{ state.error()?.message || 'An unexpected error occurred.' }}</p>
+      <button class="btn btn-primary" (click)="onBack()">Back to Directory</button>
     </div>
   }
 
