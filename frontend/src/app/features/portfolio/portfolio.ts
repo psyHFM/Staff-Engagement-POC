@@ -41,7 +41,7 @@ import { SkillEntry, EducationEntry, ProjectEntry, LinkEntry } from './portfolio
         <h1>Portfolio</h1>
         <div class="employee-picker">
           <label for="employeeId">Employee ID</label>
-          <input id="employeeId" name="employeeId" [(ngModel)]="employeeId" (keyup.enter)="load()" />
+          <input id="employeeId" name="employeeId" [(ngModel)]="employeeId" (keyup.enter)="load()" [readonly]="isReadOnly() && !isCallerAdmin()" [disabled]="isReadOnly() && !isCallerAdmin()" />
           <button (click)="load()" class="btn-primary" [disabled]="state.loading()">Load</button>
         </div>
       </header>
@@ -225,6 +225,14 @@ export class Portfolio implements OnInit {
   /** Read-only view of the service's portfolio signal. */
   protected readonly portfolio = computed(() => this.state.portfolio());
 
+  /**
+   * ATSE1-49: Helper for template to check if caller is admin.
+   * Used in the employee picker readonly/disabled binding.
+   */
+  protected isCallerAdmin(): boolean {
+    return isAdminToken(this.auth.bearerToken());
+  }
+
   /** Sections whose form is collapsed after a "Save & close" click (ATSE1-36). */
   private readonly _closedForms = signal<Set<Section>>(new Set());
   protected readonly closedForms = computed(() => this._closedForms());
@@ -271,6 +279,10 @@ export class Portfolio implements OnInit {
   @ViewChild('linkForm') linkForm?: NgForm;
 
   ngOnInit(): void {
+    // ATSE1-49: Default to the current user's employee ID from JWT (populated on login).
+    // Fall back to '1' only if no authenticated user (defensive — route is protected).
+    const defaultId = this.auth.currentEmployeeId();
+    this.employeeId.set(defaultId?.toString() ?? '1');
     this.load();
   }
 
