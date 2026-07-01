@@ -43,13 +43,14 @@ type TaskFilter = 'all' | 'open' | 'done';
         </div>
 
         <div *ngIf="state.tasks().length > 0" class="task-list">
-          <div *ngFor="let task of visibleTasks()" class="task-card" [class.task-card--done]="task.completed">
+          <div *ngFor="let task of visibleTasks()" class="task-card" [class.task-card--done]="task.completed" (click)="openTask(task)">
             <div class="task-card-main">
               <div class="task-status">
                 <input
                   type="checkbox"
                   [checked]="task.completed"
                   (change)="toggleTask(task)"
+                  (click)="$event.stopPropagation()"
                   class="task-checkbox"
                   [attr.aria-label]="task.title"
                 />
@@ -74,7 +75,7 @@ type TaskFilter = 'all' | 'open' | 'done';
               <button
                 type="button"
                 class="task-subtasks-toggle"
-                (click)="toggleExpand(task)"
+                (click)="toggleExpand(task); $event.stopPropagation()"
                 [attr.aria-expanded]="isExpanded(task)"
                 [attr.aria-controls]="itemsRegionId(task)">
                 <i class="pi" [class.pi-chevron-down]="!isExpanded(task)" [class.pi-chevron-up]="isExpanded(task)"></i>
@@ -98,6 +99,7 @@ type TaskFilter = 'all' | 'open' | 'done';
                     type="checkbox"
                     [checked]="item.completed"
                     (change)="toggleItem(task, item, $any($event.target).checked)"
+                    (click)="$event.stopPropagation()"
                     class="task-items__checkbox"
                     [attr.aria-label]="'Mark ' + item.title + (item.completed ? ' incomplete' : ' complete')" />
 
@@ -138,7 +140,7 @@ type TaskFilter = 'all' | 'open' | 'done';
                     <button
                       type="button"
                       class="task-items__btn"
-                      (click)="moveItem(task, item, -1)"
+                      (click)="moveItem(task, item, -1); $event.stopPropagation()"
                       [disabled]="first"
                       [attr.aria-label]="'Move ' + item.title + ' up'">
                       <i class="pi pi-arrow-up"></i>
@@ -146,7 +148,7 @@ type TaskFilter = 'all' | 'open' | 'done';
                     <button
                       type="button"
                       class="task-items__btn"
-                      (click)="moveItem(task, item, +1)"
+                      (click)="moveItem(task, item, +1); $event.stopPropagation()"
                       [disabled]="last"
                       [attr.aria-label]="'Move ' + item.title + ' down'">
                       <i class="pi pi-arrow-down"></i>
@@ -154,14 +156,14 @@ type TaskFilter = 'all' | 'open' | 'done';
                     <button
                       type="button"
                       class="task-items__btn"
-                      (click)="startItemEdit(item)"
+                      (click)="startItemEdit(item); $event.stopPropagation()"
                       [attr.aria-label]="'Edit ' + item.title">
                       <i class="pi pi-pencil"></i>
                     </button>
                     <button
                       type="button"
                       class="task-items__btn task-items__btn--danger"
-                      (click)="removeItem(task, item)"
+                      (click)="removeItem(task, item); $event.stopPropagation()"
                       [attr.aria-label]="'Remove ' + item.title">
                       <i class="pi pi-trash"></i>
                     </button>
@@ -181,10 +183,12 @@ type TaskFilter = 'all' | 'open' | 'done';
                   maxlength="255"
                   placeholder="Add a sub-task..."
                   class="task-items__input"
-                  data-testid="task-items-input" />
+                  data-testid="task-items-input"
+                  (click)="$event.stopPropagation()" />
                 <button
                   type="submit"
                   class="btn-secondary"
+                  (click)="$event.stopPropagation()"
                   [disabled]="!itemForm.form.valid || newItemTitle.trim().length === 0"
                   data-testid="task-items-add">
                   Add
