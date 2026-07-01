@@ -1,0 +1,14 @@
+/* Coloured-initials avatar (frontend-redesign §2.2). Background colour is set
+   inline from the name hash; the palette is intentionally out of the token set
+   because it is data-derived, not themeable chrome. */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1;
+  flex: none;
+  user-select: none;
+}

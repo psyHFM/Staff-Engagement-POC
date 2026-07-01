@@ -1,0 +1,48 @@
+/* Canonical badge — soft pill: tinted bg + darker same-hue fg (frontend-redesign §2.2).
+   Always keeps a right margin so a badge and adjacent text never collide. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  margin-right: var(--space);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge--indigo {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+.badge--amber {
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+}
+
+.badge--grey {
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.badge--blue {
+  background: var(--info-bg);
+  color: var(--info-fg);
+}
+
+.badge--green {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.badge--sky {
+  background: var(--sky-bg);
+  color: var(--sky-fg);
+}
+
+.badge--violet {
+  background: var(--violet-bg);
+  color: var(--violet-fg);
+}
