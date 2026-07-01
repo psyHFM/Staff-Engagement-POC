@@ -2,7 +2,7 @@
   <div class="pe__loading" role="status">Loading…</div>
 }
 
-@if (!isReadOnly() && portfolio()?.ownerEmail === undefined && portfolio()) {
+@if (rbacReadOnly() && portfolio()?.ownerEmail === undefined && portfolio()) {
   <div class="pe__banner" role="status">
     <i class="pi pi-lock" aria-hidden="true"></i>
     This portfolio is read-only for you.

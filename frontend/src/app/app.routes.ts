@@ -28,10 +28,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/task/task').then((m) => m.Task),
     canActivate: [authGuard]
   },
-  // frontend-redesign task 4.7: the standalone portfolio page is removed;
-  // portfolio editing now lives on the Profile page behind Edit mode. Old
-  // /portfolio deep links redirect to the user's own Profile (/profile).
-  { path: 'portfolio', redirectTo: 'profile', pathMatch: 'full' },
+  // ATSE1-80: self-service portfolio page — always shows the signed-in user's
+  // own portfolio; no search bar / employee picker.
+  {
+    path: 'portfolio',
+    loadComponent: () => import('./features/portfolio/portfolio-page/portfolio-page').then((m) => m.PortfolioPage),
+    canActivate: [authGuard]
+  },
   {
     path: 'interactions',
     loadComponent: () => import('./features/interaction/interaction-page/interaction-page').then((m) => m.InteractionPage),

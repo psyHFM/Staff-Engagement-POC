@@ -1,0 +1,24 @@
+<section class="portfolio-page">
+  <header class="portfolio-page__header">
+    <h1 class="page-title">My portfolio</h1>
+    <a routerLink="/dashboard" class="portfolio-page__back">← Dashboard</a>
+  </header>
+
+  @if (state.loading()) {
+    <div class="portfolio-page__loading" role="status">
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      Loading portfolio…
+    </div>
+  }
+
+  @if (!employeeId()) {
+    <div class="portfolio-page__empty" role="alert">
+      <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+      <h2>Profile not linked</h2>
+      <p>Your account is not linked to an employee profile yet. Complete your profile first.</p>
+      <a routerLink="/profile" class="ui-btn ui-btn--primary">Complete profile</a>
+    </div>
+  } @else {
+    <app-portfolio-editor [employeeId]="employeeId()!" [readOnly]="false" />
+  }
+</section>

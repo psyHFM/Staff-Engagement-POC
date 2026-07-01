@@ -39,6 +39,7 @@ describe('ProfilePage', () => {
 
   let fakeAuth: {
     currentUser: ReturnType<typeof signal<string | null>>;
+    currentUserSubject: ReturnType<typeof signal<string | null>>;
     bearerToken: ReturnType<typeof signal<string | null>>;
     currentEmployeeId: ReturnType<typeof signal<number | null>>;
   };
@@ -103,6 +104,7 @@ describe('ProfilePage', () => {
 
     fakeAuth = {
       currentUser: signal<string | null>(null),
+      currentUserSubject: signal<string | null>(null),
       bearerToken: signal<string | null>(null),
       currentEmployeeId: signal<number | null>(null)
     };
@@ -199,6 +201,7 @@ describe('ProfilePage', () => {
     fakeState.profile.set(personProfile());
     fakeState.currentUser.set('jane@staff.eng');
     fakeAuth.currentUser.set('jane@staff.eng');
+    fakeAuth.currentUserSubject.set('jane@staff.eng');
     fakePortfolio.portfolio.set(portfolioModel());
     fixture.detectChanges();
 
