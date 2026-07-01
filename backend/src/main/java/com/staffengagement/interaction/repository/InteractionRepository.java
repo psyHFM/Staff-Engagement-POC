@@ -22,7 +22,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface InteractionRepository extends JpaRepository<Interaction, Long> {
 
-    List<Interaction> findBySubjectIdOrderByCreatedAtDesc(Long subjectId);
+    List<Interaction> findBySubjectIdOrFacilitatorIdOrderByCreatedAtDesc(Long subjectId, Long facilitatorId);
 
-    Page<Interaction> findBySubjectId(Long subjectId, Pageable pageable);
+    Page<Interaction> findBySubjectIdOrFacilitatorId(Long subjectId, Long facilitatorId, Pageable pageable);
 }
