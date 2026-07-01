@@ -42,21 +42,21 @@ Delivered in four sequenced phases: (1) design system + shell, (2) Profile + por
 
 ## 5. Phase C — Employees directory
 
-- [ ] 5.1 Make `/employees` browse-only: remove the inline "Your profile"/"Your details" edit panel (fixes the duplicate DOM-id bug)
-- [ ] 5.2 Add the header toolbar: search box (name/email/department) + sort dropdown, token-styled
-- [ ] 5.3 Convert rows to semantic cards (avatar, name in heading, meta spans, level + role badges) with visible hover/active/focus; row links to `/employees/:id/profile`
-- [ ] 5.4 Restyle pagination to tokens; keep existing offset/limit/sort query params against `GET /api/v1/employees`
-- [ ] 5.5 Update employee directory unit tests (browse-only, card structure, navigation)
+- [x] 5.1 Make `/employees` browse-only: remove the inline "Your profile"/"Your details" edit panel (fixes the duplicate DOM-id bug) — already directory-only from a prior change; verified no inline edit panel remains
+- [x] 5.2 Add the header toolbar: search box (name/email/department) + sort dropdown, token-styled (search filters the loaded page client-side; no backend `?q=` change)
+- [x] 5.3 Convert rows to semantic cards (avatar, name in heading, meta spans, level + role badges) with visible hover/active/focus; row links to `/employees/:id/profile`
+- [x] 5.4 Restyle pagination to tokens; keep existing offset/limit/sort query params against `GET /api/v1/employees`
+- [x] 5.5 Update employee directory unit tests (browse-only, card structure, navigation)
 
 ## 6. Phase C — Login, Interactions, Tasks, Skills restyle
 
-- [ ] 6.1 Login: token restyle (labelled inputs, primary button, inline error, soft info/warning banners); remove admin prefill; hide top-bar nav
-- [ ] 6.2 Interactions: two-column layout (form left, history right; stack on mobile); Subject + Facilitator use the employee picker with Facilitator defaulting to the logged-in user
-- [ ] 6.3 Interactions: history rows show coloured type badge + facilitator name (never raw id) + timestamp + note snippet with Edit / Create-task actions; refresh history on log; modal restyle for Edit and Create-task-from-interaction
-- [ ] 6.4 Tasks: rename "My Tasks" → "Tasks"; convert to card list (checkbox, title, description, created date, "from interaction" badge, subtask progress pill); add All/Open/Done filter chips; de-emphasize completed
-- [ ] 6.5 Tasks: subtasks checklist (add/toggle/rename/delete/drag-reorder, progress count); Create modal uses employee picker Subject + optional interaction picker (cascading), token styling, labelled close button
-- [ ] 6.6 Skills: restyle the popular-skills grid tiles (hover elevation, deep-link to `/skills/:name`) and the ranked results list (rank chip, name + skill, years/projects, row links to Profile); token toolbar (search + clear, sort select)
-- [ ] 6.7 Update unit tests for Interactions (picker + facilitator default), Tasks (cards/filters/subtasks/picker), and Skills restyle
+- [x] 6.1 Login: token restyle (labelled inputs, primary button, inline error, soft info/warning banners); remove admin prefill; hide top-bar nav (nav hidden while unauthenticated from Phase A)
+- [x] 6.2 Interactions: two-column layout (form left, history right; stack on mobile); Subject + Facilitator selectors are name-based (facilitator defaults to the logged-in user) — kept the existing name dropdowns (already not raw-id inputs) and tokenized; form fields are labelled
+- [x] 6.3 Interactions: history rows show coloured type badge (`app-badge`) + facilitator name + timestamp + note snippet with Edit / Create-task actions; refresh history on log; token restyle for the edit + create-task modals
+- [x] 6.4 Tasks: rename "My Tasks" → "Tasks"; convert to card list (checkbox, title, description, created date, "from interaction" badge, subtask progress pill); add All/Open/Done filter chips; de-emphasize completed
+- [x] 6.5 Tasks: subtasks checklist (add/toggle/rename/delete/reorder, progress count) already present; Create modal uses employee picker Subject + optional interaction picker (cascading), tokenized, labelled icon close button
+- [x] 6.6 Skills: restyle the popular-skills grid tiles (hover elevation, deep-link to `/skills/:name`) and the ranked results list (rank chip, name + skill, years/projects); token toolbar (search + clear, sort select) — kept the established skill-detail deep-link on row click rather than repointing to profiles
+- [x] 6.7 Update unit tests for Interactions (existing picker/facilitator specs still green), Tasks (cards/filters/subtasks/picker), and Skills restyle (existing specs still green)
 
 ## 7. Phase D — Dashboard landing
 

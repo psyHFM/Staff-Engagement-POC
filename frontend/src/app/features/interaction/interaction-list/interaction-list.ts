@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { DatePipe } from '@angular/common';
 
 import { InteractionSummary, Paged } from '../interaction.types';
+import { Badge } from '../../../shared/ui/badge/badge';
 
 /** Emitted when the user requests a different page of results. */
 export interface PageRequest {
@@ -28,7 +29,7 @@ export interface PageRequest {
  */
 @Component({
   selector: 'app-interaction-list',
-  imports: [DatePipe],
+  imports: [DatePipe, Badge],
   templateUrl: './interaction-list.html',
   styleUrl: './interaction-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
