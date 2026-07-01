@@ -50,6 +50,17 @@ export interface CreateTaskRequest {
 }
 
 /**
+ * Request body for {@code PUT /api/v1/tasks/{id}}.
+ * Any non-null field overwrites the persisted value; null or undefined
+ * fields leave the existing value untouched.
+ */
+export interface UpdateTaskRequest {
+  title?: string | null;
+  description?: string | null;
+  completed?: boolean | null;
+}
+
+/**
  * Additive sub-item model for the ATSE1-34 task subtasks feature.
  *
  * Mirrors the backend {@code com.staffengagement.shared.api.TaskItemSummary}
@@ -83,5 +94,7 @@ export interface PatchTaskItemRequest {
   completed?: boolean | null;
 }
 
-/** List of item ids in the desired order; sent to {@code PUT /api/v1/tasks/{taskId}/items/reorder}. */
-export type TaskItemReorderRequest = string[];
+/** Item ids in the desired order; sent to {@code PUT /api/v1/tasks/{taskId}/items/reorder}. */
+export interface TaskItemReorderRequest {
+  itemIds: number[];
+}
