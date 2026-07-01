@@ -8,6 +8,12 @@
   margin-bottom: 1.5rem;
 }
 
+.profile-page__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space);
+}
+
 .profile-page__back {
   display: inline-block;
   margin-bottom: 0.75rem;

@@ -28,11 +28,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/task/task').then((m) => m.Task),
     canActivate: [authGuard]
   },
-  {
-    path: 'portfolio',
-    loadComponent: () => import('./features/portfolio/portfolio').then((m) => m.Portfolio),
-    canActivate: [authGuard]
-  },
+  // frontend-redesign task 4.7: the standalone portfolio page is removed;
+  // portfolio editing now lives on the Profile page behind Edit mode. Old
+  // /portfolio deep links redirect to the user's own Profile (/profile).
+  { path: 'portfolio', redirectTo: 'profile', pathMatch: 'full' },
   {
     path: 'interactions',
     loadComponent: () => import('./features/interaction/interaction-page/interaction-page').then((m) => m.InteractionPage),
@@ -54,12 +53,12 @@ export const routes: Routes = [
     loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),
     canActivate: [authGuard]
   },
-  // Self-service page — resolves the current user from the JWT subject and
-  // surfaces their own Employee record. Split out from /employees in ATSE1-32
-  // so the directory page can stay focused on browsing.
+  // Self-service destination — folded into the Profile page (frontend-redesign
+  // task 4.6). ProfilePage resolves the current user's id from the JWT when no
+  // route id is present; identity editing happens in the page's Edit mode.
   {
     path: 'profile',
-    loadComponent: () => import('./your-details/your-details-page').then((m) => m.YourDetailsPage),
+    loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),
     canActivate: [authGuard]
   }
 ];

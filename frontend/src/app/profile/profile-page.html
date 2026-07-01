@@ -29,10 +29,21 @@
 
   @if (state.profile(); as profile) {
     <article class="profile-card">
+      @if (canEdit()) {
+        <div class="profile-page__actions">
+          @if (editMode()) {
+            <button type="button" class="ui-btn ui-btn--secondary" (click)="exitEdit()">Done</button>
+          } @else {
+            <button type="button" class="ui-btn ui-btn--primary" (click)="enterEdit()">Edit profile</button>
+          }
+        </div>
+      }
+
       <app-employee-detail
         [employee]="profile.employee"
         [canEdit]="canEdit()"
         [canEditRole]="canEditRole()"
+        [editing]="editMode()"
         [showBack]="true"
         (updated)="onUpdate($event)"
         (closed)="onBack()"></app-employee-detail>
@@ -60,7 +71,7 @@
           <ul class="profile-list">
             @for (interaction of profile.interactions; track interaction.id.value) {
               <li class="profile-interaction">
-                <span class="profile-interaction__type">{{ interaction.type }}</span>
+                <app-badge kind="interaction" [value]="interaction.type" />
                 <span class="profile-interaction__note">{{ interaction.note }}</span>
                 @if (interaction.createdAt) {
                   <time [attr.datetime]="interaction.createdAt">
@@ -100,73 +111,8 @@
 
       <section class="profile-section">
         <h3>Portfolio</h3>
-
-        <h4>Skills</h4>
-        @if (profile.portfolio.skills.length === 0) {
-          <p class="profile-empty">No skills listed.</p>
-        } @else {
-          <ul class="profile-list">
-            @for (skill of profile.portfolio.skills; track skill.id) {
-              <li class="profile-portfolio-skill">
-                <span class="profile-portfolio-skill__name">{{ skill.skill }}</span>
-                <span class="profile-portfolio-skill__metric">{{ skill.years }} yrs</span>
-                <span class="profile-portfolio-skill__metric">{{ skill.projectCount }} projects</span>
-              </li>
-            }
-          </ul>
-        }
-
-        <h4>Education</h4>
-        @if (profile.portfolio.education.length === 0) {
-          <p class="profile-empty">No education entries.</p>
-        } @else {
-          <ul class="profile-list">
-            @for (entry of profile.portfolio.education; track entry.id) {
-              <li class="profile-education">
-                <span class="profile-education__institution">{{ entry.institution }}</span>
-                @if (entry.qualification) {
-                  <span class="profile-education__qualification">{{ entry.qualification }}</span>
-                }
-                @if (entry.startYear) {
-                  <span class="profile-education__years">({{ entry.startYear }}@if (entry.endYear) {–{{ entry.endYear }}})</span>
-                }
-              </li>
-            }
-          </ul>
-        }
-
-        <h4>Projects</h4>
-        @if (profile.portfolio.projects.length === 0) {
-          <p class="profile-empty">No projects listed.</p>
-        } @else {
-          <ul class="profile-list">
-            @for (project of profile.portfolio.projects; track project.id) {
-              <li class="profile-project">
-                <span class="profile-project__name">{{ project.name }}</span>
-                @if (project.description) {
-                  <span class="profile-project__description">{{ project.description }}</span>
-                }
-                @if (project.startYear) {
-                  <span class="profile-project__years">({{ project.startYear }}@if (project.endYear) {–{{ project.endYear }}})</span>
-                }
-              </li>
-            }
-          </ul>
-        }
-
-        <h4>Links</h4>
-        @if (profile.portfolio.links.length === 0) {
-          <p class="profile-empty">No links listed.</p>
-        } @else {
-          <ul class="profile-list">
-            @for (link of profile.portfolio.links; track link.id) {
-              <li class="profile-link">
-                <a [href]="link.url" target="_blank" rel="noopener">
-                  {{ link.label || link.url }}
-                </a>
-              </li>
-            }
-          </ul>
+        @if (employeeIdStr(); as eid) {
+          <app-portfolio-editor [employeeId]="eid" [readOnly]="!editMode()" />
         }
       </section>
     </article>
