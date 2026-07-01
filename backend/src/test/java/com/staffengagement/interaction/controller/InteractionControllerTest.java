@@ -254,6 +254,58 @@ class InteractionControllerTest {
                 .isInstanceOf(InteractionNotFoundException.class);
     }
 
+    @Test
+    void updateRejectsNullTypeWith400BadRequest() {
+        // Given — request with null type (Jackson would normally reject unknown types,
+        // but null can pass through if explicitly sent or missing from JSON)
+        // No service stub needed — controller validates before calling service
+        var principal = adminPrincipal();
+
+        // When / Then — null type is rejected with 400
+        assertThatThrownBy(() -> controller.update(5L,
+                new UpdateInteractionRequest(null, "note"), principal))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("type is required");
+    }
+
+    @Test
+    void updateAcceptsCatchUpTypeSuccessfully() {
+        // Given — catch-up type deserialized correctly from kebab-case JSON
+        InteractionSummary updated = new InteractionSummary(
+                new InteractionId(5L), InteractionType.CATCH_UP, new EmployeeId(1L), new EmployeeId(2L),
+                "Facilitator Name", "subject", "updated note", Instant.parse("2026-06-25T11:00:00Z"));
+        when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
+        var principal = adminPrincipal();
+
+        // When — update with catch-up type
+        var response = controller.update(5L,
+                new UpdateInteractionRequest(InteractionType.CATCH_UP, "updated note"), principal);
+
+        // Then — 200 with updated summary
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isEqualTo(updated);
+        verify(interactionService).update(any(), eq(InteractionType.CATCH_UP), any(), any(), anyBoolean());
+    }
+
+    @Test
+    void updateAcceptsCheckInTypeSuccessfully() {
+        // Given — check-in type deserialized correctly from kebab-case JSON
+        InteractionSummary updated = new InteractionSummary(
+                new InteractionId(6L), InteractionType.CHECK_IN, new EmployeeId(1L), new EmployeeId(2L),
+                "Facilitator Name", "subject", "note", Instant.parse("2026-06-25T11:00:00Z"));
+        when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
+        var principal = adminPrincipal();
+
+        // When — update with check-in type
+        var response = controller.update(6L,
+                new UpdateInteractionRequest(InteractionType.CHECK_IN, "note"), principal);
+
+        // Then — 200 with updated summary
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isEqualTo(updated);
+        verify(interactionService).update(any(), eq(InteractionType.CHECK_IN), any(), any(), anyBoolean());
+    }
+
     private static User adminPrincipal() {
         return new User("1", "n/a", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
     }
