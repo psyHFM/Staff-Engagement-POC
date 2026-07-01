@@ -20,9 +20,7 @@
       @for (interaction of history.content; track interaction.id.value) {
         <li class="interaction-list__item">
           <div class="interaction-list__meta">
-            <span class="interaction-list__badge interaction-list__badge--{{ interaction.type }}">
-              {{ interaction.type }}
-            </span>
+            <app-badge kind="interaction" [value]="interaction.type" />
             <span class="interaction-list__facilitator">
               Facilitator: {{ interaction.facilitatorName }}
             </span>

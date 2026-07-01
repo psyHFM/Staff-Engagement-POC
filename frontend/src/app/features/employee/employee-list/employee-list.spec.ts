@@ -39,14 +39,32 @@ describe('EmployeeList', () => {
     fixture.componentRef.setInput('sort', 'createdAt,desc');
   });
 
-  it('renders the employee rows', () => {
+  it('renders the employee rows as semantic cards with a heading', () => {
     // When
     fixture.detectChanges();
 
     // Then
     const items = fixture.nativeElement.querySelectorAll('.employee-list__item');
     expect(items.length).toBe(2);
-    expect(items[0].textContent).toContain('Jane 1');
+    expect(items[0].querySelector('h3.employee-list__name')?.textContent).toContain('Jane 1');
+    expect(items[0].querySelector('app-avatar')).toBeTruthy();
+    expect(items[0].querySelectorAll('app-badge').length).toBe(2);
+  });
+
+  it('filters rows client-side by the search box', () => {
+    // Given
+    fixture.detectChanges();
+
+    // When — search for the second employee's email fragment
+    const search = fixture.nativeElement.querySelector('#employee-search') as HTMLInputElement;
+    search.value = 'jane2';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    // Then — only the matching card remains
+    const items = fixture.nativeElement.querySelectorAll('.employee-list__item');
+    expect(items.length).toBe(1);
+    expect(items[0].textContent).toContain('Jane 2');
   });
 
   it('shows an empty state when there are no employees', () => {
@@ -121,15 +139,14 @@ describe('EmployeeList', () => {
     expect(emitted).toEqual(['fullName,asc']);
   });
 
-  it('renders a Profile link for each employee', () => {
+  it('links each row to the employee profile page', () => {
     // When
     fixture.detectChanges();
 
     // Then
-    const links = fixture.nativeElement.querySelectorAll('.employee-list__profile');
-    expect(links.length).toBe(2);
-    expect(links[0].getAttribute('href')).toBe('/employees/1/profile');
-    expect(links[0].textContent).toContain('Profile');
+    const cards = fixture.nativeElement.querySelectorAll('a.employee-list__card');
+    expect(cards.length).toBe(2);
+    expect(cards[0].getAttribute('href')).toBe('/employees/1/profile');
   });
 
   it('emits the selected employee when a row is clicked', () => {

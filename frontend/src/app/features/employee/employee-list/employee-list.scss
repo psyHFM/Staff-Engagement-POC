@@ -1,29 +1,29 @@
 .employee-list {
-  &__title {
-    margin: 0 0 0.5rem;
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: calc(var(--space) * 2);
+    margin-bottom: calc(var(--space) * 2);
+  }
+
+  &__search {
+    flex: 1 1 260px;
   }
 
   &__sort {
-    margin-bottom: 1rem;
-
-    label {
-      margin-right: 0.5rem;
-      font-weight: 600;
-    }
-
-    select {
-      padding: 0.25rem 0.5rem;
-    }
+    flex: 0 0 auto;
+    min-width: 180px;
   }
 
   &__loading,
   &__empty {
-    padding: 1.5rem;
+    padding: calc(var(--space) * 3);
     text-align: center;
-    color: var(--surface-600, #6b7280);
+    color: var(--text-muted);
 
     .pi {
-      margin-right: 0.5rem;
+      margin-right: var(--space);
     }
   }
 
@@ -32,109 +32,57 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.5rem;
+    gap: var(--space);
   }
 
-  &__item {
+  &__card {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: calc(var(--space) * 2);
+    padding: calc(var(--space) * 1.5) calc(var(--space) * 2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--text);
   }
 
-  &__select {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 0.25rem 1rem;
-    padding: 0.75rem 1rem;
-    text-align: left;
-    background: var(--surface-card, #fff);
-    border: 1px solid var(--surface-border, #e5e7eb);
-    border-radius: 6px;
-    cursor: pointer;
-
-    &:hover {
-      border-color: var(--primary-color, #3b82f6);
-    }
+  &__body {
+    flex: 1;
+    min-width: 0;
   }
 
   &__name {
-    grid-column: 1;
+    margin: 0;
+    font-size: 15px;
     font-weight: 600;
   }
 
-  &__email {
-    grid-column: 1;
-    color: var(--surface-600, #6b7280);
-    font-size: 0.875rem;
-  }
-
-  &__badge {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    text-transform: capitalize;
-
-    &--admin {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-
-    &--employee {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-  }
-
   &__meta {
-    grid-column: 1;
-    font-size: 0.8rem;
-    color: var(--surface-500, #9ca3af);
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--space) * 1.5);
+    margin-top: calc(var(--space) * 0.5);
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  &__badges {
+    display: flex;
+    align-items: center;
+    flex: none;
   }
 
   &__pagination {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-
-  &__page-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.75rem;
-    border: 1px solid var(--surface-border, #e5e7eb);
-    border-radius: 4px;
-    background: var(--surface-card, #fff);
-    cursor: pointer;
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    gap: calc(var(--space) * 2);
+    margin-top: calc(var(--space) * 2);
   }
 
   &__page-info {
-    font-size: 0.875rem;
-  }
-
-  &__profile {
-    padding: 0.5rem 0.75rem;
-    white-space: nowrap;
-    color: var(--primary-color, #3b82f6);
-    text-decoration: none;
-    border: 1px solid var(--surface-border, #e5e7eb);
-    border-radius: 4px;
-    background: var(--surface-card, #fff);
-
-    &:hover {
-      text-decoration: underline;
-    }
+    font-size: 13px;
+    color: var(--text-muted);
   }
 }

@@ -1,9 +1,11 @@
 <section class="login">
-  <form class="login__card" (ngSubmit)="submit()">
-    <h1 class="login__title">
-      <i class="pi pi-sign-in" aria-hidden="true"></i>
-      Sign in
-    </h1>
+  <form class="login__card ui-card" (ngSubmit)="submit()">
+    <div class="login__brand">
+      <span class="login__brand-chip" aria-hidden="true"><i class="pi pi-th-large"></i></span>
+      <span class="login__brand-word">Staff Engagement</span>
+    </div>
+
+    <h1 class="login__title">Sign in</h1>
 
     @if (showSessionExpiredBanner()) {
       <p class="login__banner login__banner--info" role="alert">
@@ -23,26 +25,28 @@
       <p class="login__error" role="alert">{{ error() }}</p>
     }
 
-    <label class="login__field">
-      <span>Username</span>
-      <input name="username" [(ngModel)]="username" autocomplete="username" required />
-    </label>
+    <div class="login__field">
+      <label class="ui-label" for="login-username">Username</label>
+      <input id="login-username" class="ui-input" name="username" [(ngModel)]="username" autocomplete="username" required />
+    </div>
 
-    <label class="login__field">
-      <span>Password</span>
+    <div class="login__field">
+      <label class="ui-label" for="login-password">Password</label>
       <input
+        id="login-password"
+        class="ui-input"
         name="password"
         type="password"
         [(ngModel)]="password"
         autocomplete="current-password"
         required
       />
-    </label>
+    </div>
 
-    <button type="submit" class="login__submit" [disabled]="submitting()">
+    <button type="submit" class="ui-btn ui-btn--primary login__submit" [disabled]="submitting()">
       {{ submitting() ? 'Signing in…' : 'Sign in' }}
     </button>
 
-    <p class="login__hint">POC stub — employee@staff.eng / staffeng or admin@staff.eng / staffeng.</p>
+    <p class="login__hint">POC stub — employee&#64;staff.eng / staffeng or admin&#64;staff.eng / staffeng.</p>
   </form>
 </section>
