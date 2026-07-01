@@ -83,12 +83,19 @@ public class InteractionController {
      * <p>RBAC is ADMIN-only at the controller boundary to match the rest of
      * the module; the facilitator-edit affordance is enforced inside the
      * service and surfaces to the UI via {@code InteractionContract.verifyEditable}.
+     *
+     * <p>Controller-level validation: {@code type} is required and must be non-null.
+     * A null or missing type returns 400 Bad Request before reaching the service.
      */
     @PatchMapping("/interactions/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InteractionSummary> update(@PathVariable Long id,
                                                       @RequestBody UpdateInteractionRequest body,
                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        // Controller-level validation: type is required
+        if (body.type() == null) {
+            throw new IllegalArgumentException("type is required");
+        }
         // The Phase 0 principal is a username; for the POC we map the username
         // to a best-effort employee id the same way the create endpoint does.
         // Admins bypass the ownership check (isAdmin=true). The service

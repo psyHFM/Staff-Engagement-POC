@@ -381,3 +381,10 @@ only remove the empty spec.md files
 
 switch to main fetch and pull
 
+### Hendrik Muller — 2026-07-01 14:04:19
+
+> **Model:** `qwen3.5`  
+> **Tokens:** `90,381` in / `301` out · cache read `0` / write `0` · **90,682 total**
+
+check on jira which of those ticket dont touch the frontend
+

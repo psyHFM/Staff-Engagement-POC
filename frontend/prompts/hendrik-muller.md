@@ -44,3 +44,21 @@ check the PR , rename it the test have fail aswell
 
 I want tests for everything can you give  me a report and the current state of  tests
 
+### Hendrik Muller — 2026-07-01 13:19:50
+
+> **Model:** `qwen3.5`  
+> **Tokens:** `73,044` in / `0` out · cache read `0` / write `0` · **73,044 total**
+
+Failed Ci playwright smoke test on PR
+
+### Hendrik Muller — 2026-07-01 13:22:21
+
+> **Model:** `qwen3.5`  
+> **Tokens:** `74,475` in / `232` out · cache read `0` / write `0` · **74,707 total**
+
+this is the error on the PR :Run docker compose up -d --build
+ postgres Pulling 
+ postgres Error Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+Error: Process completed with exit code 1.
+
