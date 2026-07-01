@@ -1,12 +1,24 @@
 <article class="employee-list">
 
-  <div class="employee-list__sort">
-    <label for="sort">Sort</label>
-    <select id="sort" [value]="sort" (change)="onSortChange($event)">
-      @for (option of sorts; track option.value) {
-        <option [value]="option.value">{{ option.label }}</option>
-      }
-    </select>
+  <div class="employee-list__toolbar">
+    <div class="employee-list__search">
+      <label class="ui-label" for="employee-search">Search</label>
+      <input
+        id="employee-search"
+        class="ui-input"
+        type="search"
+        placeholder="Name, email or department"
+        [value]="query()"
+        (input)="onSearch($event)" />
+    </div>
+    <div class="employee-list__sort">
+      <label class="ui-label" for="sort">Sort</label>
+      <select id="sort" class="ui-select" [value]="sort" (change)="onSortChange($event)">
+        @for (option of sorts; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
   </div>
 
   @if (loading) {
@@ -16,64 +28,68 @@
     </div>
   }
 
-  @if (!loading && (!directory || directory.content.length === 0)) {
+  @if (!loading && visible().length === 0) {
     <div class="employee-list__empty" role="status">
       <i class="pi pi-inbox" aria-hidden="true"></i>
-      <p>No employees yet.</p>
+      <p>No employees found.</p>
     </div>
   }
 
-  @if (!loading && directory && directory.content.length > 0) {
+  @if (!loading && visible().length > 0) {
     <ul class="employee-list__items" role="list">
-      @for (employee of directory.content; track employee.id.value) {
+      @for (employee of visible(); track employee.id.value) {
         <li class="employee-list__item">
-          <button type="button" class="employee-list__select" (click)="selected.emit(employee)">
-            <span class="employee-list__name">{{ employee.fullName }}</span>
-            <span class="employee-list__email">{{ employee.email }}</span>
-            <span class="employee-list__badge employee-list__badge--{{ employee.role }}">{{ employee.role }}</span>
-            @if (employee.jobTitle) {
-              <span class="employee-list__meta">{{ employee.jobTitle }}</span>
-            }
-            @if (employee.department) {
-              <span class="employee-list__meta">{{ employee.department }}</span>
-            }
-            @if (employee.level) {
-              <span class="employee-list__meta">{{ employee.level }}</span>
-            }
-          </button>
           <a
-            class="employee-list__profile"
-            [routerLink]="['/employees', employee.id.value, 'profile']"
-            (click)="$event.stopPropagation()"
-          >
-            Profile
+            class="employee-list__card ui-row"
+            [routerLink]="['/employees', employee.id.value, 'profile']">
+            <app-avatar [name]="employee.fullName" size="md" />
+            <div class="employee-list__body">
+              <h3 class="employee-list__name">{{ employee.fullName }}</h3>
+              <div class="employee-list__meta">
+                <span class="employee-list__email">{{ employee.email }}</span>
+                @if (employee.jobTitle) {
+                  <span>{{ employee.jobTitle }}</span>
+                }
+                @if (employee.department) {
+                  <span>{{ employee.department }}</span>
+                }
+              </div>
+            </div>
+            <div class="employee-list__badges">
+              @if (employee.level) {
+                <app-badge kind="level" [value]="employee.level" />
+              }
+              <app-badge kind="role" [value]="employee.role" />
+            </div>
           </a>
         </li>
       }
     </ul>
 
-    <div class="employee-list__pagination">
-      <button
-        type="button"
-        class="employee-list__page-btn"
-        [disabled]="!hasPrevious"
-        (click)="previous()">
-        <i class="pi pi-chevron-left" aria-hidden="true"></i>
-        Previous
-      </button>
+    @if (directory) {
+      <div class="employee-list__pagination">
+        <button
+          type="button"
+          class="ui-btn ui-btn--secondary employee-list__page-btn"
+          [disabled]="!hasPrevious"
+          (click)="previous()">
+          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+          Previous
+        </button>
 
-      <span class="employee-list__page-info" aria-live="polite">
-        {{ currentOffset + 1 }} – {{ currentOffset + directory.content.length }} of {{ directory.total }}
-      </span>
+        <span class="employee-list__page-info" aria-live="polite">
+          {{ currentOffset + 1 }} – {{ currentOffset + directory.content.length }} of {{ directory.total }}
+        </span>
 
-      <button
-        type="button"
-        class="employee-list__page-btn"
-        [disabled]="!hasNext"
-        (click)="next()">
-        Next
-        <i class="pi pi-chevron-right" aria-hidden="true"></i>
-      </button>
-    </div>
+        <button
+          type="button"
+          class="ui-btn ui-btn--secondary employee-list__page-btn"
+          [disabled]="!hasNext"
+          (click)="next()">
+          Next
+          <i class="pi pi-chevron-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    }
   }
 </article>

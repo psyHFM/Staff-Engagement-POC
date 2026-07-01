@@ -44,7 +44,7 @@ describe('Task (My Tasks view)', () => {
 
   afterEach(() => httpMock.verify());
 
-  it('renders the loaded tasks in a table', async () => {
+  it('renders the loaded tasks as cards', async () => {
     // Given — the component loads my tasks on init
     const fixture = TestBed.createComponent(Task);
     fixture.detectChanges();
@@ -57,12 +57,35 @@ describe('Task (My Tasks view)', () => {
     fixture.detectChanges();
 
     // Then
-    const rows = fixture.nativeElement.querySelectorAll('.task-table tbody tr');
-    expect(rows).toHaveLength(2);
+    const cards = fixture.nativeElement.querySelectorAll('.task-card');
+    expect(cards).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('Write tests');
     expect(fixture.nativeElement.textContent).toContain('Ship it');
     // The create-form modal is hidden until the user asks for it
     expect(fixture.nativeElement.querySelector('app-task-create-form')).toBeNull();
+  });
+
+  it('filters cards by the All / Open / Done chips', async () => {
+    // Given — one open and one completed task
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([
+      task({ id: taskId(1), title: 'Open one', completed: false }),
+      task({ id: taskId(2), title: 'Done one', completed: true })
+    ]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.task-card')).toHaveLength(2);
+
+    // When — clicking the "Done" chip
+    const doneChip = Array.from(fixture.nativeElement.querySelectorAll('.task-filter'))
+      .find((b) => (b as HTMLElement).textContent?.trim() === 'Done') as HTMLButtonElement;
+    doneChip.click();
+    fixture.detectChanges();
+
+    // Then — only the completed task remains
+    const cards = fixture.nativeElement.querySelectorAll('.task-card');
+    expect(cards).toHaveLength(1);
+    expect(cards[0].textContent).toContain('Done one');
   });
 
   it('shows the empty state when there are no tasks', async () => {
