@@ -43,6 +43,9 @@ export class EmployeePicker extends StateService implements OnInit {
   /** Whether the picker is readonly. */
   readonly readonly = input<boolean>(false);
 
+  /** Visible field label. Configurable so the same picker serves Subject, Facilitator, etc. */
+  readonly label = input<string>('Subject');
+
   /** Emits the new id whenever the user picks a different employee. */
   @Output() readonly valueChange = new EventEmitter<number | null>();
 
