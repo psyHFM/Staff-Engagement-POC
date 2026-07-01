@@ -5,6 +5,7 @@ import { StateService } from '../../shared/state/state.service';
 import {
   Task,
   CreateTaskRequest,
+  UpdateTaskRequest,
   TaskItem,
   TaskWithItems
 } from './task.model';
@@ -118,14 +119,19 @@ export class TaskStateService extends StateService {
 
   /**
    * Toggle task completion.
-   * Note: The backend requirements mentioned "task completion toggle",
-   * assuming a PUT or PATCH to /api/v1/tasks/{id} or similar.
-   * For the POC, I will implement it as a call to a hypothetical update endpoint.
+   * Calls the extended PUT /api/v1/tasks/{id} with only the completed flag.
    */
   toggleCompletion(taskId: number, completed: boolean): void {
-    // Assuming PUT /api/v1/tasks/{id} for completion update
+    this.updateTask(taskId, { completed });
+  }
+
+  /**
+   * Update a task's title, description, and/or completed flag.
+   * Null/undefined fields leave existing values untouched on the backend.
+   */
+  updateTask(taskId: number, patch: UpdateTaskRequest): void {
     this.beginLoad();
-    this.api.put<Task>(`tasks/${taskId}`, { completed })
+    this.api.put<Task>(`tasks/${taskId}`, patch)
       .pipe(
         catchApiError(),
         finalize(() => this.endLoad())
@@ -136,7 +142,7 @@ export class TaskStateService extends StateService {
             tasks.map(t => t.id.value === taskId ? updatedTask : t)
           );
         },
-        error: (err) => console.error('Failed to toggle task completion:', err)
+        error: (err) => console.error('Failed to update task:', err)
       });
   }
 

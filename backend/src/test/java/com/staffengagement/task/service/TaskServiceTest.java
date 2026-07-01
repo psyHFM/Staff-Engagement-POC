@@ -218,4 +218,88 @@ class TaskServiceTest {
                 .hasMessageContaining("Task not found: 404");
         then(taskRepository).should(never()).save(any());
     }
+
+    @Test
+    @DisplayName("Should update title and description while preserving completion")
+    void updateTask_updatesTitleAndDescription() {
+        // Given
+        Task task = Task.builder()
+                .id(100L)
+                .subjectId(1L)
+                .title("Old title")
+                .description("Old body")
+                .completed(false)
+                .build();
+        given(taskRepository.findById(100L)).willReturn(Optional.of(task));
+        given(taskRepository.save(task)).willReturn(task);
+
+        // When
+        TaskSummary result = taskService.updateTask(100L, "New title", "New body", null);
+
+        // Then
+        then(taskRepository).should().save(task);
+        assertThat(task.getTitle()).isEqualTo("New title");
+        assertThat(task.getDescription()).isEqualTo("New body");
+        assertThat(task.isCompleted()).isFalse();
+        assertThat(result.title()).isEqualTo("New title");
+        assertThat(result.description()).isEqualTo("New body");
+    }
+
+    @Test
+    @DisplayName("Should update completion without changing title or description")
+    void updateTask_updatesCompletionOnly() {
+        // Given
+        Task task = Task.builder()
+                .id(100L)
+                .subjectId(1L)
+                .title("Title")
+                .description("Body")
+                .completed(false)
+                .build();
+        given(taskRepository.findById(100L)).willReturn(Optional.of(task));
+        given(taskRepository.save(task)).willReturn(task);
+
+        // When
+        TaskSummary result = taskService.updateTask(100L, null, null, true);
+
+        // Then
+        assertThat(task.isCompleted()).isTrue();
+        assertThat(task.getCompletedAt()).isNotNull();
+        assertThat(task.getTitle()).isEqualTo("Title");
+        assertThat(task.getDescription()).isEqualTo("Body");
+        assertThat(result.completed()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should reject updating a task with a blank title")
+    void updateTask_rejectsBlankTitle() {
+        // Given
+        Task task = Task.builder()
+                .id(100L)
+                .subjectId(1L)
+                .title("Title")
+                .description("Body")
+                .completed(false)
+                .build();
+        given(taskRepository.findById(100L)).willReturn(Optional.of(task));
+
+        // When / Then
+        assertThatThrownBy(() -> taskService.updateTask(100L, "   ", null, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("title is required");
+        then(taskRepository).should(never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should reject updating an unknown task")
+    void updateTask_rejectsUnknownTask() {
+        // Given
+        given(taskRepository.findById(404L)).willReturn(Optional.empty());
+
+        // When / Then
+        assertThatThrownBy(() -> taskService.updateTask(404L, "Title", "Body", false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Task not found: 404");
+        then(taskRepository).should(never()).save(any());
+    }
 }

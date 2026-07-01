@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TaskStateService } from './task-state.service';
 import { TaskCreateForm } from './task-create-form';
-import { Task as TaskModel, TaskItem } from './task.model';
+import { Task as TaskModel, TaskItem, UpdateTaskRequest } from './task.model';
 
 @Component({
   selector: 'app-task',
@@ -28,63 +28,69 @@ import { Task as TaskModel, TaskItem } from './task.model';
           <p>No tasks assigned to you. Take a break!</p>
         </div>
 
-        <table class="task-table" *ngIf="state.tasks().length > 0">
-          <thead>
-            <tr>
-              <th (click)="state.setSort('title')" class="sortable">
-                Title <i class="pi pi-sort-alt"></i>
-              </th>
-              <th>Description</th>
-              <th (click)="state.setSort('createdAt')" class="sortable">
-                Created <i class="pi pi-sort-alt"></i>
-              </th>
-              <th class="text-center">Done</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let task of state.tasks()" [class.completed]="task.completed">
-              <td class="font-bold">{{ task.title }}</td>
-              <td>{{ task.description }}</td>
-              <td>{{ task.createdAt | date:'shortDate' }}</td>
-              <td class="text-center">
-                <input
-                  type="checkbox"
-                  [checked]="task.completed"
-                  (change)="toggleTask(task)"
-                  class="task-checkbox"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div *ngIf="state.itemsByTaskId().size > 0" class="task-list">
+        <div class="task-list">
           <div *ngFor="let task of state.tasks()" class="task-card">
-            <div class="task-card-main">
+            <div class="task-card-main" (click)="toggleExpand(task)">
               <div class="task-status">
                 <input
                   type="checkbox"
                   [checked]="task.completed"
+                  (click)="$event.stopPropagation()"
                   (change)="toggleTask(task)"
                   class="task-checkbox"
                 />
-                <span class="task-title" [class.completed]="task.completed">
-                  {{ task.title }}
-                </span>
+                <ng-container *ngIf="editingTaskId() !== task.id.value.toString(); else editForm">
+                  <span class="task-title" [class.completed]="task.completed">
+                    {{ task.title }}
+                  </span>
+                </ng-container>
+                <ng-template #editForm>
+                  <form (ngSubmit)="saveEdit(task, $event)" class="task-edit-form" (click)="$event.stopPropagation()">
+                    <input
+                      name="editTitle"
+                      [(ngModel)]="editTitle"
+                      required
+                      maxlength="120"
+                      class="task-edit-form__input"
+                      data-testid="task-edit-title"
+                      placeholder="Task title" />
+                    <textarea
+                      name="editDescription"
+                      [(ngModel)]="editDescription"
+                      maxlength="1000"
+                      rows="2"
+                      class="task-edit-form__textarea"
+                      data-testid="task-edit-description"
+                      placeholder="Description"></textarea>
+                    <div class="task-edit-form__actions">
+                      <button type="submit" class="btn-primary" [disabled]="editTitle.trim().length === 0">Save</button>
+                      <button type="button" class="btn-secondary" (click)="cancelEdit($event)">Cancel</button>
+                    </div>
+                  </form>
+                </ng-template>
               </div>
-              <p class="task-desc">{{ task.description }}</p>
+              <p *ngIf="editingTaskId() !== task.id.value.toString()" class="task-desc">{{ task.description }}</p>
             </div>
             <div class="task-footer">
               <span class="task-date">Created: {{ task.createdAt | date:'shortDate' }}</span>
-              <button
-                type="button"
-                class="task-subtasks-toggle"
-                (click)="toggleExpand(task)"
-                [attr.aria-expanded]="isExpanded(task)"
-                [attr.aria-controls]="itemsRegionId(task)">
-                <i class="pi" [class.pi-chevron-down]="!isExpanded(task)" [class.pi-chevron-up]="isExpanded(task)"></i>
-                Sub-tasks
-              </button>
+              <div class="task-footer__actions">
+                <button
+                  type="button"
+                  class="task-subtasks-toggle"
+                  (click)="toggleExpand(task); $event.stopPropagation()"
+                  [attr.aria-expanded]="isExpanded(task)"
+                  [attr.aria-controls]="itemsRegionId(task)">
+                  <i class="pi" [class.pi-chevron-down]="!isExpanded(task)" [class.pi-chevron-up]="isExpanded(task)"></i>
+                  Sub-tasks
+                </button>
+                <button
+                  type="button"
+                  class="task-edit-btn"
+                  (click)="startEdit(task, $event)"
+                  [attr.aria-label]="'Edit ' + task.title">
+                  <i class="pi pi-pencil"></i>
+                </button>
+              </div>
               <i *ngIf="task.sourceInteractionId"
                  class="pi pi-link"
                  title="Created from Interaction"></i>
@@ -108,9 +114,32 @@ import { Task as TaskModel, TaskItem } from './task.model';
                     [checked]="item.completed"
                     (change)="toggleItem(task, item, $any($event.target).checked)"
                     [attr.aria-label]="'Mark ' + item.title + (item.completed ? ' incomplete' : ' complete')" />
-                  <span class="task-items__title" [class.completed]="item.completed">
-                    {{ item.title }}
-                  </span>
+                  <ng-container *ngIf="editingItemId() !== item.id; else itemEditForm">
+                    <span class="task-items__title" [class.completed]="item.completed">
+                      {{ item.title }}
+                    </span>
+                  </ng-container>
+                  <ng-template #itemEditForm>
+                    <form (ngSubmit)="saveItemEdit(task, item, $event)" class="task-items__edit-form" (click)="$event.stopPropagation()">
+                      <input
+                        name="editItemTitle"
+                        [(ngModel)]="editItemTitle"
+                        required
+                        maxlength="255"
+                        class="task-items__edit-input"
+                        data-testid="task-item-edit-input"
+                        placeholder="Sub-task title" />
+                      <button type="submit" class="task-items__btn" [disabled]="editItemTitle.trim().length === 0"
+                              aria-label="Save sub-task title">
+                        <i class="pi pi-check"></i>
+                      </button>
+                      <button type="button" class="task-items__btn" (click)="cancelItemEdit($event)"
+                              aria-label="Cancel sub-task edit">
+                        <i class="pi pi-times"></i>
+                      </button>
+                    </form>
+                  </ng-template>
+
                   <button type="button"
                           class="task-items__btn"
                           (click)="moveItem(task, item, -1)"
@@ -124,6 +153,12 @@ import { Task as TaskModel, TaskItem } from './task.model';
                           [disabled]="last"
                           [attr.aria-label]="'Move ' + item.title + ' down'">
                     <i class="pi pi-arrow-down"></i>
+                  </button>
+                  <button type="button"
+                          class="task-items__btn"
+                          (click)="startItemEdit(item)"
+                          [attr.aria-label]="'Edit ' + item.title">
+                    <i class="pi pi-pencil"></i>
                   </button>
                   <button type="button"
                           class="task-items__btn task-items__btn--danger"
@@ -205,51 +240,11 @@ import { Task as TaskModel, TaskItem } from './task.model';
     }
     .empty-state i { font-size: 3rem; }
 
-    .task-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      border-radius: 0.75rem;
-      overflow: hidden;
-    }
-    .task-table th, .task-table td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    .task-table th {
-      background: #f9fafb;
-      color: #4b5563;
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-    }
-    .task-table .sortable {
-      cursor: pointer;
-      user-select: none;
-    }
-    .task-table .sortable:hover {
-      background: #f3f4f6;
-    }
-    .task-table tr.completed td {
-      color: #9ca3af;
-    }
-    .task-table tr.completed .font-bold {
-      text-decoration: line-through;
-    }
-    .font-bold {
-      font-weight: 600;
-      color: #1f2937;
-    }
-    .text-center {
-      text-align: center;
-    }
-    .task-checkbox {
+.task-checkbox {
       width: 1.2rem;
       height: 1.2rem;
       cursor: pointer;
+      margin-right: 0.5rem;
     }
 
     .task-title {
@@ -342,6 +337,20 @@ import { Task as TaskModel, TaskItem } from './task.model';
     }
     .task-items__btn:disabled { color: #d1d5db; cursor: not-allowed; }
     .task-items__btn--danger:hover:not(:disabled) { color: #dc2626; }
+    .task-items__edit-form {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex: 1;
+    }
+    .task-items__edit-input {
+      flex: 1;
+      padding: 0.25rem 0.4rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.25rem;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
     .task-items__form {
       display: flex;
       gap: 0.5rem;
@@ -376,6 +385,15 @@ export class Task implements OnInit {
   protected readonly expandedTaskId = signal<string | null>(null);
   /** Bound to the inline add form via {@code [(ngModel)]}. */
   protected newItemTitle = '';
+  /** Task currently in inline edit mode (null when not editing). */
+  protected editingTaskId = signal<string | null>(null);
+  /** Bound to the inline edit form. */
+  protected editTitle = '';
+  protected editDescription = '';
+  /** Sub-task currently in inline edit mode (null when not editing). */
+  protected editingItemId = signal<string | null>(null);
+  /** Bound to the inline sub-task edit form. */
+  protected editItemTitle = '';
 
   ngOnInit() {
     this.state.loadMyTasks();
@@ -383,6 +401,32 @@ export class Task implements OnInit {
 
   toggleTask(task: TaskModel) {
     this.state.toggleCompletion(task.id.value, !task.completed);
+  }
+
+  protected startEdit(task: TaskModel, event: MouseEvent): void {
+    event.stopPropagation();
+    this.editingTaskId.set(task.id.value.toString());
+    this.editTitle = task.title;
+    this.editDescription = task.description;
+  }
+
+  protected cancelEdit(event: MouseEvent): void {
+    event.stopPropagation();
+    this.editingTaskId.set(null);
+  }
+
+  protected saveEdit(task: TaskModel, event: MouseEvent): void {
+    event.stopPropagation();
+    const title = this.editTitle.trim();
+    if (title.length === 0) {
+      return;
+    }
+    const patch: UpdateTaskRequest = { title };
+    if (this.editDescription.trim() !== task.description) {
+      patch.description = this.editDescription.trim();
+    }
+    this.state.updateTask(task.id.value, patch);
+    this.editingTaskId.set(null);
   }
 
   protected isExpanded(task: TaskModel): boolean {
@@ -411,6 +455,27 @@ export class Task implements OnInit {
 
   protected toggleItem(task: TaskModel, item: TaskItem, completed: boolean): void {
     this.state.patchTaskItem(task.id.value.toString(), item.id, { completed });
+  }
+
+  protected startItemEdit(item: TaskItem): void {
+    this.editingItemId.set(item.id);
+    this.editItemTitle = item.title;
+  }
+
+  protected saveItemEdit(task: TaskModel, item: TaskItem, event: Event): void {
+    event.stopPropagation();
+    const title = this.editItemTitle.trim();
+    if (title.length === 0 || title === item.title) {
+      this.editingItemId.set(null);
+      return;
+    }
+    this.state.patchTaskItem(task.id.value.toString(), item.id, { title });
+    this.editingItemId.set(null);
+  }
+
+  protected cancelItemEdit(event: Event): void {
+    event.stopPropagation();
+    this.editingItemId.set(null);
   }
 
   protected removeItem(task: TaskModel, item: TaskItem): void {

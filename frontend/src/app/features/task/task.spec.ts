@@ -57,8 +57,8 @@ describe('Task (My Tasks view)', () => {
     fixture.detectChanges();
 
     // Then
-    const rows = fixture.nativeElement.querySelectorAll('.task-table tbody tr');
-    expect(rows).toHaveLength(2);
+    const cards = fixture.nativeElement.querySelectorAll('.task-card');
+    expect(cards).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('Write tests');
     expect(fixture.nativeElement.textContent).toContain('Ship it');
     // The create-form modal is hidden until the user asks for it
@@ -101,6 +101,93 @@ describe('Task (My Tasks view)', () => {
     fixture.detectChanges();
     const checkbox = fixture.nativeElement.querySelector('.task-checkbox') as HTMLInputElement;
     expect(checkbox.checked).toBe(true);
+  });
+
+  it('WHEN the user clicks a task card THEN it expands and loads sub-tasks', () => {
+    // Given
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
+    fixture.detectChanges();
+
+    // When — clicking the card main area
+    const cardMain = fixture.nativeElement.querySelector('.task-card-main');
+    cardMain.click();
+    const get = httpMock.expectOne('/api/v1/tasks/1');
+    expect(get.request.method).toBe('GET');
+    get.flush({ base: task({ id: '1' }), items: [item({ id: '10', title: 'Write tests' })] });
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.querySelector('.task-items')).toBeTruthy();
+    expect(fixture.nativeElement.querySelectorAll('.task-items__row')).toHaveLength(1);
+  });
+
+  it('WHEN the user edits a task title/description THEN PUT /tasks/{id} fires and the list updates', () => {
+    // Given
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1), title: 'Before', description: 'Old' })]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      startEdit: (t: TaskModel, event: MouseEvent) => void;
+      saveEdit: (t: TaskModel, event: MouseEvent) => void;
+      editTitle: string;
+      editDescription: string;
+    };
+    const editButton = fixture.nativeElement.querySelector('.task-edit-btn');
+    editButton.click();
+
+    component.editTitle = 'After';
+    component.editDescription = 'New body';
+    component.saveEdit(task({ id: taskId(1), title: 'Before', description: 'Old' }), new MouseEvent('click'));
+
+    const put = httpMock.expectOne('/api/v1/tasks/1');
+    expect(put.request.method).toBe('PUT');
+    expect(put.request.body).toEqual({ title: 'After', description: 'New body' });
+    put.flush(task({ id: taskId(1), title: 'After', description: 'New body' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('After');
+    expect(fixture.nativeElement.textContent).toContain('New body');
+  });
+
+  it('WHEN the user edits a sub-task title THEN PATCH /items/{itemId} fires with the new title', () => {
+    // Given
+    const fixture = TestBed.createComponent(Task);
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      toggleExpand: (t: TaskModel) => void;
+      startItemEdit: (i: TaskItem) => void;
+      saveItemEdit: (t: TaskModel, i: TaskItem, event: Event) => void;
+      editItemTitle: string;
+    };
+    component.toggleExpand(task({ id: taskId(1) }));
+    httpMock.expectOne('/api/v1/tasks/1').flush({
+      base: task({ id: taskId(1) }),
+      items: [item({ id: '10', title: 'Old item' })]
+    });
+    fixture.detectChanges();
+
+    component.startItemEdit(item({ id: '10', title: 'Old item' }));
+    component.editItemTitle = 'Updated item';
+    component.saveItemEdit(
+      task({ id: taskId(1) }),
+      item({ id: '10', title: 'Old item' }),
+      new Event('submit')
+    );
+
+    const patch = httpMock.expectOne('/api/v1/tasks/1/items/10');
+    expect(patch.request.method).toBe('PATCH');
+    expect(patch.request.body).toEqual({ title: 'Updated item' });
+    patch.flush(item({ id: '10', title: 'Updated item' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Updated item');
   });
 
   // --- §8.8 — sub-tasks (ATSE1-34) -----------------------------------------

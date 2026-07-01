@@ -103,9 +103,10 @@ public class TaskController {
 
     @PutMapping("/tasks/{id}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<TaskSummary> updateCompletion(@PathVariable Long id,
-                                                         @RequestBody CompletionRequest request) {
-        return ResponseEntity.ok(taskService.toggleCompletion(id, request.completed()));
+    public ResponseEntity<TaskSummary> updateTask(@PathVariable Long id,
+                                                   @RequestBody TaskUpdateRequest request) {
+        return ResponseEntity.ok(taskService.updateTask(
+                id, request.title(), request.description(), request.completed()));
     }
 
     @GetMapping("/employees/{id}/tasks")
@@ -219,6 +220,16 @@ public class TaskController {
             Long subjectId,
             Long sourceInteractionId,
             String description) {}
+
+    /**
+     * Request body for {@code PUT /api/v1/tasks/{id}}. Any non-null field
+     * overwrites the persisted value; null or absent fields leave the
+     * existing value untouched.
+     */
+    public record TaskUpdateRequest(
+            String title,
+            String description,
+            Boolean completed) {}
 
     public record CompletionRequest(boolean completed) {}
 

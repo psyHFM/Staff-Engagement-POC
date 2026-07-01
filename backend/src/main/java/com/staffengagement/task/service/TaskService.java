@@ -51,10 +51,34 @@ public class TaskService implements TaskContract {
      */
     @Transactional
     public TaskSummary toggleCompletion(Long id, boolean completed) {
+        return updateTask(id, null, null, completed);
+    }
+
+    /**
+     * Updates a task's {@code title}, {@code description}, and/or
+     * {@code completed} flag. Null title/description leaves the existing
+     * value untouched; null completed leaves the flag untouched.
+     *
+     * @throws IllegalArgumentException if no task with the given id exists
+     *     or if a non-null title is blank.
+     */
+    @Transactional
+    public TaskSummary updateTask(Long id, String title, String description, Boolean completed) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found: " + id));
-        task.setCompleted(completed);
-        task.setCompletedAt(completed ? Instant.now() : null);
+        if (title != null) {
+            if (title.isBlank()) {
+                throw new IllegalArgumentException("title is required");
+            }
+            task.setTitle(title);
+        }
+        if (description != null) {
+            task.setDescription(description);
+        }
+        if (completed != null) {
+            task.setCompleted(completed);
+            task.setCompletedAt(completed ? Instant.now() : null);
+        }
         return toSummary(taskRepository.save(task));
     }
 

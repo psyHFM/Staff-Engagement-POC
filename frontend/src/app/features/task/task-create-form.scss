@@ -149,3 +149,44 @@
     cursor: not-allowed;
   }
 }
+
+/* Inline task-edit controls rendered in the task list card */
+.task-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.task-edit-form__input,
+.task-edit-form__textarea {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.35rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.task-edit-form__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.task-edit-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+
+  &:hover {
+    color: #2563eb;
+  }
+}
+
+.task-footer__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

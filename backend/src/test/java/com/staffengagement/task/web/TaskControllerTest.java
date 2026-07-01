@@ -203,19 +203,55 @@ class TaskControllerTest {
     }
 
     @Test
-    @DisplayName("Should toggle a task's completion via the service")
-    void updateCompletion_delegatesToService() {
+    @DisplayName("Should update a task's completion via the service")
+    void updateTask_updatesCompletion_whenCompletedProvided() {
         // Given
         TaskSummary summary = new TaskSummary(
                 new TaskId(10L), subject, "Read", new InteractionId(42L), true, "Read", Instant.now());
-        given(taskService.toggleCompletion(10L, true)).willReturn(summary);
+        given(taskService.updateTask(10L, null, null, true)).willReturn(summary);
 
         // When
         ResponseEntity<TaskSummary> response =
-                controller.updateCompletion(10L, new TaskController.CompletionRequest(true));
+                controller.updateTask(10L, new TaskController.TaskUpdateRequest(null, null, true));
 
         // Then
-        then(taskService).should().toggleCompletion(10L, true);
+        then(taskService).should().updateTask(10L, null, null, true);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(summary);
+    }
+
+    @Test
+    @DisplayName("Should update a task's title and description via the service")
+    void updateTask_updatesTitleAndDescription_whenProvided() {
+        // Given
+        TaskSummary summary = new TaskSummary(
+                new TaskId(10L), subject, "Updated title", new InteractionId(42L), false, "Updated body", Instant.now());
+        given(taskService.updateTask(10L, "Updated title", "Updated body", null)).willReturn(summary);
+
+        // When
+        ResponseEntity<TaskSummary> response = controller.updateTask(
+                10L, new TaskController.TaskUpdateRequest("Updated title", "Updated body", null));
+
+        // Then
+        then(taskService).should().updateTask(10L, "Updated title", "Updated body", null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(summary);
+    }
+
+    @Test
+    @DisplayName("Should delegate a full task update to the service")
+    void updateTask_delegatesAllFields_whenAllProvided() {
+        // Given
+        TaskSummary summary = new TaskSummary(
+                new TaskId(10L), subject, "All fields", new InteractionId(42L), true, "All body", Instant.now());
+        given(taskService.updateTask(10L, "All fields", "All body", true)).willReturn(summary);
+
+        // When
+        ResponseEntity<TaskSummary> response = controller.updateTask(
+                10L, new TaskController.TaskUpdateRequest("All fields", "All body", true));
+
+        // Then
+        then(taskService).should().updateTask(10L, "All fields", "All body", true);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(summary);
     }

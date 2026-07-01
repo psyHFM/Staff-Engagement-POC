@@ -148,6 +148,49 @@ describe('TaskStateService', () => {
     errorSpy.mockRestore();
   });
 
+  it('updates a task via PUT /api/v1/tasks/{id} and replaces only the matching task', () => {
+    // Given — two tasks loaded
+    service.loadMyTasks();
+    httpMock.expectOne('/api/v1/me/tasks').flush([
+      task({ id: taskId(1), title: 'Before', description: 'Old' }),
+      task({ id: taskId(2), title: 'Other', description: 'Other body' })
+    ]);
+    const other = service.tasks()[1];
+
+    // When
+    service.updateTask(1, { title: 'After', description: 'New body' });
+    const put = httpMock.expectOne('/api/v1/tasks/1');
+    expect(put.request.method).toBe('PUT');
+    expect(put.request.body).toEqual({ title: 'After', description: 'New body' });
+    put.flush(task({ id: taskId(1), title: 'After', description: 'New body' }));
+
+    // Then
+    expect(service.tasks()[0].title).toBe('After');
+    expect(service.tasks()[0].description).toBe('New body');
+    expect(service.tasks()[1]).toBe(other);
+  });
+
+  it('logs and clears loading when updating a task fails', () => {
+    // Given
+    service.loadMyTasks();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1), title: 'Before' })]);
+    const before = service.tasks()[0];
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    // When
+    service.updateTask(1, { title: 'After' });
+    httpMock.expectOne('/api/v1/tasks/1').flush('boom', {
+      status: 500,
+      statusText: 'Server Error'
+    });
+
+    // Then
+    expect(service.tasks()[0]).toBe(before);
+    expect(service.loading()).toBe(false);
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
   it('leaves the tasks signal unchanged when create fails', () => {
     // Given — an existing task
     service.loadMyTasks();
