@@ -86,7 +86,9 @@ class TaskItemServiceTest {
         assertThat(result.completed()).isFalse();
         ArgumentCaptor<TaskItem> captor = ArgumentCaptor.forClass(TaskItem.class);
         then(taskItemRepository).should().save(captor.capture());
-        assertThat(captor.getValue().getOrdinal()).isEqualTo(0);
+        TaskItem saved = captor.getValue();
+        assertThat(saved.getOrdinal()).isEqualTo(0);
+        assertThat(saved.getCreatedAt()).isNotNull();
     }
 
     @Test

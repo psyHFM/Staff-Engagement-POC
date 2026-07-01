@@ -191,6 +191,48 @@ describe('Task (My Tasks view)', () => {
     expect(fixture.nativeElement.textContent).toContain('Updated item');
   });
 
+  it('WHEN the user adds a sub-task from the modal THEN POST /tasks/{id}/items fires and the item renders', () => {
+    // Given
+    const fixture = TestBed.createComponent(Task);
+    const component = fixture.componentInstance as unknown as {
+      selectedTask: () => TaskModel | null;
+      addItem: (t: TaskModel) => void;
+      newItemTitle: string;
+    };
+    fixture.detectChanges();
+    httpMock.expectOne('/api/v1/me/tasks').flush([task({ id: taskId(1) })]);
+    fixture.detectChanges();
+
+    // When — open the modal via the row pencil button
+    const openButton = fixture.nativeElement.querySelector('.task-open-btn');
+    openButton.click();
+    httpMock.expectOne('/api/v1/tasks/1').flush({ base: task({ id: taskId(1) }), items: [] });
+    fixture.detectChanges();
+
+    // The modal is open and the selected task is available
+    expect(fixture.nativeElement.querySelector('.task-detail-modal')).toBeTruthy();
+    const selected = component.selectedTask();
+    expect(selected).toBeTruthy();
+
+    // Add a sub-task using the modal's selected task
+    component.newItemTitle = 'New sub-task from modal';
+    component.addItem(selected!);
+
+    // Then — the correct POST is sent
+    const post = httpMock.expectOne('/api/v1/tasks/1/items');
+    expect(post.request.method).toBe('POST');
+    expect(post.request.body).toEqual({ title: 'New sub-task from modal' });
+
+    // Simulate the backend response and keep the modal open
+    post.flush(item({ id: '20', taskId: '1', ordinal: 0, title: 'New sub-task from modal' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.task-items__row')).toHaveLength(1);
+    expect(fixture.nativeElement.textContent).toContain('New sub-task from modal');
+    expect(fixture.nativeElement.querySelector('.task-detail-modal')).toBeTruthy();
+    expect(component.newItemTitle).toBe('');
+  });
+
   // --- §8.8 — sub-tasks (ATSE1-34) -----------------------------------------
 
   it('WHEN the user expands a card THEN GET /api/v1/tasks/{id} fires once and the items render', () => {
