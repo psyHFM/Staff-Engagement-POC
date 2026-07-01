@@ -1,0 +1,112 @@
+<section class="dashboard">
+  <header class="dashboard__greeting">
+    <h1 class="page-title">Good morning, {{ firstName() }}</h1>
+    <p class="text-meta">{{ today | date:'fullDate' }}</p>
+  </header>
+
+  <div class="dashboard__grid">
+    <!-- My open tasks -->
+    <article class="ui-card dash-card">
+      <header class="dash-card__header">
+        <h2 class="dash-card__title">My open tasks</h2>
+        <a routerLink="/tasks" class="dash-card__link">View all</a>
+      </header>
+
+      <app-data-state
+        [loading]="profileLoading()"
+        [error]="profileErrored()"
+        [empty]="!profileLoading() && !profileErrored() && openTasks().length === 0"
+        emptyText="No open tasks — nice."
+        errorText="Couldn't load your tasks."
+        (retry)="reloadProfile()" />
+
+      @if (!profileLoading() && !profileErrored() && openTasks().length > 0) {
+        <p class="dash-card__count">{{ openTasks().length }} open</p>
+        <ul class="dash-list">
+          @for (task of openTasks().slice(0, 4); track task.id.value) {
+            <li class="dash-list__row">
+              <a routerLink="/tasks" class="dash-list__link">{{ task.title }}</a>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+
+    <!-- Recent interactions -->
+    <article class="ui-card dash-card">
+      <header class="dash-card__header">
+        <h2 class="dash-card__title">Recent interactions</h2>
+        <a routerLink="/interactions" class="dash-card__link">View all</a>
+      </header>
+
+      <app-data-state
+        [loading]="profileLoading()"
+        [error]="profileErrored()"
+        [empty]="!profileLoading() && !profileErrored() && recentInteractions().length === 0"
+        emptyText="No interactions yet."
+        errorText="Couldn't load interactions."
+        (retry)="reloadProfile()" />
+
+      @if (!profileLoading() && !profileErrored() && recentInteractions().length > 0) {
+        <ul class="dash-list">
+          @for (interaction of recentInteractions(); track interaction.id.value) {
+            <li class="dash-list__row dash-interaction">
+              <app-badge kind="interaction" [value]="interaction.type" />
+              <span class="dash-interaction__note">{{ interaction.note }}</span>
+              <time class="dash-interaction__date" [attr.datetime]="interaction.createdAt">
+                {{ interaction.createdAt | date:'shortDate' }}
+              </time>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+
+    <!-- Top skills -->
+    <article class="ui-card dash-card">
+      <header class="dash-card__header">
+        <h2 class="dash-card__title">Top skills</h2>
+        <a routerLink="/skills" class="dash-card__link">Explore</a>
+      </header>
+
+      <app-data-state
+        [loading]="skillsLoading()"
+        [error]="skillsErrored()"
+        [empty]="!skillsLoading() && !skillsErrored() && popularSkills().length === 0"
+        emptyText="No skills recorded yet."
+        errorText="Couldn't load skills."
+        (retry)="reloadSkills()" />
+
+      @if (!skillsLoading() && !skillsErrored() && popularSkills().length > 0) {
+        <ul class="dash-list">
+          @for (summary of popularSkills(); track summary.skill) {
+            <li class="dash-list__row dash-skill">
+              <a [routerLink]="['/skills', summary.skill]" class="dash-list__link">{{ summary.skill }}</a>
+              <span class="dash-skill__count">
+                {{ summary.employeeCount }} {{ summary.employeeCount === 1 ? 'person' : 'people' }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+
+    <!-- Quick actions -->
+    <article class="ui-card dash-card">
+      <header class="dash-card__header">
+        <h2 class="dash-card__title">Quick actions</h2>
+      </header>
+      <div class="dash-actions">
+        <a routerLink="/interactions" class="ui-btn ui-btn--secondary">
+          <i class="pi pi-comments" aria-hidden="true"></i> Log interaction
+        </a>
+        <a routerLink="/tasks" class="ui-btn ui-btn--secondary">
+          <i class="pi pi-plus" aria-hidden="true"></i> New task
+        </a>
+        <a [routerLink]="myProfileLink()" class="ui-btn ui-btn--secondary">
+          <i class="pi pi-user-edit" aria-hidden="true"></i> Edit my portfolio
+        </a>
+      </div>
+    </article>
+  </div>
+</section>
