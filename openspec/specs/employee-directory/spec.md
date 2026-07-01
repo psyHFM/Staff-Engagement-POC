@@ -5,11 +5,16 @@ TBD - created by archiving change atse1-25-35-ux-walkthrough-fixes. Update Purpo
 ## Requirements
 ### Requirement: /employees renders the directory only
 
-The `/employees` route MUST render the employee directory component
-already built in PR #28. The page MUST NOT contain an inline "Your
-profile" edit form, an "Your details" edit form, or any other
-section that duplicates the current user's own profile editing
-surface.
+The `/employees` route MUST render the employee directory as a
+browse-only page for non-admins. The page MUST NOT contain an
+inline "Your profile" edit form, a "Your details" edit form, or any
+other section that duplicates the current user's own profile editing
+surface. The page MUST provide a header toolbar with a search box
+(matching name / email / department) and a sort dropdown, and MUST
+render rows as semantic cards using the design system: avatar, full
+name (in a heading element), job title, department, level badge, and
+role badge — not a single long button label. Rows MUST show a
+visible hover/active/focus state.
 
 #### Scenario: Visiting /employees shows the directory
 
@@ -32,5 +37,13 @@ surface.
 - **THEN** it MUST call `GET /api/v1/employees` with the
   existing offset/limit/sort query parameters
 - **AND** the existing pagination and sort controls MUST work as
-  they did before PR #28
+  they did before, restyled to the design tokens
+
+#### Scenario: Rows are semantic cards with badges and avatar
+
+- **WHEN** a directory row is rendered
+- **THEN** it MUST show an initials avatar, the full name in a
+  heading element, and meta (job title, department) in spans
+- **AND** it MUST render capitalized level and role badges
+- **AND** it MUST show a visible hover/active/focus state
 
