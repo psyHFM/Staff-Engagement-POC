@@ -94,5 +94,7 @@ export interface PatchTaskItemRequest {
   completed?: boolean | null;
 }
 
-/** List of item ids in the desired order; sent to {@code PUT /api/v1/tasks/{taskId}/items/reorder}. */
-export type TaskItemReorderRequest = string[];
+/** Item ids in the desired order; sent to {@code PUT /api/v1/tasks/{taskId}/items/reorder}. */
+export interface TaskItemReorderRequest {
+  itemIds: number[];
+}

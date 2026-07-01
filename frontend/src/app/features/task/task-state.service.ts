@@ -7,6 +7,7 @@ import {
   CreateTaskRequest,
   UpdateTaskRequest,
   TaskItem,
+  TaskItemReorderRequest,
   TaskWithItems
 } from './task.model';
 
@@ -228,13 +229,16 @@ export class TaskStateService extends StateService {
 
   /**
    * Reorder sub-items (PUT /api/v1/tasks/{taskId}/items/reorder).
-   * The body is the desired id order. On success the returned list replaces
+   * The body wraps the desired id order. On success the returned list replaces
    * the map entry. No optimistic local mutation — matches the existing
    * `toggleCompletion` / `removeSkill` pattern.
    */
   reorderTaskItems(taskId: string, orderedIds: string[]): void {
     this.beginLoad();
-    this.api.put<TaskItem[]>(`tasks/${taskId}/items/reorder`, orderedIds)
+    const request: TaskItemReorderRequest = {
+      itemIds: orderedIds.map(id => Number(id))
+    };
+    this.api.put<TaskItem[]>(`tasks/${taskId}/items/reorder`, request)
       .pipe(
         catchApiError(),
         finalize(() => this.endLoad())

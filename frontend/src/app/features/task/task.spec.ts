@@ -402,7 +402,7 @@ describe('Task (My Tasks view)', () => {
     component.moveItem(task({ id: taskId(1) }), item({ id: '10' }), +1);
     const put = httpMock.expectOne('/api/v1/tasks/1/items/reorder');
     expect(put.request.method).toBe('PUT');
-    expect(put.request.body).toEqual(['11', '10']);
+    expect(put.request.body).toEqual({ itemIds: [11, 10] });
     put.flush([item({ id: '11', ordinal: 0 }), item({ id: '10', ordinal: 1 })]);
     fixture.detectChanges();
 
