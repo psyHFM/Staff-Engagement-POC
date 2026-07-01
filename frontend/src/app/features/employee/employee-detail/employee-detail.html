@@ -1,9 +1,21 @@
 <article class="employee-detail">
   @if (employee) {
     <header class="employee-detail__header">
-      <h2 class="employee-detail__name">{{ employee.fullName }}</h2>
+      <app-avatar [name]="employee.fullName" size="lg" />
+      <div class="employee-detail__identity">
+        <h2 class="employee-detail__name">{{ employee.fullName }}</h2>
+        @if (employee.jobTitle) {
+          <p class="employee-detail__title">{{ employee.jobTitle }}</p>
+        }
+        <div class="employee-detail__badges">
+          <app-badge kind="role" [value]="employee.role" />
+          @if (employee.level) {
+            <app-badge kind="level" [value]="employee.level" />
+          }
+        </div>
+      </div>
       @if (showBack) {
-        <button type="button" class="employee-detail__close" (click)="closed.emit()">← Back to directory</button>
+        <button type="button" class="employee-detail__close ui-btn ui-btn--secondary" (click)="closed.emit()">← Back to directory</button>
       }
     </header>
 
@@ -12,31 +24,15 @@
         <dt>Email</dt>
         <dd>{{ employee.email }}</dd>
       </div>
-      <div class="employee-detail__field">
-        <dt>Role</dt>
-        <dd>{{ employee.role }}</dd>
-      </div>
-      @if (employee.jobTitle) {
-        <div class="employee-detail__field">
-          <dt>Job title</dt>
-          <dd>{{ employee.jobTitle }}</dd>
-        </div>
-      }
       @if (employee.department) {
         <div class="employee-detail__field">
           <dt>Department</dt>
           <dd>{{ employee.department }}</dd>
         </div>
       }
-      @if (employee.level) {
-        <div class="employee-detail__field">
-          <dt>Level</dt>
-          <dd>{{ employee.level }}</dd>
-        </div>
-      }
     </dl>
 
-    @if (canEdit) {
+    @if (canEdit && editing) {
       <form (ngSubmit)="submit()" class="employee-detail__form">
         <h3 class="employee-detail__form-title">Edit profile</h3>
 
