@@ -244,15 +244,6 @@ type TaskFilter = 'all' | 'open' | 'done';
 
             <div class="task-edit-form__meta">
               <span>Created {{ task.createdAt | date:'mediumDate' }}</span>
-              <label class="task-complete-toggle">
-                <input
-                  type="checkbox"
-                  [checked]="task.completed"
-                  (change)="toggleTask(task)"
-                  class="task-checkbox"
-                  [attr.aria-label]="'Mark ' + task.title + (task.completed ? ' incomplete' : ' complete')" />
-                Done
-              </label>
             </div>
 
             <div class="task-edit-form__actions">
@@ -330,6 +321,7 @@ type TaskFilter = 'all' | 'open' | 'done';
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
       padding: calc(var(--space) * 2);
+      cursor: pointer;
     }
     .task-card--done { opacity: 0.7; }
 
@@ -500,6 +492,18 @@ type TaskFilter = 'all' | 'open' | 'done';
       font: inherit;
       font-weight: 500;
     }
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 0 calc(var(--space) * 1.5);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+    }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
     .btn-secondary:disabled { color: var(--text-faint); cursor: not-allowed; }
     .btn-secondary:hover:not(:disabled) { background: var(--surface-2); }
   `]
