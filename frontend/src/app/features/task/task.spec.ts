@@ -57,8 +57,8 @@ describe('Task (My Tasks view)', () => {
     fixture.detectChanges();
 
     // Then
-    const cards = fixture.nativeElement.querySelectorAll('.task-card');
-    expect(cards).toHaveLength(2);
+    const rows = fixture.nativeElement.querySelectorAll('.task-row');
+    expect(rows).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('Write tests');
     expect(fixture.nativeElement.textContent).toContain('Ship it');
     // The create-form modal is hidden until the user asks for it
@@ -76,7 +76,7 @@ describe('Task (My Tasks view)', () => {
 
     // Then
     expect(fixture.nativeElement.querySelector('.empty-state')).toBeTruthy();
-    expect(fixture.nativeElement.querySelectorAll('.task-card')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('.task-row')).toHaveLength(0);
   });
 
   it('toggles a task completion through the state service', () => {
@@ -111,8 +111,8 @@ describe('Task (My Tasks view)', () => {
     fixture.detectChanges();
 
     // When — clicking the card main area
-    const cardMain = fixture.nativeElement.querySelector('.task-card-main');
-    cardMain.click();
+    const row = fixture.nativeElement.querySelector('.task-row');
+    row.click();
     const get = httpMock.expectOne('/api/v1/tasks/1');
     expect(get.request.method).toBe('GET');
     get.flush({ base: task({ id: '1' }), items: [item({ id: '10', title: 'Write tests' })] });
@@ -136,8 +136,9 @@ describe('Task (My Tasks view)', () => {
       editTitle: string;
       editDescription: string;
     };
-    const editButton = fixture.nativeElement.querySelector('.task-edit-btn');
+    const editButton = fixture.nativeElement.querySelector('.task-open-btn');
     editButton.click();
+    httpMock.expectOne('/api/v1/tasks/1').flush({ base: task({ id: taskId(1) }), items: [] });
 
     component.editTitle = 'After';
     component.editDescription = 'New body';
