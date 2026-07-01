@@ -1,0 +1,44 @@
+/* Standard data-list states (frontend-redesign §2.6). */
+.ds {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space) * 1.5);
+  padding: calc(var(--space) * 3);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.ds__text {
+  flex: 1;
+}
+
+.ds--loading {
+  color: var(--text-muted);
+}
+
+.ds__spinner {
+  color: var(--accent);
+  animation: ds-spin 0.8s linear infinite;
+}
+
+.ds--empty {
+  justify-content: center;
+  color: var(--text-faint);
+  background: var(--surface-2);
+}
+
+.ds--error {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.ds__retry {
+  flex: none;
+}
+
+@keyframes ds-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,7 +1,7 @@
 <label class="employee-picker">
-  <span class="employee-picker__label">Subject</span>
+  <span class="employee-picker__label ui-label">{{ label() }}</span>
   <select
-    class="employee-picker__select"
+    class="employee-picker__select ui-select"
     (change)="onSelectChange($event)"
     [disabled]="isLoading() || readonly()">
     <option value="" disabled [selected]="value() === null">

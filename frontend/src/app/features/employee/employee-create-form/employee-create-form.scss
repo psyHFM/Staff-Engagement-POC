@@ -1,26 +1,37 @@
 .employee-create-form {
   &__title {
-    margin: 0 0 0.5rem;
+    margin: 0 0 calc(var(--space) * 1.5);
+    font-size: 16px;
   }
 
   &__form {
     display: grid;
-    gap: 0.75rem;
+    gap: calc(var(--space) * 1.5);
   }
 
   &__field {
     display: grid;
-    gap: 0.25rem;
+    gap: calc(var(--space) * 0.75);
 
     label {
       font-weight: 600;
+      font-size: 13px;
     }
 
     input,
     select {
-      padding: 0.25rem 0.5rem;
-      border: 1px solid var(--surface-border, #e5e7eb);
-      border-radius: 4px;
+      min-height: 40px;
+      padding: 0 calc(var(--space) * 1.5);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font: inherit;
+      background: var(--surface);
+
+      &:focus-visible {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: var(--focus-ring);
+      }
     }
   }
 
@@ -28,13 +39,19 @@
     justify-self: start;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.4rem 1rem;
+    gap: calc(var(--space) * 0.75);
+    height: 40px;
+    padding: 0 calc(var(--space) * 2);
     border: none;
-    border-radius: 4px;
-    background: var(--primary-color, #3b82f6);
+    border-radius: var(--radius-sm);
+    background: var(--accent);
     color: #fff;
+    font-weight: 600;
     cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
 
     &:disabled {
       opacity: 0.5;

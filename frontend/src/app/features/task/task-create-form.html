@@ -8,7 +8,9 @@
   <div class="modal-content" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()" tabindex="0" role="document">
     <header class="modal-header">
       <h2>{{ interactionId ? 'Create Task from Interaction' : 'Create New Task' }}</h2>
-      <button type="button" (click)="closeForm()" class="close-btn" aria-label="Close">&times;</button>
+      <button type="button" (click)="closeForm()" class="close-btn" aria-label="Close dialog">
+        <i class="pi pi-times" aria-hidden="true"></i>
+      </button>
     </header>
 
     <form (ngSubmit)="submit()" #taskForm="ngForm" class="task-form">

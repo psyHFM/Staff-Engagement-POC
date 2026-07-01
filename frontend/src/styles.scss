@@ -21,6 +21,57 @@
   text-align: center;
 }
 
+/* ==========================================================================
+   Design tokens (frontend-redesign §2.1) — the single source of truth.
+   No component keeps its own hex/radius/shadow value; everything references a
+   token below via var(--…).
+   ========================================================================== */
+:root {
+  /* neutrals — warm-cool balanced, low saturation */
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --border: #e6e8ec;
+  --text: #1a1f2b;
+  --text-muted: #6b7280;
+  --text-faint: #9ca3af;
+
+  /* single accent — calm indigo */
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef0fe;
+
+  /* status */
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --success: #16a34a;
+  --success-soft: #ecfdf3;
+  --warn-bg: #fffbeb;
+  --warn-fg: #92400e;
+  --info-bg: #eff6ff;
+  --info-fg: #1e40af;
+  /* badge-only tones for the interaction-type vocabulary (§2.2) */
+  --sky-bg: #e0f2fe;
+  --sky-fg: #0369a1;
+  --violet-bg: #f5f3ff;
+  --violet-fg: #6d28d9;
+
+  /* elevation */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --scrim: rgba(16, 24, 40, 0.45);
+
+  /* geometry / type / motion */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --space: 8px;
+  --font: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ease: 150ms cubic-bezier(0.2, 0.6, 0.3, 1);
+
+  /* focus ring — accent, used by every focusable control */
+  --focus-ring: 0 0 0 3px rgba(79, 70, 229, 0.18);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -29,7 +80,191 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #f3f4f6;
-  color: #111827;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---- Type scale (frontend-redesign §2.1) ---------------------------------- */
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--text);
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.text-meta {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.text-caption {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+a {
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   Canonical component patterns (frontend-redesign §2.2) — define once here,
+   reference the classes from any component template.
+   ========================================================================== */
+
+/* ---- Card ----------------------------------------------------------------- */
+.ui-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: calc(var(--space) * 3);
+}
+
+/* ---- Buttons -------------------------------------------------------------- */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--space) * 0.75);
+  height: 40px;
+  padding: 0 calc(var(--space) * 2);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--ease), color var(--ease), border-color var(--ease);
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.ui-btn--primary {
+  background: var(--accent);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+}
+
+.ui-btn--secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+
+  &:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+}
+
+.ui-btn--ghost {
+  background: transparent;
+  color: var(--accent);
+
+  &:hover:not(:disabled) {
+    background: var(--accent-soft);
+  }
+}
+
+.ui-btn--destructive {
+  background: var(--danger);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #b91c1c;
+  }
+}
+
+/* ---- Form controls -------------------------------------------------------- */
+.ui-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: calc(var(--space) * 0.75);
+}
+
+.ui-input,
+.ui-select,
+.ui-textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 calc(var(--space) * 1.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  transition: border-color var(--ease), box-shadow var(--ease);
+
+  &::placeholder {
+    color: var(--text-faint);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
+  }
+}
+
+.ui-textarea {
+  min-height: 96px;
+  padding: calc(var(--space) * 1.25) calc(var(--space) * 1.5);
+  resize: vertical;
+}
+
+/* ---- List row ------------------------------------------------------------- */
+.ui-row {
+  cursor: pointer;
+  transition: background-color var(--ease);
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+}
+
+/* ==========================================================================
+   Motion — honour reduced-motion preferences (frontend-redesign §6).
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

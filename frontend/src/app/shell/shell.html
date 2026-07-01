@@ -1,17 +1,29 @@
 <header class="shell__bar">
   <a class="shell__brand" routerLink="/dashboard">
-    <i class="pi pi-th-large" aria-hidden="true"></i>
-    Staff Engagement
+    <span class="shell__brand-chip" aria-hidden="true">
+      <i class="pi pi-th-large"></i>
+    </span>
+    <span class="shell__brand-word">Staff Engagement</span>
   </a>
 
-  <nav class="shell__nav">
-    <a routerLink="/dashboard" routerLinkActive="shell__nav-link--active">Dashboard</a>
-    <a routerLink="/employees" routerLinkActive="shell__nav-link--active">Employees</a>
-    <a routerLink="/interactions" routerLinkActive="shell__nav-link--active">Interactions</a>
-    <a routerLink="/tasks" routerLinkActive="shell__nav-link--active">Tasks</a>
-    <a routerLink="/portfolio" routerLinkActive="shell__nav-link--active">Portfolio</a>
-    <a routerLink="/skills" routerLinkActive="shell__nav-link--active">Skills</a>
-  </nav>
+  @if (auth.isAuthenticated()) {
+    <button
+      type="button"
+      class="shell__nav-toggle"
+      (click)="toggleNav()"
+      [attr.aria-expanded]="isNavOpen()"
+      aria-label="Toggle navigation">
+      <i class="pi pi-bars" aria-hidden="true"></i>
+    </button>
+
+    <nav class="shell__nav" [class.shell__nav--open]="isNavOpen()">
+      <a routerLink="/dashboard" routerLinkActive="shell__nav-link--active" (click)="closeNav()">Dashboard</a>
+      <a routerLink="/employees" routerLinkActive="shell__nav-link--active" (click)="closeNav()">Employees</a>
+      <a routerLink="/interactions" routerLinkActive="shell__nav-link--active" (click)="closeNav()">Interactions</a>
+      <a routerLink="/tasks" routerLinkActive="shell__nav-link--active" (click)="closeNav()">Tasks</a>
+      <a routerLink="/skills" routerLinkActive="shell__nav-link--active" (click)="closeNav()">Skills</a>
+    </nav>
+  }
 
   <div class="shell__auth">
     @if (auth.isAuthenticated()) {
@@ -24,25 +36,31 @@
           [attr.aria-haspopup]="true"
           [attr.aria-label]="'User menu for ' + auth.currentUser()"
           #triggerBtn>
-
+          <app-avatar [name]="auth.currentUser() ?? ''" size="sm" />
           <span class="user-greeting">{{ auth.currentUser() }}</span>
-          <i class="pi" [class.pi-chevron-down]="!isMenuOpen()" [class.pi-chevron-up]="isMenuOpen()"></i>
+          <i class="pi" [class.pi-chevron-down]="!isMenuOpen()" [class.pi-chevron-up]="isMenuOpen()" aria-hidden="true"></i>
         </button>
 
         @if (isMenuOpen()) {
           <div class="auth-menu-dropdown" (clickOutside)="closeMenu()">
             <ul class="auth-menu-items">
+              <li>
+                <a routerLink="/profile" (click)="closeMenu()">
+                  <i class="pi pi-id-card" aria-hidden="true"></i>
+                  Your details
+                </a>
+              </li>
               @if (profileLink()) {
                 <li>
                   <a [routerLink]="profileLink()" (click)="closeMenu()">
-                    <i class="pi pi-user"></i>
+                    <i class="pi pi-user" aria-hidden="true"></i>
                     Profile
                   </a>
                 </li>
               }
               <li>
                 <button type="button" (click)="onLogout()">
-                  <i class="pi pi-sign-out"></i>
+                  <i class="pi pi-sign-out" aria-hidden="true"></i>
                   Sign out
                 </button>
               </li>
@@ -51,7 +69,7 @@
         }
       </div>
     } @else {
-      <a routerLink="/login" class="shell__login">Sign in</a>
+      <a routerLink="/login" class="shell__login ui-btn ui-btn--secondary">Sign in</a>
     }
   </div>
 </header>

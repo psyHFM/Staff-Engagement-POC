@@ -5,17 +5,20 @@ TBD - created by archiving change atse1-25-35-ux-walkthrough-fixes. Update Purpo
 ## Requirements
 ### Requirement: Top-level /profile route shows the current user's details
 
-The application MUST expose a top-level `/profile` route that
-renders the current authenticated user's profile in editable form.
-The route MUST be guarded by `authGuard` and MUST resolve the
-current user's employee id from the JWT subject.
+The application MUST keep a top-level `/profile` route guarded by
+`authGuard` that resolves the current authenticated user's employee
+id from the JWT subject, but it MUST route the user to their own
+Profile page as the single self-service destination rather than a
+separate standalone identity page. Self-service identity editing MUST
+happen in the Profile page's Edit mode.
 
 #### Scenario: Authenticated user visits /profile
 
 - **WHEN** an authenticated user navigates to `/profile`
-- **THEN** the page MUST render the same `ProfilePage` component
-  used for `/employees/{id}/profile`
-- **AND** the form MUST be editable by the current user
+- **THEN** they MUST land on their own Profile page resolved from the
+  JWT subject (the same page as `/employees/{id}/profile`)
+- **AND** they MUST be able to enter Edit mode to change their
+  identity fields
 
 #### Scenario: Unauthenticated user visits /profile
 
@@ -23,30 +26,31 @@ current user's employee id from the JWT subject.
 - **THEN** the `authGuard` MUST redirect to
   `/login?redirectUrl=/profile`
 
-#### Scenario: Shell user-name is a link to /profile
+#### Scenario: Shell user-name is a link to the user's own profile
 
 - **WHEN** the shell renders for an authenticated user
-- **THEN** the `span.shell__user` element MUST be an `<a>` whose
-  `href` is `/profile`
-- **AND** clicking it MUST navigate to the user's own profile
+- **THEN** the username chip MUST navigate to the user's own Profile
+  page without requiring a typed id
 
 ### Requirement: /profile covers the same fields as the old inline form
 
-The `/profile` page MUST support editing the same fields the old
-inline "Your profile" form exposed: `fullName`, `jobTitle`,
-`department`, `level`, `role`. Non-admin users MUST NOT be able to
-edit `role`; admins MUST be able to.
+The self-service identity editor on the Profile page MUST support
+editing the same fields the old inline "Your profile" form exposed:
+`fullName`, `jobTitle`, `department`, `level`, `role`. Non-admin
+users MUST NOT be able to edit `role`; admins MUST be able to. These
+fields MUST be edited within the Profile page's Edit mode, not on a
+separate standalone page.
 
 #### Scenario: Non-admin edits own details
 
-- **WHEN** a non-admin user saves edits on `/profile`
+- **WHEN** a non-admin user saves identity edits in Profile Edit mode
 - **THEN** the `role` field MUST be read-only
 - **AND** all other fields MUST be persisted via the existing
   `PUT /api/v1/employees/{id}` endpoint
 
 #### Scenario: Admin edits own or any user's details
 
-- **WHEN** an admin user saves edits on `/profile`
+- **WHEN** an admin user saves identity edits in Profile Edit mode
 - **THEN** the `role` field MUST be editable
 - **AND** all fields MUST be persisted
 
