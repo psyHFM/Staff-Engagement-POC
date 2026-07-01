@@ -37,3 +37,10 @@ yes and pr
 
 check the PR , rename it the test have fail aswell
 
+### Hendrik Muller — 2026-07-01 11:21:32
+
+> **Model:** `qwen3.5`  
+> **Tokens:** `117,316` in / `330` out · cache read `0` / write `0` · **117,646 total**
+
+I want tests for everything can you give  me a report and the current state of  tests
+

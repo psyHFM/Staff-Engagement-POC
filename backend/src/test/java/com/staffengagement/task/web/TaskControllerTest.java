@@ -4,7 +4,9 @@ import com.staffengagement.shared.api.EmployeeContract;
 import com.staffengagement.shared.api.EmployeeSummary;
 import com.staffengagement.shared.api.InteractionContract;
 import com.staffengagement.shared.api.InteractionSummary;
+import com.staffengagement.shared.api.TaskItemSummary;
 import com.staffengagement.shared.api.TaskSummary;
+import com.staffengagement.shared.api.TaskSummaryWithItems;
 import com.staffengagement.shared.kernel.EmployeeId;
 import com.staffengagement.shared.kernel.EmployeeRole;
 import com.staffengagement.shared.kernel.InteractionId;
@@ -294,5 +296,168 @@ class TaskControllerTest {
         // Then
         then(taskService).should().myTasks(new EmployeeId(7L));
         assertThat(response.getBody()).containsExactly(summary);
+    }
+
+    @Test
+    @DisplayName("Should return task with items when task exists")
+    void getWithItems_shouldReturnTaskWithItems_whenTaskExists() {
+        // Given
+        TaskId taskId = new TaskId(10L);
+        TaskSummary summary = new TaskSummary(taskId, subject, "Task Title", null, false, "Description", Instant.now());
+        TaskItemSummary item1 = new TaskItemSummary(1L, taskId, 0, "Item 1", false, Instant.now());
+        TaskItemSummary item2 = new TaskItemSummary(2L, taskId, 1, "Item 2", true, Instant.now());
+        TaskSummaryWithItems taskWithItems = new TaskSummaryWithItems(summary, List.of(item1, item2));
+
+        given(taskService.taskWithItems(taskId)).willReturn(Optional.of(taskWithItems));
+
+        // When
+        ResponseEntity<TaskSummaryWithItems> response = controller.getWithItems(10L);
+
+        // Then
+        then(taskService).should().taskWithItems(taskId);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(taskWithItems);
+    }
+
+    @Test
+    @DisplayName("Should return 404 when task with items not found")
+    void getWithItems_shouldReturn404_whenTaskNotFound() {
+        // Given
+        TaskId taskId = new TaskId(999L);
+        given(taskService.taskWithItems(taskId)).willReturn(Optional.empty());
+
+        // When
+        ResponseEntity<TaskSummaryWithItems> response = controller.getWithItems(999L);
+
+        // Then
+        then(taskService).should().taskWithItems(taskId);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("Should add item to task checklist")
+    void addItem_shouldAddItemToList() {
+        // Given
+        TaskItemSummary newItem = new TaskItemSummary(
+                5L, new TaskId(10L), 2, "New Item", false, Instant.now());
+        TaskController.ItemRequest request = new TaskController.ItemRequest("New Item");
+
+        given(taskService.addItem(10L, "New Item")).willReturn(newItem);
+
+        // When
+        ResponseEntity<TaskItemSummary> response = controller.addItem(10L, request);
+
+        // Then
+        then(taskService).should().addItem(10L, "New Item");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(newItem);
+    }
+
+    @Test
+    @DisplayName("Should update item title and completed status")
+    void updateItem_shouldPatchItemFields() {
+        // Given
+        TaskItemSummary updatedItem = new TaskItemSummary(
+                5L, new TaskId(10L), 1, "Updated Title", true, Instant.now());
+        TaskController.ItemPatchRequest request = new TaskController.ItemPatchRequest("Updated Title", true);
+
+        given(taskService.updateItem(10L, 5L, "Updated Title", true)).willReturn(updatedItem);
+
+        // When
+        ResponseEntity<TaskItemSummary> response = controller.updateItem(10L, 5L, request);
+
+        // Then
+        then(taskService).should().updateItem(10L, 5L, "Updated Title", true);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(updatedItem);
+    }
+
+    @Test
+    @DisplayName("Should update only item title when completed is null")
+    void updateItem_shouldPatchOnlyTitle_whenCompletedIsNull() {
+        // Given
+        TaskItemSummary updatedItem = new TaskItemSummary(
+                5L, new TaskId(10L), 1, "Title Only", false, Instant.now());
+        TaskController.ItemPatchRequest request = new TaskController.ItemPatchRequest("Title Only", null);
+
+        given(taskService.updateItem(10L, 5L, "Title Only", null)).willReturn(updatedItem);
+
+        // When
+        ResponseEntity<TaskItemSummary> response = controller.updateItem(10L, 5L, request);
+
+        // Then
+        then(taskService).should().updateItem(10L, 5L, "Title Only", null);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @DisplayName("Should delete item from task checklist")
+    void deleteItem_shouldRemoveItemFromList() {
+        // When
+        ResponseEntity<Void> response = controller.deleteItem(10L, 5L);
+
+        // Then
+        then(taskService).should().deleteItem(10L, 5L);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    @DisplayName("Should reorder items based on provided itemIds")
+    void reorderItems_shouldReorderItemsByProvidedIds() {
+        // Given
+        List<Long> itemIds = List.of(3L, 1L, 2L);
+        TaskController.ReorderRequest request = new TaskController.ReorderRequest(itemIds);
+        TaskItemSummary item1 = new TaskItemSummary(1L, new TaskId(10L), 0, "First", false, Instant.now());
+        TaskItemSummary item2 = new TaskItemSummary(2L, new TaskId(10L), 1, "Second", false, Instant.now());
+        TaskItemSummary item3 = new TaskItemSummary(3L, new TaskId(10L), 2, "Third", false, Instant.now());
+        List<TaskItemSummary> reordered = List.of(item3, item1, item2);
+
+        given(taskService.reorderItems(10L, itemIds)).willReturn(reordered);
+
+        // When
+        ResponseEntity<List<TaskItemSummary>> response = controller.reorderItems(10L, request);
+
+        // Then
+        then(taskService).should().reorderItems(10L, itemIds);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(reordered);
+    }
+
+    @Test
+    @DisplayName("Should update task completion via toggleCompletion")
+    void updateCompletion_shouldToggleCompletion() {
+        // Given
+        TaskSummary completedSummary = new TaskSummary(
+                new TaskId(10L), subject, "Task", null, true, "Description", Instant.now());
+        TaskController.CompletionRequest request = new TaskController.CompletionRequest(true);
+
+        given(taskService.toggleCompletion(10L, true)).willReturn(completedSummary);
+
+        // When
+        ResponseEntity<TaskSummary> response = controller.updateCompletion(10L, request);
+
+        // Then
+        then(taskService).should().toggleCompletion(10L, true);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(completedSummary);
+    }
+
+    @Test
+    @DisplayName("Should mark task as not completed when completed is false")
+    void updateCompletion_shouldMarkTaskAsNotCompleted() {
+        // Given
+        TaskSummary notCompletedSummary = new TaskSummary(
+                new TaskId(10L), subject, "Task", null, false, "Description", Instant.now());
+        TaskController.CompletionRequest request = new TaskController.CompletionRequest(false);
+
+        given(taskService.toggleCompletion(10L, false)).willReturn(notCompletedSummary);
+
+        // When
+        ResponseEntity<TaskSummary> response = controller.updateCompletion(10L, request);
+
+        // Then
+        then(taskService).should().toggleCompletion(10L, false);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().completed()).isFalse();
     }
 }

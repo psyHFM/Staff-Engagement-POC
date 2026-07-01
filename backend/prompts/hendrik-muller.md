@@ -16,3 +16,17 @@ okay continue tasks but remove persona reviews
 
 commit and make PR
 
+### Hendrik Muller — 2026-07-01 12:05:30
+
+> **Model:** `qwen3.5`  
+> **Tokens:** `114,193` in / `371` out · cache read `0` / write `0` · **114,564 total**
+
+previous session you were looking at the current test state of this project and making new test can you see where you left off before and continue please
+
+### Hendrik Muller — 2026-07-01 12:08:32
+
+> **Model:** `qwen3.5`  
+> **Tokens:** `122,543` in / `540` out · cache read `0` / write `0` · **123,083 total**
+
+how is the coverage looking
+
