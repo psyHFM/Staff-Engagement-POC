@@ -11,6 +11,7 @@ class StubPage {}
 
 const testRoutes: Routes = [
   { path: 'login', component: StubPage },
+  { path: 'profile', component: StubPage },
   { path: 'employees/:id/profile', component: StubPage }
 ];
 
@@ -62,29 +63,35 @@ describe('Shell', () => {
     fixture.destroy();
   });
 
-  it('renders the global navigation links', () => {
+  it('renders the global navigation links without a Portfolio item when authenticated', () => {
+    // Given
+    isAuthenticated.set(true);
+    currentUser.set('jane@staff.eng');
+
     // When
     fixture.detectChanges();
 
     // Then
     const links = Array.from(fixture.nativeElement.querySelectorAll('.shell__nav a'))
       .map((a: unknown) => (a as HTMLAnchorElement).textContent?.trim());
-    expect(links).toEqual(['Dashboard', 'Employees', 'Interactions', 'Tasks', 'Portfolio', 'Skills']);
+    expect(links).toEqual(['Dashboard', 'Employees', 'Interactions', 'Tasks', 'Skills']);
+    expect(links).not.toContain('Portfolio');
   });
 
-  it('shows a sign-in link when the user is not authenticated', () => {
+  it('hides the nav links while unauthenticated (e.g. on /login)', () => {
     // Given
     isAuthenticated.set(false);
 
     // When
     fixture.detectChanges();
 
-    // Then
+    // Then — no nav, just the sign-in affordance
+    expect(fixture.nativeElement.querySelector('.shell__nav')).toBeFalsy();
     expect(fixture.nativeElement.querySelector('.shell__login')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('.auth-menu')).toBeFalsy();
   });
 
-  it('shows the auth dropdown menu when authenticated', () => {
+  it('shows the avatar user menu when authenticated', () => {
     // Given
     isAuthenticated.set(true);
     currentUser.set('jane@staff.eng');
@@ -95,6 +102,7 @@ describe('Shell', () => {
     // Then
     expect(fixture.nativeElement.querySelector('.auth-menu')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('.auth-menu-trigger')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-avatar')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('.shell__login')).toBeFalsy();
   });
 
@@ -111,50 +119,47 @@ describe('Shell', () => {
     expect(trigger?.textContent?.trim()).toContain('jane@staff.eng');
   });
 
-  it('opens the dropdown menu when trigger is clicked', () => {
-    // Given
-    isAuthenticated.set(true);
-    currentUser.set('jane@staff.eng');
-
-    fixture.detectChanges();
-    const trigger = fixture.nativeElement.querySelector('.auth-menu-trigger');
-
-    // When
-    trigger.click();
-    fixture.detectChanges();
-
-    // Then
-    expect(fixture.nativeElement.querySelector('.auth-menu-dropdown')).toBeTruthy();
-  });
-
-  it('makes the profile link go to the user profile when employee id is available', () => {
+  it('opens the dropdown with Your details, Profile and Sign out', () => {
     // Given
     isAuthenticated.set(true);
     currentUser.set('jane@staff.eng');
     currentEmployeeId.set(42);
-
     fixture.detectChanges();
+
+    // When
     const trigger = fixture.nativeElement.querySelector('.auth-menu-trigger');
     trigger.click();
     fixture.detectChanges();
 
+    // Then
+    const items = Array.from(fixture.nativeElement.querySelectorAll('.auth-menu-items li'))
+      .map((li: unknown) => (li as HTMLElement).textContent?.trim());
+    expect(items).toEqual(['Your details', 'Profile', 'Sign out']);
+  });
+
+  it('points Your details at /profile and Profile at the user own profile', () => {
+    // Given
+    isAuthenticated.set(true);
+    currentUser.set('jane@staff.eng');
+    currentEmployeeId.set(42);
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('.auth-menu-trigger').click();
+    fixture.detectChanges();
+
     // When
-    const profileLink = fixture.nativeElement.querySelector('.auth-menu-items a');
+    const links = fixture.nativeElement.querySelectorAll('.auth-menu-items a');
 
     // Then
-    expect(profileLink).toBeTruthy();
-    expect(profileLink.getAttribute('href')).toBe('/employees/42/profile');
-    expect(profileLink.textContent?.trim()).toBe('Profile');
+    expect((links[0] as HTMLAnchorElement).getAttribute('href')).toBe('/profile');
+    expect((links[1] as HTMLAnchorElement).getAttribute('href')).toBe('/employees/42/profile');
   });
 
   it('calls logout when sign out button is clicked', () => {
     // Given
     isAuthenticated.set(true);
     currentUser.set('jane@staff.eng');
-
     fixture.detectChanges();
-    const trigger = fixture.nativeElement.querySelector('.auth-menu-trigger');
-    trigger.click();
+    fixture.nativeElement.querySelector('.auth-menu-trigger').click();
     fixture.detectChanges();
 
     const logoutSpy = jest.spyOn(authMock, 'logout');

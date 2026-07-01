@@ -4,29 +4,29 @@ Delivered in four sequenced phases: (1) design system + shell, (2) Profile + por
 
 ## 1. Phase A — Design system foundation
 
-- [ ] 1.1 Add `:root` design tokens (neutrals, indigo accent, status, elevation, geometry, type, motion) to `styles.scss` as the single source of truth
-- [ ] 1.2 Add base element styles (body/type scale, links, headings) referencing tokens; optionally load Inter (400/500/600/700) in `index.html` with the Segoe UI fallback stack
-- [ ] 1.3 Define canonical Card, Button (primary/secondary/ghost/destructive, 40px, `--radius-sm`), and Input/select/textarea styles (40px, visible label, accent focus ring)
-- [ ] 1.4 Add `prefers-reduced-motion` handling and standard `150ms --ease` hover/active/expand transitions
-- [ ] 1.5 Write unit tests for token-driven base styles / any style helpers introduced
+- [x] 1.1 Add `:root` design tokens (neutrals, indigo accent, status, elevation, geometry, type, motion) to `styles.scss` as the single source of truth
+- [x] 1.2 Add base element styles (body/type scale, links, headings) referencing tokens; optionally load Inter (400/500/600/700) in `index.html` with the Segoe UI fallback stack
+- [x] 1.3 Define canonical Card, Button (primary/secondary/ghost/destructive, 40px, `--radius-sm`), and Input/select/textarea styles (40px, visible label, accent focus ring)
+- [x] 1.4 Add `prefers-reduced-motion` handling and standard `150ms --ease` hover/active/expand transitions
+- [x] 1.5 Write unit tests for token-driven base styles / any style helpers introduced (styles.scss has no TS helpers; the token-driven classes are asserted via the primitive specs in 2.7)
 
 ## 2. Phase A — Shared primitives
 
-- [ ] 2.1 Create reusable `badge` component with canonical role/level/interaction-type variants using capitalized display-label lookups + right margin
-- [ ] 2.2 Create reusable `avatar` component (coloured-initials circle, colour hashed from name; 28–32px and 64px sizes)
-- [ ] 2.3 Create reusable searchable `employee-picker` component (shows name, resolves id) backed by the existing employee service
-- [ ] 2.4 Standardize the toast stack styling (top-right, success/error) to tokens
-- [ ] 2.5 Standardize modal styling to tokens (`role="dialog"`, `aria-modal`, focus trap, Escape close, `--shadow-md`)
-- [ ] 2.6 Standardize the loading / empty / error+retry state set (spinner `--accent`, muted empty, `--danger` error card with Retry)
-- [ ] 2.7 Write BDD Jest tests for badge, avatar, employee-picker, and the shared states (mutation-resilient)
+- [x] 2.1 Create reusable `badge` component with canonical role/level/interaction-type variants using capitalized display-label lookups + right margin
+- [x] 2.2 Create reusable `avatar` component (coloured-initials circle, colour hashed from name; 28–32px and 64px sizes)
+- [x] 2.3 Create reusable searchable `employee-picker` component (shows name, resolves id) backed by the existing employee service (restyled existing picker to tokens; label made a configurable input for Subject/Facilitator reuse)
+- [x] 2.4 Standardize the toast stack styling (top-right, success/error) to tokens
+- [x] 2.5 Standardize modal styling to tokens (`role="dialog"`, `aria-modal`, focus trap, Escape close, `--shadow-md`)
+- [x] 2.6 Standardize the loading / empty / error+retry state set (spinner `--accent`, muted empty, `--danger` error card with Retry)
+- [x] 2.7 Write BDD Jest tests for badge, avatar, employee-picker, and the shared states (mutation-resilient)
 
 ## 3. Phase A — App shell & navigation
 
-- [ ] 3.1 Restyle `shell/shell.{html,scss}` to the light sticky top bar (`--surface`, `1px --border`, `--shadow-sm`), brand chip + wordmark, centered ~1120px main with 24px padding
-- [ ] 3.2 Implement active-nav pill (`--accent` text on `--accent-soft`) for Dashboard/Employees/Interactions/Tasks/Skills; remove the Portfolio nav item
-- [ ] 3.3 Implement the avatar user menu (initials + name + chevron → dropdown: "Your details", "Profile", "Sign out"); username chip navigates to own Profile
-- [ ] 3.4 Hide nav links on `/login`; add responsive collapse (menu button, single column) below ~768px
-- [ ] 3.5 Update shell unit tests for active state, logged-out nav hiding, and user-menu navigation
+- [x] 3.1 Restyle `shell/shell.{html,scss}` to the light sticky top bar (`--surface`, `1px --border`, `--shadow-sm`), brand chip + wordmark, centered ~1120px main with 24px padding
+- [x] 3.2 Implement active-nav pill (`--accent` text on `--accent-soft`) for Dashboard/Employees/Interactions/Tasks/Skills; remove the Portfolio nav item
+- [x] 3.3 Implement the avatar user menu (initials + name + chevron → dropdown: "Your details", "Profile", "Sign out"); username chip navigates to own Profile
+- [x] 3.4 Hide nav links on `/login`; add responsive collapse (menu button, single column) below ~768px
+- [x] 3.5 Update shell unit tests for active state, logged-out nav hiding, and user-menu navigation
 
 ## 4. Phase B — Profile view/edit + portfolio move
 

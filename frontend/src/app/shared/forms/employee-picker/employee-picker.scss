@@ -1,29 +1,21 @@
 .employee-picker {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: calc(var(--space) * 0.75);
 }
 
+/* Label + select inherit the canonical .ui-label / .ui-select styles from
+   styles.scss; only picker-specific overrides live here. */
 .employee-picker__label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #374151;
-}
-
-.employee-picker__select {
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.4rem;
-  font-size: 1rem;
-  background-color: white;
+  margin-bottom: 0;
 }
 
 .employee-picker__select:disabled {
-  background-color: #f3f4f6;
+  background: var(--surface-2);
   cursor: not-allowed;
 }
 
 .employee-picker__error {
-  color: #b91c1c;
-  font-size: 0.85rem;
+  color: var(--danger);
+  font-size: 13px;
 }

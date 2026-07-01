@@ -32,67 +32,67 @@ import { ToastService, ToastMessage } from './toast.service';
   styles: [`
     .toast-container {
       position: fixed;
-      top: 1rem;
-      right: 1rem;
+      top: calc(var(--space) * 2);
+      right: calc(var(--space) * 2);
       z-index: 9999;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--space);
     }
 
     .toast {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      gap: calc(var(--space) * 1.5);
+      padding: calc(var(--space) * 1.5) calc(var(--space) * 2);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
       min-width: 280px;
       max-width: 400px;
-      animation: slide-in 0.2s ease-out;
+      font-size: 14px;
+      animation: slide-in var(--ease);
 
       &.toast-success {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #86efac;
+        background: var(--success-soft);
+        color: var(--success);
+        border: 1px solid var(--success);
       }
 
       &.toast-error {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fca5a5;
+        background: var(--danger-soft);
+        color: var(--danger);
+        border: 1px solid var(--danger);
       }
 
       &.toast-warning {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fcd34d;
+        background: var(--warn-bg);
+        color: var(--warn-fg);
+        border: 1px solid var(--warn-fg);
       }
 
       &.toast-info {
-        background: #dbeafe;
-        color: #1e40af;
-        border: 1px solid #93c5fd;
+        background: var(--info-bg);
+        color: var(--info-fg);
+        border: 1px solid var(--info-fg);
       }
     }
 
     .toast-message {
       flex: 1;
-      font-size: 0.875rem;
     }
 
     .toast-dismiss {
       background: transparent;
       border: none;
       cursor: pointer;
-      padding: 0.25rem;
+      padding: calc(var(--space) * 0.5);
       color: inherit;
       opacity: 0.7;
-      border-radius: 0.25rem;
+      border-radius: var(--radius-sm);
 
       &:hover {
         opacity: 1;
-        background: rgba(0, 0, 0, 0.1);
+        background: var(--surface-2);
       }
     }
 
