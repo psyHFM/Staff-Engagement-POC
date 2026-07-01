@@ -109,6 +109,13 @@ public class TaskController {
                 id, request.title(), request.description(), request.completed()));
     }
 
+    @PatchMapping("/tasks/{id}/completion")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<TaskSummary> updateCompletion(@PathVariable Long id,
+                                                         @RequestBody CompletionRequest request) {
+        return ResponseEntity.ok(taskService.toggleCompletion(id, request.completed()));
+    }
+
     @GetMapping("/employees/{id}/tasks")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<List<TaskSummary>> getForEmployee(@PathVariable Long id) {
