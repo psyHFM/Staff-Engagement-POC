@@ -562,6 +562,9 @@ export class Task implements OnInit {
     this.editDescription = task.description;
     this.editingItemId.set(null);
     this.newItemTitle = '';
+    
+    // Keep the inline expansion in sync with the modal so items render
+    this.expandedTaskId.set(task.id.value.toString());
 
     if (!this.state.itemsByTaskId().has(task.id.value.toString())) {
       this.state.loadTaskItems(task.id.value.toString());
@@ -573,6 +576,7 @@ export class Task implements OnInit {
     this.editingTaskId.set(null);
     this.editingItemId.set(null);
     this.newItemTitle = '';
+    this.expandedTaskId.set(null);
   }
 
   protected startEdit(task: TaskModel, event: MouseEvent): void {
@@ -599,7 +603,7 @@ export class Task implements OnInit {
   }
 
   protected isExpanded(task: TaskModel): boolean {
-    return this.selectedTaskId() === task.id.value.toString();
+    return this.expandedTaskId() === task.id.value.toString();
   }
 
   protected itemsRegionId(task: TaskModel): string {
@@ -611,11 +615,15 @@ export class Task implements OnInit {
   }
 
   protected toggleExpand(task: TaskModel): void {
+    const idStr = task.id.value.toString();
     if (this.isExpanded(task)) {
-      this.closeTask();
+      this.expandedTaskId.set(null);
       return;
     }
-    this.openTask(task);
+    this.expandedTaskId.set(idStr);
+    if (!this.state.itemsByTaskId().has(idStr)) {
+      this.state.loadTaskItems(idStr);
+    }
   }
 
   protected toggleItem(task: TaskModel, item: TaskItem, completed: boolean): void {
