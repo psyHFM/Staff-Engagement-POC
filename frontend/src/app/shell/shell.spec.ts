@@ -63,7 +63,7 @@ describe('Shell', () => {
     fixture.destroy();
   });
 
-  it('renders the global navigation links without a Portfolio item when authenticated', () => {
+  it('renders the global navigation links including Portfolio when authenticated', () => {
     // Given
     isAuthenticated.set(true);
     currentUser.set('jane@staff.eng');
@@ -74,8 +74,7 @@ describe('Shell', () => {
     // Then
     const links = Array.from(fixture.nativeElement.querySelectorAll('.shell__nav a'))
       .map((a: unknown) => (a as HTMLAnchorElement).textContent?.trim());
-    expect(links).toEqual(['Dashboard', 'Employees', 'Interactions', 'Tasks', 'Skills']);
-    expect(links).not.toContain('Portfolio');
+    expect(links).toEqual(['Dashboard', 'Employees', 'Interactions', 'Tasks', 'Skills', 'Portfolio']);
   });
 
   it('hides the nav links while unauthenticated (e.g. on /login)', () => {

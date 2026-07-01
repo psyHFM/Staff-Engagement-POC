@@ -54,20 +54,22 @@ export class PortfolioEditor {
   protected readonly portfolio = computed(() => this.state.portfolio());
 
   /**
-   * RBAC backstop (ATSE1-39): a viewer is read-only when we have an owner email
-   * and the caller is neither the owner nor an admin. Falls back to read-only
-   * when {@code ownerEmail} is absent (the backend rejects mutations anyway).
+   * RBAC backstop (ATSE1-39 / ATSE1-79): matches the backend owner-or-admin rule.
+   * Admins may always edit; owners may edit when we can prove ownership via
+   * {@code ownerEmail}; everyone else is read-only. The authoritative caller
+   * identity is the JWT {@code sub} claim ({@link AuthState.currentUserSubject}).
    */
   protected readonly rbacReadOnly = computed(() => {
+    const isAdmin = isAdminToken(this.auth.bearerToken());
+    if (isAdmin) {
+      return false;
+    }
     const owner = this.portfolio()?.ownerEmail;
     if (!owner) {
       return true;
     }
-    const caller = this.auth.currentUser();
-    if (caller && caller === owner) {
-      return false;
-    }
-    return !isAdminToken(this.auth.bearerToken());
+    const caller = this.auth.currentUserSubject();
+    return !caller || caller !== owner;
   });
 
   /** Effective read-only = host request OR the RBAC backstop. */

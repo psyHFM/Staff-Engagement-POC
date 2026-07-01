@@ -24,6 +24,7 @@ describe('PortfolioEditor', () => {
 
   let fakeAuth: {
     currentUser: ReturnType<typeof signal<string | null>>;
+    currentUserSubject: ReturnType<typeof signal<string | null>>;
     bearerToken: ReturnType<typeof signal<string | null>>;
   };
 
@@ -36,7 +37,17 @@ describe('PortfolioEditor', () => {
     links: []
   });
 
-  const setup = async (readOnly: boolean, owner = 'jane@staff.eng', caller: string | null = 'jane@staff.eng') => {
+  const jwt = (roles: string[]): string => {
+    const payload = btoa(JSON.stringify({ roles })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return `header.${payload}.signature`;
+  };
+
+  const setup = async (
+    readOnly: boolean,
+    owner: string | null | undefined = 'jane@staff.eng',
+    caller: string | null = 'jane@staff.eng',
+    isAdmin = false
+  ) => {
     fakeState = {
       portfolio: signal<Portfolio | null>({ ...portfolio(), ownerEmail: owner }),
       loading: signal(false),
@@ -51,7 +62,8 @@ describe('PortfolioEditor', () => {
     };
     fakeAuth = {
       currentUser: signal<string | null>(caller),
-      bearerToken: signal<string | null>(null)
+      currentUserSubject: signal<string | null>(caller),
+      bearerToken: signal<string | null>(isAdmin ? jwt(['ADMIN']) : null)
     };
 
     await TestBed.configureTestingModule({
@@ -91,6 +103,24 @@ describe('PortfolioEditor', () => {
   it('stays read-only for a non-owner, non-admin viewer even when readOnly=false (RBAC backstop)', async () => {
     // When — caller is not the owner and holds no admin token
     const el = await setup(false, 'someone-else@staff.eng', 'jane@staff.eng');
+
+    // Then
+    expect(el.querySelector('.pe__form')).toBeFalsy();
+    expect(el.querySelector('.pe__remove')).toBeFalsy();
+  });
+
+  it('allows an admin to edit even when ownerEmail is absent', async () => {
+    // When — admin viewing a portfolio with no ownerEmail
+    const el = await setup(false, null, 'admin@staff.eng', true);
+
+    // Then
+    expect(el.querySelector('.pe__form')).toBeTruthy();
+    expect(el.querySelector('.pe__remove')).toBeTruthy();
+  });
+
+  it('keeps the editor read-only when the host passes readOnly=true', async () => {
+    // When — admin viewer, but host explicitly requests read-only mode
+    const el = await setup(true, 'jane@staff.eng', 'admin@staff.eng', true);
 
     // Then
     expect(el.querySelector('.pe__form')).toBeFalsy();
