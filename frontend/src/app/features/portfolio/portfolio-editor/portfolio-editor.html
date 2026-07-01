@@ -1,0 +1,148 @@
+@if (state.loading()) {
+  <div class="pe__loading" role="status">Loading…</div>
+}
+
+@if (!isReadOnly() && portfolio()?.ownerEmail === undefined && portfolio()) {
+  <div class="pe__banner" role="status">
+    <i class="pi pi-lock" aria-hidden="true"></i>
+    This portfolio is read-only for you.
+  </div>
+}
+
+@if (portfolio(); as p) {
+  <!-- Skills (the centrepiece: years + project count) -->
+  <section class="ui-card pe__section">
+    <h3 class="pe__section-title">Skills</h3>
+    <ul class="pe__list">
+      @for (s of p.skills; track s.id) {
+        <li class="pe__item">
+          <span><strong>{{ s.skill }}</strong> — {{ s.years }} yrs, {{ s.projectCount }} projects</span>
+          @if (!isReadOnly()) {
+            <button type="button" (click)="removeSkill(s)" class="pe__remove">Remove</button>
+          }
+        </li>
+      }
+      @if (p.skills.length === 0) {
+        <li class="pe__empty">No skills yet.</li>
+      }
+    </ul>
+
+    @if (!isReadOnly()) {
+      @if (isClosed('skills')) {
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="reopen('skills')">+ Add another skill</button>
+      } @else {
+        <form (ngSubmit)="addSkill()" class="pe__form" #skillForm="ngForm">
+          <input class="ui-input" name="skill" [(ngModel)]="skillModel.skill" placeholder="Skill (e.g. Angular)" required aria-label="Skill" />
+          <input class="ui-input" type="number" name="years" [(ngModel)]="skillModel.years" placeholder="Years" min="0" aria-label="Years" />
+          <input class="ui-input" type="number" name="projectCount" [(ngModel)]="skillModel.projectCount" placeholder="Projects" min="0" aria-label="Projects" />
+          <button type="submit" [disabled]="!skillForm.valid" class="ui-btn ui-btn--secondary">Add another</button>
+          <button type="button" [disabled]="!skillForm.valid" class="ui-btn ui-btn--ghost" (click)="saveAndClose('skills')">Save &amp; close</button>
+        </form>
+      }
+    }
+  </section>
+
+  <!-- Education -->
+  <section class="ui-card pe__section">
+    <h3 class="pe__section-title">Education</h3>
+    <ul class="pe__list">
+      @for (e of p.education; track e.id) {
+        <li class="pe__item">
+          <span>
+            <strong>{{ e.institution }}</strong>
+            @if (e.qualification) { — {{ e.qualification }} }
+            @if (e.startYear) { ({{ e.startYear }}@if (e.endYear) {–{{ e.endYear }}}) }
+          </span>
+          @if (!isReadOnly()) {
+            <button type="button" (click)="removeEducation(e)" class="pe__remove">Remove</button>
+          }
+        </li>
+      }
+      @if (p.education.length === 0) {
+        <li class="pe__empty">No education entries.</li>
+      }
+    </ul>
+
+    @if (!isReadOnly()) {
+      @if (isClosed('education')) {
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="reopen('education')">+ Add another education</button>
+      } @else {
+        <form (ngSubmit)="addEducation()" class="pe__form" #eduForm="ngForm">
+          <input class="ui-input" name="institution" [(ngModel)]="eduModel.institution" placeholder="Institution" required aria-label="Institution" />
+          <input class="ui-input" name="qualification" [(ngModel)]="eduModel.qualification" placeholder="Qualification" aria-label="Qualification" />
+          <input class="ui-input" type="number" name="startYear" [(ngModel)]="eduModel.startYear" placeholder="Start year" aria-label="Start year" />
+          <input class="ui-input" type="number" name="endYear" [(ngModel)]="eduModel.endYear" placeholder="End year" aria-label="End year" />
+          <button type="submit" [disabled]="!eduForm.valid" class="ui-btn ui-btn--secondary">Add another</button>
+          <button type="button" [disabled]="!eduForm.valid" class="ui-btn ui-btn--ghost" (click)="saveAndClose('education')">Save &amp; close</button>
+        </form>
+      }
+    }
+  </section>
+
+  <!-- Projects -->
+  <section class="ui-card pe__section">
+    <h3 class="pe__section-title">Projects</h3>
+    <ul class="pe__list">
+      @for (pr of p.projects; track pr.id) {
+        <li class="pe__item">
+          <span>
+            <strong>{{ pr.name }}</strong>
+            @if (pr.description) { — {{ pr.description }} }
+          </span>
+          @if (!isReadOnly()) {
+            <button type="button" (click)="removeProject(pr)" class="pe__remove">Remove</button>
+          }
+        </li>
+      }
+      @if (p.projects.length === 0) {
+        <li class="pe__empty">No projects.</li>
+      }
+    </ul>
+
+    @if (!isReadOnly()) {
+      @if (isClosed('projects')) {
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="reopen('projects')">+ Add another project</button>
+      } @else {
+        <form (ngSubmit)="addProject()" class="pe__form" #projForm="ngForm">
+          <input class="ui-input" name="name" [(ngModel)]="projModel.name" placeholder="Project name" required aria-label="Project name" />
+          <input class="ui-input" name="description" [(ngModel)]="projModel.description" placeholder="Description" aria-label="Description" />
+          <input class="ui-input" type="number" name="startYear" [(ngModel)]="projModel.startYear" placeholder="Start year" aria-label="Start year" />
+          <input class="ui-input" type="number" name="endYear" [(ngModel)]="projModel.endYear" placeholder="End year" aria-label="End year" />
+          <button type="submit" [disabled]="!projForm.valid" class="ui-btn ui-btn--secondary">Add another</button>
+          <button type="button" [disabled]="!projForm.valid" class="ui-btn ui-btn--ghost" (click)="saveAndClose('projects')">Save &amp; close</button>
+        </form>
+      }
+    }
+  </section>
+
+  <!-- Links -->
+  <section class="ui-card pe__section">
+    <h3 class="pe__section-title">Public links</h3>
+    <ul class="pe__list">
+      @for (l of p.links; track l.id) {
+        <li class="pe__item">
+          <a [href]="l.url" target="_blank" rel="noopener">{{ l.label || l.url }}</a>
+          @if (!isReadOnly()) {
+            <button type="button" (click)="removeLink(l)" class="pe__remove">Remove</button>
+          }
+        </li>
+      }
+      @if (p.links.length === 0) {
+        <li class="pe__empty">No links.</li>
+      }
+    </ul>
+
+    @if (!isReadOnly()) {
+      @if (isClosed('links')) {
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="reopen('links')">+ Add another link</button>
+      } @else {
+        <form (ngSubmit)="addLink()" class="pe__form" #linkForm="ngForm">
+          <input class="ui-input" name="label" [(ngModel)]="linkModel.label" placeholder="Label (optional)" aria-label="Link label" />
+          <input class="ui-input" name="url" [(ngModel)]="linkModel.url" placeholder="https://…" required aria-label="Link URL" />
+          <button type="submit" [disabled]="!linkForm.valid" class="ui-btn ui-btn--secondary">Add another</button>
+          <button type="button" [disabled]="!linkForm.valid" class="ui-btn ui-btn--ghost" (click)="saveAndClose('links')">Save &amp; close</button>
+        </form>
+      }
+    }
+  </section>
+}

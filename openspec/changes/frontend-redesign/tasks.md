@@ -30,15 +30,15 @@ Delivered in four sequenced phases: (1) design system + shell, (2) Profile + por
 
 ## 4. Phase B — Profile view/edit + portfolio move
 
-- [ ] 4.1 Extract the portfolio editor body from `features/portfolio/portfolio.ts` into a reusable `features/portfolio/portfolio-editor` component with `@Input() employeeId` and `@Input() readOnly`; drop the "Employee ID" picker
-- [ ] 4.2 Add `editMode = signal(false)` to `profile-page.ts` and call `PortfolioStateService.loadPortfolio(id)` on load so view + editor share one signal
-- [ ] 4.3 Add `@Input() editing` to `employee-detail` and gate the identity edit form on `canEdit && editing`
-- [ ] 4.4 Build Profile View mode: identity header (64px avatar, name, job title, role+level badges), meta grid, Top skills chips, Interactions, read-only Tasks, read-only portfolio (`portfolio-editor` with `readOnly=true`)
-- [ ] 4.5 Build Profile Edit mode: "Edit profile" button (owner-or-admin only) reveals identity form + editable `portfolio-editor`; "Done" returns to View
-- [ ] 4.6 Fold `/profile` self-service into the Profile page: resolve current user from JWT subject and route to their own Profile; identity editing happens in Edit mode
-- [ ] 4.7 Remove the standalone `/portfolio` route + `features/portfolio/portfolio.ts`; add a redirect from `/portfolio` to the user's own Profile in `app.routes.ts`
-- [ ] 4.8 Apply cheap fixes on Profile: capitalized role/level labels and spacing between interaction badge and note
-- [ ] 4.9 Port/author unit tests: portfolio-editor (add/edit/remove + read-only mode), profile view/edit gating, `/profile` fold-in, and `/portfolio` redirect
+- [x] 4.1 Extract the portfolio editor body from `features/portfolio/portfolio.ts` into a reusable `features/portfolio/portfolio-editor` component with `@Input() employeeId` and `@Input() readOnly`; drop the "Employee ID" picker
+- [x] 4.2 Add `editMode = signal(false)` to `profile-page.ts` and call `PortfolioStateService.loadPortfolio(id)` on load so view + editor share one signal
+- [x] 4.3 Add `@Input() editing` to `employee-detail` and gate the identity edit form on `canEdit && editing` (default `true` keeps other callers unaffected; ProfilePage passes `editMode()`)
+- [x] 4.4 Build Profile View mode: identity header (64px avatar, name, job title, role+level badges), meta grid, Top skills chips, Interactions, read-only Tasks, read-only portfolio (`portfolio-editor` with `readOnly=true`)
+- [x] 4.5 Build Profile Edit mode: "Edit profile" button (owner-or-admin only) reveals identity form + editable `portfolio-editor`; "Done" returns to View
+- [x] 4.6 Fold `/profile` self-service into the Profile page: resolve current user from JWT subject and route to their own Profile; identity editing happens in Edit mode (retired the standalone `your-details` page/state; `/profile` → `ProfilePage`)
+- [x] 4.7 Remove the standalone `/portfolio` route + `features/portfolio/portfolio.ts`; add a redirect from `/portfolio` to the user's own Profile in `app.routes.ts`
+- [x] 4.8 Apply cheap fixes on Profile: capitalized role/level labels and spacing between interaction badge and note
+- [x] 4.9 Port/author unit tests: portfolio-editor (add/edit/remove + read-only mode), profile view/edit gating, `/profile` fold-in, and `/portfolio` redirect
 
 ## 5. Phase C — Employees directory
 

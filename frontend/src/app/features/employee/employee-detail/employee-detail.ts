@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 
 import { UpdateEmployeeRequest } from '../employee.types';
 import { EmployeeLevel, EmployeeResponse, EMPLOYEE_LEVELS, EMPLOYEE_ROLES, EmployeeRole } from '../employee.types';
+import { Avatar } from '../../../shared/ui/avatar/avatar';
+import { Badge } from '../../../shared/ui/badge/badge';
 
 /**
  * Employee detail with an RBAC-gated edit form.
@@ -21,7 +23,7 @@ import { EmployeeLevel, EmployeeResponse, EMPLOYEE_LEVELS, EMPLOYEE_ROLES, Emplo
  */
 @Component({
   selector: 'app-employee-detail',
-  imports: [FormsModule],
+  imports: [FormsModule, Avatar, Badge],
   templateUrl: './employee-detail.html',
   styleUrl: './employee-detail.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -30,6 +32,13 @@ export class EmployeeDetail implements OnChanges {
   @Input({ required: true }) employee: EmployeeResponse | null = null;
   @Input({ required: true }) canEdit = false;
   @Input({ required: true }) canEditRole = false;
+  /**
+   * Whether the edit form is shown. Gated together with {@link canEdit}
+   * (frontend-redesign task 4.3). Defaults to true so existing callers keep the
+   * previous "form visible whenever editable" behaviour; the Profile page passes
+   * its own edit-mode signal.
+   */
+  @Input() editing = true;
   @Input() showBack = true;
   @Output() updated = new EventEmitter<UpdateEmployeeRequest>();
   @Output() closed = new EventEmitter<void>();
