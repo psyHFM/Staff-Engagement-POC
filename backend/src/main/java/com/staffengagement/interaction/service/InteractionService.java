@@ -43,7 +43,7 @@ public class InteractionService implements InteractionContract {
 
     @Override
     public List<InteractionSummary> findBySubject(EmployeeId subject) {
-        return repository.findBySubjectIdOrderByCreatedAtDesc(subject.value())
+        return repository.findBySubjectIdOrFacilitatorIdOrderByCreatedAtDesc(subject.value(), subject.value())
                 .stream()
                 .map(this::toSummary)
                 .toList();
@@ -58,7 +58,7 @@ public class InteractionService implements InteractionContract {
      */
     public Paged<InteractionSummary> findPageBySubject(EmployeeId subject, PageRequest request, Sort sort) {
         Pageable pageable = new OffsetPageRequest(request.offset(), request.limit(), sort);
-        Page<Interaction> page = repository.findBySubjectId(subject.value(), pageable);
+        Page<Interaction> page = repository.findBySubjectIdOrFacilitatorId(subject.value(), subject.value(), pageable);
         List<InteractionSummary> content = page.getContent().stream()
                 .map(this::toSummary)
                 .toList();

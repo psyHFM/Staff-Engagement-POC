@@ -136,7 +136,7 @@ class InteractionServiceTest {
         // Given — the repository returns interactions newest-first
         Interaction first = interaction(10L, InteractionType.CHECK_IN, 1L, 2L, "first");
         Interaction second = interaction(11L, InteractionType.MENTORING, 1L, 3L, "second");
-        when(repository.findBySubjectIdOrderByCreatedAtDesc(1L)).thenReturn(List.of(first, second));
+        when(repository.findBySubjectIdOrFacilitatorIdOrderByCreatedAtDesc(1L, 1L)).thenReturn(List.of(first, second));
 
         // When
         List<InteractionSummary> result = service.findBySubject(SUBJECT);
@@ -149,9 +149,25 @@ class InteractionServiceTest {
     }
 
     @Test
+    void findBySubjectReturnsInteractionsWhereEmployeeIsSubjectOrFacilitator() {
+        // Given — one interaction where the employee is the subject, one where they facilitated
+        Interaction asSubject = interaction(10L, InteractionType.CHECK_IN, 1L, 2L, "subject-led");
+        Interaction asFacilitator = interaction(11L, InteractionType.MENTORING, 3L, 1L, "facilitated");
+        when(repository.findBySubjectIdOrFacilitatorIdOrderByCreatedAtDesc(1L, 1L)).thenReturn(List.of(asSubject, asFacilitator));
+
+        // When
+        List<InteractionSummary> result = service.findBySubject(SUBJECT);
+
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(InteractionSummary::id)
+                .containsExactly(new InteractionId(10L), new InteractionId(11L));
+    }
+
+    @Test
     void findBySubjectReturnsEmptyListWhenNoneExist() {
         // Given
-        when(repository.findBySubjectIdOrderByCreatedAtDesc(1L)).thenReturn(List.of());
+        when(repository.findBySubjectIdOrFacilitatorIdOrderByCreatedAtDesc(1L, 1L)).thenReturn(List.of());
 
         // When
         List<InteractionSummary> result = service.findBySubject(SUBJECT);
@@ -166,7 +182,7 @@ class InteractionServiceTest {
         Interaction a = interaction(10L, InteractionType.CHECK_IN, 1L, 2L, "a");
         Interaction b = interaction(11L, InteractionType.OTHER, 1L, 3L, "b");
         Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
-        when(repository.findBySubjectId(any(Long.class), any(org.springframework.data.domain.Pageable.class)))
+        when(repository.findBySubjectIdOrFacilitatorId(any(Long.class), any(Long.class), any(org.springframework.data.domain.Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(a, b), org.springframework.data.domain.PageRequest.of(0, 20, sort), 2L));
 
         // When
@@ -175,7 +191,7 @@ class InteractionServiceTest {
         // Then — the Pageable handed to the repository carries the true offset/limit/sort
         ArgumentCaptor<org.springframework.data.domain.Pageable> captor =
                 ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
-        verify(repository).findBySubjectId(any(Long.class), captor.capture());
+        verify(repository).findBySubjectIdOrFacilitatorId(any(Long.class), any(Long.class), captor.capture());
         org.springframework.data.domain.Pageable passed = captor.getValue();
         assertThat(passed.getOffset()).isZero();
         assertThat(passed.getPageSize()).isEqualTo(20);
@@ -191,7 +207,7 @@ class InteractionServiceTest {
     @Test
     void findPageBySubjectWithOffsetBeyondDataReturnsEmptyWindow() {
         // Given — page offset 20 / limit 20 over 2 total rows
-        when(repository.findBySubjectId(any(Long.class), any(org.springframework.data.domain.Pageable.class)))
+        when(repository.findBySubjectIdOrFacilitatorId(any(Long.class), any(Long.class), any(org.springframework.data.domain.Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(), org.springframework.data.domain.PageRequest.of(1, 20), 2L));
 
         // When
