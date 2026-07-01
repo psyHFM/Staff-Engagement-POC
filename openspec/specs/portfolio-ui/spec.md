@@ -22,7 +22,12 @@ The system SHALL provide a `PortfolioStateService` in `features/portfolio/` that
 - **THEN** it calls a method on `PortfolioStateService`, which performs the HTTP call and updates the portfolio signal; the component does not call `.set()` on a global state signal
 
 ### Requirement: Portfolio editor components
-The system SHALL provide components to view and edit the portfolio: a skill section (skill name, years, project count), an education section, a projects section, and a links section — each able to add, edit, and remove entries through the state service.
+The system SHALL provide a reusable `portfolio-editor` component (extracted from the former standalone `features/portfolio/portfolio.ts` body) that accepts `@Input() employeeId` and `@Input() readOnly`, and renders the four portfolio sections — skills (skill name, years, project count), education, projects, and links — each able to add, edit, and remove entries through `PortfolioStateService`. The component SHALL NOT contain any "Employee ID" picker; the employee is supplied by its host (the Profile page). When `readOnly` is true the editor SHALL render the sections without add/edit/remove affordances.
+
+#### Scenario: Editor is driven by inputs, not an id picker
+- **WHEN** the `portfolio-editor` is mounted on the Profile page
+- **THEN** it uses the `employeeId` input for all reads/writes
+- **AND** it presents no free-text "Employee ID" input
 
 #### Scenario: Editing a skill updates the portfolio
 - **WHEN** the user edits a skill's `years` or `projectCount` and saves
@@ -32,9 +37,6 @@ The system SHALL provide components to view and edit the portfolio: a skill sect
 - **WHEN** the user removes a project or link
 - **THEN** the component calls the state service, which DELETEs the entry and the UI removes it from the computed view
 
-### Requirement: Lazy-loaded portfolio route
-The system SHALL register the portfolio feature as a lazy-loaded route by appending exactly one `loadChildren` line to `routes.ts`, using a kebab-case route path. No other shared file SHALL be edited by this feature.
-
-#### Scenario: Route is appended, not inserted
-- **WHEN** the portfolio feature is wired
-- **THEN** `routes.ts` gains one new `loadChildren` line for the portfolio feature path and no existing line is modified
+#### Scenario: Read-only mode hides edit affordances
+- **WHEN** the editor is mounted with `readOnly` true (profile View mode or a non-owner viewer)
+- **THEN** the four sections render without add, edit, or remove controls
