@@ -43,13 +43,14 @@ type TaskFilter = 'all' | 'open' | 'done';
         </div>
 
         <div *ngIf="state.tasks().length > 0" class="task-list">
-          <div *ngFor="let task of visibleTasks()" class="task-card" [class.task-card--done]="task.completed">
+          <div *ngFor="let task of visibleTasks()" class="task-card" [class.task-card--done]="task.completed" (click)="openTask(task)">
             <div class="task-card-main">
               <div class="task-status">
                 <input
                   type="checkbox"
                   [checked]="task.completed"
                   (change)="toggleTask(task)"
+                  (click)="$event.stopPropagation()"
                   class="task-checkbox"
                   [attr.aria-label]="task.title"
                 />
@@ -74,7 +75,7 @@ type TaskFilter = 'all' | 'open' | 'done';
               <button
                 type="button"
                 class="task-subtasks-toggle"
-                (click)="toggleExpand(task)"
+                (click)="toggleExpand(task); $event.stopPropagation()"
                 [attr.aria-expanded]="isExpanded(task)"
                 [attr.aria-controls]="itemsRegionId(task)">
                 <i class="pi" [class.pi-chevron-down]="!isExpanded(task)" [class.pi-chevron-up]="isExpanded(task)"></i>
@@ -105,6 +106,7 @@ type TaskFilter = 'all' | 'open' | 'done';
                     type="checkbox"
                     [checked]="item.completed"
                     (change)="toggleItem(task, item, $any($event.target).checked)"
+                    (click)="$event.stopPropagation()"
                     class="task-items__checkbox"
                     [attr.aria-label]="'Mark ' + item.title + (item.completed ? ' incomplete' : ' complete')" />
 
@@ -145,7 +147,7 @@ type TaskFilter = 'all' | 'open' | 'done';
                     <button
                       type="button"
                       class="task-items__btn"
-                      (click)="moveItem(task, item, -1)"
+                      (click)="moveItem(task, item, -1); $event.stopPropagation()"
                       [disabled]="first"
                       [attr.aria-label]="'Move ' + item.title + ' up'">
                       <i class="pi pi-arrow-up"></i>
@@ -153,7 +155,7 @@ type TaskFilter = 'all' | 'open' | 'done';
                     <button
                       type="button"
                       class="task-items__btn"
-                      (click)="moveItem(task, item, +1)"
+                      (click)="moveItem(task, item, +1); $event.stopPropagation()"
                       [disabled]="last"
                       [attr.aria-label]="'Move ' + item.title + ' down'">
                       <i class="pi pi-arrow-down"></i>
@@ -161,14 +163,14 @@ type TaskFilter = 'all' | 'open' | 'done';
                     <button
                       type="button"
                       class="task-items__btn"
-                      (click)="startItemEdit(item)"
+                      (click)="startItemEdit(item); $event.stopPropagation()"
                       [attr.aria-label]="'Edit ' + item.title">
                       <i class="pi pi-pencil"></i>
                     </button>
                     <button
                       type="button"
                       class="task-items__btn task-items__btn--danger"
-                      (click)="removeItem(task, item)"
+                      (click)="removeItem(task, item); $event.stopPropagation()"
                       [attr.aria-label]="'Remove ' + item.title">
                       <i class="pi pi-trash"></i>
                     </button>
@@ -188,10 +190,12 @@ type TaskFilter = 'all' | 'open' | 'done';
                   maxlength="255"
                   placeholder="Add a sub-task..."
                   class="task-items__input"
-                  data-testid="task-items-input" />
+                  data-testid="task-items-input"
+                  (click)="$event.stopPropagation()" />
                 <button
                   type="submit"
                   class="btn-secondary"
+                  (click)="$event.stopPropagation()"
                   [disabled]="!itemForm.form.valid || newItemTitle.trim().length === 0"
                   data-testid="task-items-add">
                   Add
@@ -247,15 +251,6 @@ type TaskFilter = 'all' | 'open' | 'done';
 
             <div class="task-edit-form__meta">
               <span>Created {{ task.createdAt | date:'mediumDate' }}</span>
-              <label class="task-complete-toggle">
-                <input
-                  type="checkbox"
-                  [checked]="task.completed"
-                  (change)="toggleTask(task)"
-                  class="task-checkbox"
-                  [attr.aria-label]="'Mark ' + task.title + (task.completed ? ' incomplete' : ' complete')" />
-                Done
-              </label>
             </div>
 
             <div class="task-edit-form__actions">
@@ -334,6 +329,7 @@ type TaskFilter = 'all' | 'open' | 'done';
       border-radius: var(--radius);
       box-shadow: var(--shadow-sm);
       padding: calc(var(--space) * 2);
+      cursor: pointer;
     }
     .task-card--done { opacity: 0.7; }
 
@@ -399,6 +395,19 @@ type TaskFilter = 'all' | 'open' | 'done';
       box-shadow: 0 20px 50px rgba(15, 23, 42, 0.24);
       padding: 1.5rem;
     }
+    .icon-button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+    }
+    .icon-button:hover { background: var(--surface-2); color: var(--text); }
     .task-detail-modal__header {
       display: flex;
       align-items: flex-start;
@@ -503,7 +512,21 @@ type TaskFilter = 'all' | 'open' | 'done';
       cursor: pointer;
       font: inherit;
       font-weight: 500;
+      min-height: 36px;
     }
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 0 calc(var(--space) * 1.5);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+      min-height: 36px;
+    }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
     .btn-secondary:disabled { color: var(--text-faint); cursor: not-allowed; }
     .btn-secondary:hover:not(:disabled) { background: var(--surface-2); }
     .btn-secondary--danger {
@@ -599,6 +622,9 @@ export class Task implements OnInit {
     this.editDescription = task.description;
     this.editingItemId.set(null);
     this.newItemTitle = '';
+    
+    // Keep the inline expansion in sync with the modal so items render
+    this.expandedTaskId.set(task.id.value.toString());
 
     if (!this.state.itemsByTaskId().has(task.id.value.toString())) {
       this.state.loadTaskItems(task.id.value.toString());
@@ -610,6 +636,7 @@ export class Task implements OnInit {
     this.editingTaskId.set(null);
     this.editingItemId.set(null);
     this.newItemTitle = '';
+    this.expandedTaskId.set(null);
   }
 
   protected startEdit(task: TaskModel, event: MouseEvent): void {
@@ -636,7 +663,7 @@ export class Task implements OnInit {
   }
 
   protected isExpanded(task: TaskModel): boolean {
-    return this.selectedTaskId() === task.id.value.toString();
+    return this.expandedTaskId() === task.id.value.toString();
   }
 
   protected itemsRegionId(task: TaskModel): string {
@@ -648,11 +675,15 @@ export class Task implements OnInit {
   }
 
   protected toggleExpand(task: TaskModel): void {
+    const idStr = task.id.value.toString();
     if (this.isExpanded(task)) {
-      this.closeTask();
+      this.expandedTaskId.set(null);
       return;
     }
-    this.openTask(task);
+    this.expandedTaskId.set(idStr);
+    if (!this.state.itemsByTaskId().has(idStr)) {
+      this.state.loadTaskItems(idStr);
+    }
   }
 
   protected toggleItem(task: TaskModel, item: TaskItem, completed: boolean): void {
