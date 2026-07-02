@@ -62,7 +62,7 @@ class InteractionServiceTest {
         });
 
         // When
-        InteractionSummary result = service.create(InteractionType.CHECK_IN, SUBJECT, FACILITATOR, "subject", "great chat");
+        InteractionSummary result = service.create(InteractionType.CHECK_IN, SUBJECT, FACILITATOR, "subject", "list note", "great chat");
 
         // Then — the persisted entity carries the right fields and the summary echoes them
         ArgumentCaptor<Interaction> captor = ArgumentCaptor.forClass(Interaction.class);
@@ -82,6 +82,7 @@ class InteractionServiceTest {
         assertThat(result.facilitator()).isEqualTo(FACILITATOR);
         assertThat(result.facilitatorName()).isEqualTo("Facilitator Name");
         assertThat(result.subjectText()).isEqualTo("subject");
+        assertThat(result.interactionListNote()).isEqualTo("list note");
         assertThat(result.note()).isEqualTo("great chat");
     }
 
@@ -91,7 +92,7 @@ class InteractionServiceTest {
         when(employeeContract.exists(SUBJECT)).thenReturn(false);
 
         // When / Then
-        assertThatThrownBy(() -> service.create(InteractionType.MENTORING, SUBJECT, FACILITATOR, "x", "x"))
+        assertThatThrownBy(() -> service.create(InteractionType.MENTORING, SUBJECT, FACILITATOR, "x", "x", "x"))
                 .isInstanceOf(SubjectNotFoundException.class);
         verify(repository, never()).save(any());
     }
@@ -103,7 +104,7 @@ class InteractionServiceTest {
         when(employeeContract.exists(FACILITATOR)).thenReturn(false);
 
         // When / Then
-        assertThatThrownBy(() -> service.create(InteractionType.MENTORING, SUBJECT, FACILITATOR, "x", "x"))
+        assertThatThrownBy(() -> service.create(InteractionType.MENTORING, SUBJECT, FACILITATOR, "x", "x", "x"))
                 .isInstanceOf(FacilitatorNotFoundException.class);
         verify(repository, never()).save(any());
     }
@@ -111,7 +112,7 @@ class InteractionServiceTest {
     @Test
     void createRejectsMissingTypeAsValidation400() {
         // Given / When / Then — null type never reaches the contract check
-        assertThatThrownBy(() -> service.create(null, SUBJECT, FACILITATOR, "x", "x"))
+        assertThatThrownBy(() -> service.create(null, SUBJECT, FACILITATOR, "x", "x", "x"))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(employeeContract, never()).exists(any());
         verify(repository, never()).save(any());
@@ -119,14 +120,14 @@ class InteractionServiceTest {
 
     @Test
     void createRejectsMissingSubjectAsValidation400() {
-        assertThatThrownBy(() -> service.create(InteractionType.CATCH_UP, null, FACILITATOR, "x", "x"))
+        assertThatThrownBy(() -> service.create(InteractionType.CATCH_UP, null, FACILITATOR, "x", "x", "x"))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(repository, never()).save(any());
     }
 
     @Test
     void createRejectsMissingFacilitatorAsValidation400() {
-        assertThatThrownBy(() -> service.create(InteractionType.CATCH_UP, SUBJECT, null, "x", "x"))
+        assertThatThrownBy(() -> service.create(InteractionType.CATCH_UP, SUBJECT, null, "x", "x", "x"))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(repository, never()).save(any());
     }

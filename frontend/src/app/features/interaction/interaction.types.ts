@@ -35,6 +35,8 @@ export interface InteractionSummary {
   readonly subject: EmployeeId;
   readonly facilitator: EmployeeId;
   readonly facilitatorName: string;
+  readonly subjectText: string;
+  readonly interactionListNote: string;
   readonly note: string;
   readonly createdAt: string;
 }

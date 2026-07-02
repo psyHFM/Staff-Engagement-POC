@@ -56,13 +56,16 @@ describe('InteractionPage', () => {
       clearTransient: jest.fn(),
       createInteraction: jest.fn(),
       updateInteraction: jest.fn(),
+      openInteractionDetail: jest.fn(),
+      closeInteractionDetail: jest.fn(),
       defaultFacilitator: () => ({ value: 2 }),
       subjects,
       subject,
       history,
       created,
       error,
-      isLoading
+      isLoading,
+      selectedInteractionForModal: signal(null)
     } as unknown as InteractionStateService;
 
     await TestBed

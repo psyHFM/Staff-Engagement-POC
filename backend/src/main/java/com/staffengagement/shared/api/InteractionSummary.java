@@ -11,10 +11,13 @@ import java.time.Instant;
  * <p>Encodes the v1.1.0 domain model: {@code type} (controlled vocabulary),
  * {@code subject} (who the interaction was for), {@code facilitator} (who facilitated,
  * defaulting to the logged-in user), {@code subjectText} (brief subject/summary),
- * {@code note}, and {@code createdAt}.
+ * {@code interactionListNote} (short summary for list view), {@code note} (full notes),
+ * and {@code createdAt}.
  *
  * <p>{@code facilitatorName} is the denormalised full name of the facilitator at the time
  * of creation, so the UI can render the history without an extra employee lookup.
+ * {@code interactionListNote} is a shorter version of {@code note} for display in lists,
+ * while {@code note} contains the full details shown in the detail modal.
  */
 public record InteractionSummary(
         InteractionId id,
@@ -23,6 +26,7 @@ public record InteractionSummary(
         EmployeeId facilitator,
         String facilitatorName,
         String subjectText,
+        String interactionListNote,
         String note,
         Instant createdAt) {
 }

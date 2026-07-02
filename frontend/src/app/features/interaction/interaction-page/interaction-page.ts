@@ -7,6 +7,7 @@ import { EditInteraction } from '../edit-interaction/edit-interaction';
 import { InteractionList } from '../interaction-list/interaction-list';
 import { InteractionStateService } from '../interaction-state.service';
 import { LogInteraction } from '../log-interaction/log-interaction';
+import { InteractionDetailModal } from '../interaction-detail-modal/interaction-detail-modal';
 import { InteractionSummary } from '../interaction.types';
 import { TaskCreateForm } from '../../task/task-create-form';
 
@@ -17,8 +18,9 @@ import { TaskCreateForm } from '../../task/task-create-form';
  * interaction history. Uses the {@link InteractionStateService} for all data and
  * side effects (frontend-state.yaml).
  *
- * <p>Per-row actions (ATSE1-28, ATSE1-29):
+ * <p>Per-row actions (ATSE1-28, ATSE1-29, ATSE1-82):
  * <ul>
+ *   <li>Click row — opens detail modal showing full interaction details.</li>
  *   <li>Edit — opens an edit modal bound to the row. Only {@code type} and
  *       {@code note} are mutable; subject, facilitator and createdAt are
  *       immutable to keep the audit trail honest.</li>
@@ -28,7 +30,7 @@ import { TaskCreateForm } from '../../task/task-create-form';
  */
 @Component({
   selector: 'app-interaction-page',
-  imports: [FormsModule, RouterLink, LogInteraction, InteractionList, EditInteraction, TaskCreateForm],
+  imports: [FormsModule, RouterLink, LogInteraction, InteractionList, EditInteraction, TaskCreateForm, InteractionDetailModal],
   templateUrl: './interaction-page.html',
   styleUrl: './interaction-page.scss',
   providers: [InteractionStateService],
@@ -74,6 +76,10 @@ export class InteractionPage implements OnInit {
     const value = Number((event.target as HTMLSelectElement).value);
     this.state.selectSubject({ value });
     this.state.loadHistory();
+  }
+
+  protected onRowViewDetail(interaction: InteractionSummary): void {
+    this.state.openInteractionDetail(interaction);
   }
 
   protected onRowEdit(interaction: InteractionSummary): void {
