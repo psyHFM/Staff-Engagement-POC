@@ -182,4 +182,52 @@ describe('InteractionList', () => {
     // Then
     expect(emitted).toEqual([target]);
   });
+
+  // ---- ATSE1-82 — rowViewDetail for detail modal ----------------------------
+
+  it('emits rowViewDetail when onViewDetail is called', () => {
+    // Given
+    const target = interaction(1);
+    const emitted: InteractionSummary[] = [];
+    component.rowViewDetail.subscribe((item) => emitted.push(item));
+
+    // When
+    component.onViewDetail(target);
+
+    // Then
+    expect(emitted).toEqual([target]);
+  });
+
+  it('onViewDetail only emits the supplied interaction', () => {
+    // Given
+    const target = interaction(2);
+    const emitted: InteractionSummary[] = [];
+    component.rowViewDetail.subscribe((item) => emitted.push(item));
+
+    // When
+    component.onViewDetail(target);
+
+    // Then
+    expect(emitted).toEqual([target]);
+  });
+
+  it('onActionsClick stops event propagation', () => {
+    // Given
+    const mockEvent = { stopPropagation: jest.fn() } as unknown as Event;
+
+    // When
+    component.onActionsClick(mockEvent);
+
+    // Then
+    expect(mockEvent.stopPropagation).toHaveBeenCalled();
+  });
+
+  it('renders clickable rows with hover state', () => {
+    // When
+    fixture.detectChanges();
+
+    // Then
+    const items = fixture.nativeElement.querySelectorAll('.interaction-list__item--clickable');
+    expect(items.length).toBe(2);
+  });
 });

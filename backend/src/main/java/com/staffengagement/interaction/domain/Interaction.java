@@ -59,6 +59,9 @@ public class Interaction {
     @Column(name = "subject_text", length = 100)
     private String subjectText;
 
+    @Column(name = "interaction_list_note", length = 255)
+    private String interactionListNote;
+
     @Column(name = "note", columnDefinition = "text")
     private String note;
 

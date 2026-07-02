@@ -28,6 +28,22 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
+    cursor: pointer;
+    transition: background-color var(--ease), box-shadow var(--ease);
+
+    &:hover {
+      background: var(--surface-2);
+      box-shadow: var(--shadow-sm);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    &--clickable {
+      cursor: pointer;
+    }
   }
 
   &__meta {

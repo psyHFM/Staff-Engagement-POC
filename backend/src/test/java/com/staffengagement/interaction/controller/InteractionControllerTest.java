@@ -52,12 +52,12 @@ class InteractionControllerTest {
         // Given — the service persists and returns the created summary
         InteractionSummary created = new InteractionSummary(
                 new InteractionId(42L), InteractionType.CHECK_IN, new EmployeeId(1L), new EmployeeId(2L),
-                "Admin User", "subject text", "note", Instant.parse("2026-06-25T10:00:00Z"));
-        when(interactionService.create(any(), any(), any(), any(), any())).thenReturn(created);
+                "Admin User", "subject text", "list note", "note", Instant.parse("2026-06-25T10:00:00Z"));
+        when(interactionService.create(any(), any(), any(), any(), any(), any())).thenReturn(created);
 
         // When
         var response = controller.create(
-                new CreateInteractionRequest(InteractionType.CHECK_IN, new EmployeeId(1L), new EmployeeId(2L), "subject text", "note"));
+                new CreateInteractionRequest(InteractionType.CHECK_IN, new EmployeeId(1L), new EmployeeId(2L), "subject text", "list note", "note"));
 
         // Then — 201 with the unwrapped summary, body forwarded to the service
         assertThat(response.getStatusCode().value()).isEqualTo(201);
@@ -67,12 +67,14 @@ class InteractionControllerTest {
         ArgumentCaptor<EmployeeId> subject = ArgumentCaptor.forClass(EmployeeId.class);
         ArgumentCaptor<EmployeeId> facilitator = ArgumentCaptor.forClass(EmployeeId.class);
         ArgumentCaptor<String> subjectText = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> interactionListNote = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> note = ArgumentCaptor.forClass(String.class);
-        verify(interactionService).create(type.capture(), subject.capture(), facilitator.capture(), subjectText.capture(), note.capture());
+        verify(interactionService).create(type.capture(), subject.capture(), facilitator.capture(), subjectText.capture(), interactionListNote.capture(), note.capture());
         assertThat(type.getValue()).isEqualTo(InteractionType.CHECK_IN);
         assertThat(subject.getValue()).isEqualTo(new EmployeeId(1L));
         assertThat(facilitator.getValue()).isEqualTo(new EmployeeId(2L));
         assertThat(subjectText.getValue()).isEqualTo("subject text");
+        assertThat(interactionListNote.getValue()).isEqualTo("list note");
         assertThat(note.getValue()).isEqualTo("note");
     }
 
@@ -81,7 +83,7 @@ class InteractionControllerTest {
         // Given — the service returns a page of one interaction
         InteractionSummary summary = new InteractionSummary(
                 new InteractionId(7L), InteractionType.MENTORING, new EmployeeId(1L), new EmployeeId(2L),
-                "Facilitator Name", "n", "n", Instant.parse("2026-06-25T10:00:00Z"));
+                "Facilitator Name", "n", "n", "n", Instant.parse("2026-06-25T10:00:00Z"));
         Paged<InteractionSummary> page = new Paged<>(List.of(summary), 0, 20, 1L);
         when(interactionService.findPageBySubject(any(), any(), any())).thenReturn(page);
 
@@ -158,7 +160,7 @@ class InteractionControllerTest {
         // Given
         InteractionSummary summary = new InteractionSummary(
                 new InteractionId(5L), InteractionType.CATCH_UP, new EmployeeId(1L), new EmployeeId(2L),
-                "Facilitator Name", "subject", "note", Instant.parse("2026-06-25T10:00:00Z"));
+                "Facilitator Name", "subject", "list note", "note", Instant.parse("2026-06-25T10:00:00Z"));
         when(interactionService.findById(new InteractionId(5L))).thenReturn(Optional.of(summary));
 
         // When
@@ -185,7 +187,7 @@ class InteractionControllerTest {
         // Given — the service returns the updated summary
         InteractionSummary updated = new InteractionSummary(
                 new InteractionId(5L), InteractionType.MENTORING, new EmployeeId(1L), new EmployeeId(2L),
-                "Facilitator Name", "subject", "new", Instant.parse("2026-06-25T11:00:00Z"));
+                "Facilitator Name", "subject", "new", "new", Instant.parse("2026-06-25T11:00:00Z"));
         when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
         var principal = adminPrincipal();
 
@@ -211,7 +213,7 @@ class InteractionControllerTest {
         // Given — a non-admin principal (any role other than ADMIN)
         InteractionSummary updated = new InteractionSummary(
                 new InteractionId(6L), InteractionType.OTHER, new EmployeeId(1L), new EmployeeId(2L),
-                "Facilitator Name", "subject", "n", Instant.parse("2026-06-25T11:00:00Z"));
+                "Facilitator Name", "subject", "n", "n", Instant.parse("2026-06-25T11:00:00Z"));
         when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
         var principal = employeePrincipal("2");
 
@@ -228,7 +230,7 @@ class InteractionControllerTest {
         when(interactionService.update(any(), any(), any(), any(), anyBoolean()))
                 .thenReturn(new InteractionSummary(
                         new InteractionId(7L), InteractionType.OTHER, new EmployeeId(1L), new EmployeeId(2L),
-                        "Facilitator Name", "subject", "n", Instant.parse("2026-06-25T11:00:00Z")));
+                        "Facilitator Name", "subject", "n", "n", Instant.parse("2026-06-25T11:00:00Z")));
         var principal = employeePrincipal("42");
 
         // When
@@ -273,7 +275,7 @@ class InteractionControllerTest {
         // Given — catch-up type deserialized correctly from kebab-case JSON
         InteractionSummary updated = new InteractionSummary(
                 new InteractionId(5L), InteractionType.CATCH_UP, new EmployeeId(1L), new EmployeeId(2L),
-                "Facilitator Name", "subject", "updated note", Instant.parse("2026-06-25T11:00:00Z"));
+                "Facilitator Name", "subject", "updated note", "updated note", Instant.parse("2026-06-25T11:00:00Z"));
         when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
         var principal = adminPrincipal();
 
@@ -292,7 +294,7 @@ class InteractionControllerTest {
         // Given — check-in type deserialized correctly from kebab-case JSON
         InteractionSummary updated = new InteractionSummary(
                 new InteractionId(6L), InteractionType.CHECK_IN, new EmployeeId(1L), new EmployeeId(2L),
-                "Facilitator Name", "subject", "note", Instant.parse("2026-06-25T11:00:00Z"));
+                "Facilitator Name", "subject", "note", "note", Instant.parse("2026-06-25T11:00:00Z"));
         when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
         var principal = adminPrincipal();
 

@@ -12,12 +12,13 @@ import com.staffengagement.shared.kernel.InteractionType;
  * matching the frozen {@code InteractionSummary} read model for consistency.
  * {@code facilitator} is required in this splice (design D3); {@code note} is
  * optional free-text. {@code subjectText} is a brief free-text subject/summary
- * (ATSE1-45).
+ * (ATSE1-45). {@code interactionListNote} is an optional short summary for list display.
  */
 public record CreateInteractionRequest(
         InteractionType type,
         EmployeeId subject,
         EmployeeId facilitator,
         String subjectText,
+        String interactionListNote,
         String note) {
 }

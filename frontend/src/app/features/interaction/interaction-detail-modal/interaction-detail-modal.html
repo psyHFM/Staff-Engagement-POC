@@ -1,0 +1,49 @@
+<app-modal
+  [open]="modalOpen() !== null"
+  title="Interaction Details"
+  (closed)="closeModal()">
+
+  @if (interaction(); as current) {
+    <div class="interaction-detail">
+      <div class="interaction-detail__header">
+        <app-badge kind="interaction" [value]="current.type" />
+        <span class="interaction-detail__date" aria-label="created at">
+          {{ current.createdAt | date:'medium' }}
+        </span>
+      </div>
+
+      <dl class="interaction-detail__list">
+        <div class="interaction-detail__row">
+          <dt>Interaction Type</dt>
+          <dd>{{ current.type }}</dd>
+        </div>
+
+        <div class="interaction-detail__row">
+          <dt>Facilitator</dt>
+          <dd>{{ current.facilitatorName }}</dd>
+        </div>
+
+        @if (current.subjectText) {
+          <div class="interaction-detail__row">
+            <dt>Subject</dt>
+            <dd>{{ current.subjectText }}</dd>
+          </div>
+        }
+
+        @if (current.interactionListNote) {
+          <div class="interaction-detail__row">
+            <dt>Summary</dt>
+            <dd>{{ current.interactionListNote }}</dd>
+          </div>
+        }
+
+        <div class="interaction-detail__row">
+          <dt>Notes</dt>
+          <dd class="interaction-detail__notes">
+            {{ current.note || 'No notes' }}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  }
+</app-modal>

@@ -353,4 +353,49 @@ describe('InteractionStateService', () => {
     // When / Then — actor=3, facilitator=2, not admin → false
     expect(service.verifyEditableLocally({ value: 1 }, employee(3), false)).toBe(false);
   });
+
+  // ---- ATSE1-82 — selectedInteraction for detail modal ----------------
+
+  it('starts with no selected interaction (modal closed)', () => {
+    // Then
+    expect(service.selectedInteractionForModal()).toBeNull();
+  });
+
+  it('openInteractionDetail sets the selected interaction for modal display', () => {
+    // Given
+    const testInteraction = interaction({ id: { value: 42 }, note: 'Full note content' });
+
+    // When
+    service.openInteractionDetail(testInteraction);
+
+    // Then
+    expect(service.selectedInteractionForModal()).toEqual(testInteraction);
+  });
+
+  it('closeInteractionDetail clears the selected interaction', () => {
+    // Given
+    const testInteraction = interaction({ id: { value: 42 } });
+    service.openInteractionDetail(testInteraction);
+    expect(service.selectedInteractionForModal()).not.toBeNull();
+
+    // When
+    service.closeInteractionDetail();
+
+    // Then
+    expect(service.selectedInteractionForModal()).toBeNull();
+  });
+
+  it('openInteractionDetail replaces any previously selected interaction', () => {
+    // Given
+    const first = interaction({ id: { value: 1 } });
+    const second = interaction({ id: { value: 2 } });
+    service.openInteractionDetail(first);
+
+    // When
+    service.openInteractionDetail(second);
+
+    // Then
+    expect(service.selectedInteractionForModal()).toEqual(second);
+    expect(service.selectedInteractionForModal()?.id.value).toBe(2);
+  });
 });

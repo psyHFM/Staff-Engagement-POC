@@ -73,8 +73,9 @@ public class InteractionService implements InteractionContract {
      * {@code type} is already constrained to the frozen vocabulary by Jackson
      * deserialization before reaching this method.
      * {@code subjectText} is an optional brief subject/summary (ATSE1-45).
+     * {@code interactionListNote} is an optional short summary for list display.
      */
-    public InteractionSummary create(InteractionType type, EmployeeId subject, EmployeeId facilitator, String subjectText, String note) {
+    public InteractionSummary create(InteractionType type, EmployeeId subject, EmployeeId facilitator, String subjectText, String interactionListNote, String note) {
         if (type == null) {
             throw new IllegalArgumentException("type is required");
         }
@@ -96,6 +97,7 @@ public class InteractionService implements InteractionContract {
         entity.setSubjectId(subject.value());
         entity.setFacilitatorId(facilitator.value());
         entity.setSubjectText(subjectText);
+        entity.setInteractionListNote(interactionListNote);
         entity.setNote(note);
         Instant now = Instant.now();
         entity.setCreatedAt(now);
@@ -160,6 +162,7 @@ public class InteractionService implements InteractionContract {
      * Convert domain entity to read-model summary. Includes denormalised
      * {@code facilitatorName} so the UI can render history without extra lookup.
      * {@code subjectText} is the brief subject/summary from the form.
+     * {@code interactionListNote} is a shorter version of {@code note} for list display.
      */
     private InteractionSummary toSummary(Interaction entity) {
         EmployeeId facilitatorId = new EmployeeId(entity.getFacilitatorId());
@@ -172,7 +175,18 @@ public class InteractionService implements InteractionContract {
                 facilitatorId,
                 facilitatorName,
                 entity.getSubjectText() != null ? entity.getSubjectText() : "",
+                entity.getInteractionListNote() != null ? entity.getInteractionListNote() : truncateNote(entity.getNote()),
                 entity.getNote(),
                 entity.getCreatedAt());
+    }
+
+    /**
+     * Truncate note for list display. Returns first 50 characters or the full note if shorter.
+     */
+    private String truncateNote(String note) {
+        if (note == null || note.isEmpty()) {
+            return "";
+        }
+        return note.length() <= 50 ? note : note.substring(0, 50) + "...";
     }
 }

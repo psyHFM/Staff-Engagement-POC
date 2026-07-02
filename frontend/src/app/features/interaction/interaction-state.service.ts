@@ -36,6 +36,7 @@ export class InteractionStateService extends StateService {
   private readonly interactions = signal<Paged<InteractionSummary> | null>(null);
   private readonly lastCreated = signal<InteractionSummary | null>(null);
   private readonly lastError = signal<ApiError | null>(null);
+  private readonly selectedInteraction = signal<InteractionSummary | null>(null);
 
   /**
    * Selectable subjects derived from {@code GET /api/v1/employees}. Starts
@@ -45,6 +46,7 @@ export class InteractionStateService extends StateService {
   private readonly availableSubjects = signal<EmployeeOption[]>([]);
 
   readonly subjects = computed(() => this.availableSubjects());
+  readonly selectedInteractionForModal = computed(() => this.selectedInteraction());
 
   /**
    * Load selectable employees from the real directory endpoint. The backend
@@ -208,6 +210,16 @@ export class InteractionStateService extends StateService {
   clearTransient(): void {
     this.lastError.set(null);
     this.lastCreated.set(null);
+  }
+
+  /** Open the interaction detail modal with the selected interaction. */
+  openInteractionDetail(interaction: InteractionSummary): void {
+    this.selectedInteraction.set(interaction);
+  }
+
+  /** Close the interaction detail modal. */
+  closeInteractionDetail(): void {
+    this.selectedInteraction.set(null);
   }
 
   /**

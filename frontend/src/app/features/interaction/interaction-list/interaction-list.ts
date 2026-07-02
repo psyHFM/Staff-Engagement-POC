@@ -39,6 +39,7 @@ export class InteractionList {
   @Input({ required: true }) loading = false;
   @Output() pageRequested = new EventEmitter<PageRequest>();
   @Output() rowEdit = new EventEmitter<InteractionSummary>();
+  @Output() rowViewDetail = new EventEmitter<InteractionSummary>();
   @Output() createTask = new EventEmitter<InteractionSummary>();
 
   protected readonly limit = 20;
@@ -85,11 +86,20 @@ export class InteractionList {
     this.pageRequested.emit({ offset: previousOffset, limit: this.limit });
   }
 
+  protected onViewDetail(interaction: InteractionSummary): void {
+    this.rowViewDetail.emit(interaction);
+  }
+
   protected onEdit(interaction: InteractionSummary): void {
     this.rowEdit.emit(interaction);
   }
 
   protected onCreateTask(interaction: InteractionSummary): void {
     this.createTask.emit(interaction);
+  }
+
+  protected onActionsClick(event: Event): void {
+    // Prevent row click when clicking action buttons
+    event.stopPropagation();
   }
 }

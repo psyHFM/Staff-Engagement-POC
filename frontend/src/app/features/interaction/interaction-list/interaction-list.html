@@ -18,7 +18,7 @@
   @if (!loading && history && contentLength > 0) {
     <ul class="interaction-list__items" role="list">
       @for (interaction of history.content; track interaction.id.value) {
-        <li class="interaction-list__item">
+        <li class="interaction-list__item interaction-list__item--clickable" role="button" (click)="onViewDetail(interaction)">
           <div class="interaction-list__meta">
             <app-badge kind="interaction" [value]="interaction.type" />
             <span class="interaction-list__facilitator">
@@ -28,10 +28,10 @@
               {{ interaction.createdAt | date:'medium' }}
             </span>
           </div>
-          @if (interaction.note) {
-            <p class="interaction-list__note">{{ interaction.note }}</p>
+          @if (interaction.interactionListNote || interaction.note) {
+            <p class="interaction-list__note">{{ interaction.interactionListNote || interaction.note }}</p>
           }
-          <div class="interaction-list__actions">
+          <div class="interaction-list__actions" (click)="onActionsClick($event)">
             <button
               type="button"
               class="interaction-list__action-btn"

@@ -30,6 +30,7 @@
                           [loading]="state.isLoading()"
                           (pageRequested)="state.loadHistory($event.offset, $event.limit)"
                           (rowEdit)="onRowEdit($event)"
+                          (rowViewDetail)="onRowViewDetail($event)"
                           (createTask)="onRowCreateTask($event)"></app-interaction-list>
   </div>
 
@@ -41,4 +42,6 @@
     <app-task-create-form [interactionId]="source.id.value.toString()"
                           (formClosed)="onTaskFormClosed()"></app-task-create-form>
   }
+
+  <app-interaction-detail-modal />
 </section>

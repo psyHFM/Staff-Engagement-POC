@@ -166,7 +166,7 @@ class ProfileServiceTest {
 
     private InteractionSummary interactionSummary(InteractionId id, EmployeeId subject) {
         return new InteractionSummary(
-                id, InteractionType.CHECK_IN, subject, new EmployeeId(2L), "Facilitator Name", "subject", "Great chat", Instant.now());
+                id, InteractionType.CHECK_IN, subject, new EmployeeId(2L), "Facilitator Name", "subject", "Great chat", "Great chat", Instant.now());
     }
 
     private TaskSummary taskSummary(TaskId id, EmployeeId subject) {
