@@ -33,6 +33,23 @@
                           (createTask)="onRowCreateTask($event)"
                           (archiveRequested)="onArchive($event)"
                           (deleteRequested)="onDelete($event)"></app-interaction-list>
+
+    @if (state.archivedHistory(); as archived) {
+      @if (archived.content && archived.content.length > 0) {
+        <section class="interaction-page__archived">
+          <h2 class="interaction-page__archived-title">
+            <i class="pi pi-folder" aria-hidden="true"></i> Archived
+          </h2>
+          <app-interaction-list [history]="archived"
+                                [loading]="false"
+                                [currentUserIsSubject]="true"
+                                (rowEdit)="onRowEdit($event)"
+                                (createTask)="onRowCreateTask($event)"
+                                (archiveRequested)="onArchive($event)"
+                                (deleteRequested)="onDelete($event)"></app-interaction-list>
+        </section>
+      }
+    }
   </div>
 
   <app-edit-interaction [editing]="editing()"

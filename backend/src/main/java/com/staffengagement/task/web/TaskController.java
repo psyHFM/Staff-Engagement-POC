@@ -3,6 +3,8 @@ package com.staffengagement.task.web;
 import com.staffengagement.shared.api.EmployeeContract;
 import com.staffengagement.shared.api.InteractionContract;
 import com.staffengagement.shared.api.InteractionSummary;
+import com.staffengagement.shared.api.EmployeeContract;
+import com.staffengagement.shared.api.EmployeeSummary;
 import com.staffengagement.shared.api.TaskContract;
 import com.staffengagement.shared.api.TaskItemSummary;
 import com.staffengagement.shared.api.TaskSummary;
@@ -15,11 +17,12 @@ import com.staffengagement.task.repository.TaskRepository;
 import com.staffengagement.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -52,7 +55,7 @@ public class TaskController {
     private final InteractionContract interactionContract;
 
     @PostMapping("/tasks")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<TaskSummary> create(@RequestBody TaskRequest request) {
         // When sourceInteractionId is provided, we override the subjectId with the interaction's subject.
         // In that case the interaction already carries the subject context, so we can skip the
@@ -102,7 +105,7 @@ public class TaskController {
     }
 
     @PutMapping("/tasks/{id}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<TaskSummary> updateTask(@PathVariable Long id,
                                                    @RequestBody TaskUpdateRequest request) {
         return ResponseEntity.ok(taskService.updateTask(
@@ -110,20 +113,20 @@ public class TaskController {
     }
 
     @PatchMapping("/tasks/{id}/completion")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<TaskSummary> updateCompletion(@PathVariable Long id,
                                                          @RequestBody CompletionRequest request) {
         return ResponseEntity.ok(taskService.toggleCompletion(id, request.completed()));
     }
 
     @GetMapping("/employees/{id}/tasks")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<List<TaskSummary>> getForEmployee(@PathVariable Long id) {
         return ResponseEntity.ok(taskService.tasksForEmployee(new EmployeeId(id)));
     }
 
     @GetMapping("/me/tasks")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<List<TaskSummary>> getMyTasks() {
         // 2.2 Implement GET /api/v1/me/tasks utilizing the security context to resolve the current employee
         // Get the authentication from SecurityContextHolder - it's set by JwtAuthFilter
@@ -158,7 +161,7 @@ public class TaskController {
      * exists.
      */
     @GetMapping("/tasks/{id}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<TaskSummaryWithItems> getWithItems(@PathVariable Long id) {
         return taskService.taskWithItems(new TaskId(id))
                 .map(ResponseEntity::ok)
@@ -170,7 +173,7 @@ public class TaskController {
      * assigned automatically as {@code max(existing) + 1}.
      */
     @PostMapping("/tasks/{id}/items")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<TaskItemSummary> addItem(@PathVariable Long id,
                                                    @RequestBody ItemRequest request) {
         return ResponseEntity.ok(taskService.addItem(id, request.title()));
@@ -181,7 +184,7 @@ public class TaskController {
      * are optional; null leaves the existing value untouched.
      */
     @PatchMapping("/tasks/{taskId}/items/{itemId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<TaskItemSummary> updateItem(@PathVariable Long taskId,
                                                       @PathVariable Long itemId,
                                                       @RequestBody ItemPatchRequest request) {
@@ -194,7 +197,7 @@ public class TaskController {
      * are re-numbered so ordinals stay contiguous starting at 0.
      */
     @DeleteMapping("/tasks/{taskId}/items/{itemId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<Void> deleteItem(@PathVariable Long taskId,
                                             @PathVariable Long itemId) {
         taskService.deleteItem(taskId, itemId);
@@ -207,7 +210,7 @@ public class TaskController {
      * appended in their existing order.
      */
     @PutMapping("/tasks/{taskId}/items/reorder")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<List<TaskItemSummary>> reorderItems(@PathVariable Long taskId,
                                                                @RequestBody ReorderRequest request) {
         return ResponseEntity.ok(taskService.reorderItems(taskId, request.itemIds()));
@@ -218,13 +221,15 @@ public class TaskController {
      *
      * <p>Only the subject (owner) can delete their task. The task and
      * all its sub-items are permanently removed from the database.
+     *
+     * @throws AccessDeniedException if the authenticated user is not the task subject
+     * @throws IllegalArgumentException if the task does not exist
      */
     @DeleteMapping("/tasks/{id}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        EmployeeId actor = new EmployeeId(Long.parseLong(username));
+        EmployeeId actor = resolveActor(authentication);
         taskService.deleteTask(new TaskId(id), actor);
         return ResponseEntity.noContent().build();
     }
@@ -243,6 +248,20 @@ public class TaskController {
             Long subjectId,
             Long sourceInteractionId,
             String description) {}
+
+    private EmployeeId resolveActor(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new IllegalStateException("No authentication found in security context");
+        }
+        String email = authentication.getName();
+        EmployeeContract employeeContract = employeeContractProvider.getIfAvailable();
+        if (employeeContract == null) {
+            throw new IllegalStateException("EmployeeContract not available to resolve actor");
+        }
+        return employeeContract.findByEmail(email)
+                .map(EmployeeSummary::id)
+                .orElseThrow(() -> new IllegalStateException("Authenticated employee not found: " + email));
+    }
 
     /**
      * Request body for {@code PUT /api/v1/tasks/{id}}. Any non-null field

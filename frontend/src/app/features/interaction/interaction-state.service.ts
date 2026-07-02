@@ -222,6 +222,33 @@ export class InteractionStateService extends StateService {
     return page.content.filter(i => i.subject.value === employeeId);
   }
 
+  private readonly archivedInteractions = signal<Paged<InteractionSummary> | null>(null);
+  readonly archivedHistory = computed(() => this.archivedInteractions());
+
+  /** Load archived interactions for the currently selected subject. */
+  loadArchivedHistory(): void {
+    const subject = this.selectedSubject();
+    if (!subject) {
+      return;
+    }
+    this.api
+      .get<Paged<InteractionSummary>>(`employees/${subject.value}/interactions`, {
+        offset: 0,
+        limit: 100,
+        sort: 'createdAt,desc',
+        includeArchived: 'true'
+      })
+      .pipe(catchApiError())
+      .subscribe({
+        next: (page) => {
+          // Filter to only show interactions archived by the current user
+          const archivedOnly = page.content.filter(i => i.archivedBySubject || i.archivedByFacilitator);
+          this.archivedInteractions.set({ ...page, content: archivedOnly });
+        },
+        error: (err: ApiError) => console.error('Failed to load archived interactions:', err)
+      });
+  }
+
   /**
    * Archive/unarchive an interaction (ATSE1-83).
    *
@@ -238,8 +265,9 @@ export class InteractionStateService extends StateService {
         finalize(() => this.endLoad()),
         tap({
           next: () => {
-            // Reload the history to reflect the archive toggle
+            // Reload both active and archived lists to reflect the archive toggle
             this.loadHistory();
+            this.loadArchivedHistory();
           },
           error: (err: ApiError) => this.lastError.set(err)
         })
@@ -264,8 +292,9 @@ export class InteractionStateService extends StateService {
         finalize(() => this.endLoad()),
         tap({
           next: () => {
-            // Reload the history to reflect the deletion
+            // Reload both active and archived lists to reflect the deletion
             this.loadHistory();
+            this.loadArchivedHistory();
           },
           error: (err: ApiError) => this.lastError.set(err)
         })
