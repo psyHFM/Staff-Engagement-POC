@@ -81,6 +81,13 @@ type TaskFilter = 'all' | 'open' | 'done';
                 <i class="pi" [class.pi-chevron-down]="!isExpanded(task)" [class.pi-chevron-up]="isExpanded(task)"></i>
                 Sub-tasks
               </button>
+              <button
+                type="button"
+                class="icon-button icon-button--danger"
+                (click)="deleteTask(task); $event.stopPropagation()"
+                aria-label="Delete task">
+                <i class="pi pi-trash" aria-hidden="true"></i>
+              </button>
             </div>
 
             <div *ngIf="isExpanded(task)"
@@ -249,6 +256,7 @@ type TaskFilter = 'all' | 'open' | 'done';
             <div class="task-edit-form__actions">
               <button type="submit" class="btn-primary" [disabled]="editTitle.trim().length === 0">Save changes</button>
               <button type="button" class="btn-secondary" (click)="closeTask()">Done</button>
+              <button type="button" class="btn-secondary btn-secondary--danger" (click)="deleteTask(task)">Delete task</button>
             </div>
           </form>
         </section>
@@ -521,6 +529,35 @@ type TaskFilter = 'all' | 'open' | 'done';
     .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
     .btn-secondary:disabled { color: var(--text-faint); cursor: not-allowed; }
     .btn-secondary:hover:not(:disabled) { background: var(--surface-2); }
+    .btn-secondary--danger {
+      color: var(--danger);
+      border-color: var(--danger);
+      &:hover:not(:disabled) {
+        background: var(--danger);
+        color: #ffffff;
+      }
+    }
+
+    .icon-button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      &:hover { background: var(--surface-2); color: var(--text); }
+      &--danger {
+        color: var(--danger);
+        &:hover:not(:disabled) {
+          background: var(--danger);
+          color: #ffffff;
+        }
+      }
+    }
   `]
 })
 export class Task implements OnInit {
@@ -701,6 +738,14 @@ export class Task implements OnInit {
     }
     this.state.addTaskItem(task.id.value.toString(), title);
     this.newItemTitle = '';
+  }
+
+  /** Delete a task with confirmation (ATSE1-83). */
+  protected deleteTask(task: TaskModel): void {
+    if (!confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+      return;
+    }
+    this.state.deleteTask(task.id.value.toString());
   }
 
   /** Task opened in the detail modal. */

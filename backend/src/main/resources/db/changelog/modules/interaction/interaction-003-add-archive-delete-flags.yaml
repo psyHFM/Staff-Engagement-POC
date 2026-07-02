@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: interaction-003-add-archive-delete-flags
+      author: opsx
+      changes:
+        - addColumn:
+            tableName: interaction
+            columns:
+              - column:
+                  name: archived_by_subject
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: archived_by_facilitator
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted_by_subject
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted_by_facilitator
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

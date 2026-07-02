@@ -221,4 +221,84 @@ export class InteractionStateService extends StateService {
     }
     return page.content.filter(i => i.subject.value === employeeId);
   }
+
+  private readonly archivedInteractions = signal<Paged<InteractionSummary> | null>(null);
+  readonly archivedHistory = computed(() => this.archivedInteractions());
+
+  /** Load archived interactions for the currently selected subject. */
+  loadArchivedHistory(): void {
+    const subject = this.selectedSubject();
+    if (!subject) {
+      return;
+    }
+    this.api
+      .get<Paged<InteractionSummary>>(`employees/${subject.value}/interactions`, {
+        offset: 0,
+        limit: 100,
+        sort: 'createdAt,desc',
+        includeArchived: 'true'
+      })
+      .pipe(catchApiError())
+      .subscribe({
+        next: (page) => {
+          // Filter to only show interactions archived by the current user
+          const archivedOnly = page.content.filter(i => i.archivedBySubject || i.archivedByFacilitator);
+          this.archivedInteractions.set({ ...page, content: archivedOnly });
+        },
+        error: (err: ApiError) => console.error('Failed to load archived interactions:', err)
+      });
+  }
+
+  /**
+   * Archive/unarchive an interaction (ATSE1-83).
+   *
+   * <p>Only the subject or facilitator can archive. The archive flag is
+   * toggled — calling again un-archives (restores visibility).
+   */
+  archiveInteraction(interactionId: string): void {
+    this.beginLoad();
+    this.lastError.set(null);
+    this.api
+      .post<InteractionSummary>(`interactions/${interactionId}/archive`, {})
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad()),
+        tap({
+          next: () => {
+            // Reload both active and archived lists to reflect the archive toggle
+            this.loadHistory();
+            this.loadArchivedHistory();
+          },
+          error: (err: ApiError) => this.lastError.set(err)
+        })
+      )
+      .subscribe();
+  }
+
+  /**
+   * Soft-delete an interaction (ATSE1-83).
+   *
+   * <p>Sets the actor's delete flag. If both parties have deleted, the
+   * interaction is hard-deleted from the database. Otherwise, it remains
+   * but is hidden from the deleting party's view.
+   */
+  deleteInteraction(interactionId: string): void {
+    this.beginLoad();
+    this.lastError.set(null);
+    this.api
+      .delete(`interactions/${interactionId}`)
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad()),
+        tap({
+          next: () => {
+            // Reload both active and archived lists to reflect the deletion
+            this.loadHistory();
+            this.loadArchivedHistory();
+          },
+          error: (err: ApiError) => this.lastError.set(err)
+        })
+      )
+      .subscribe();
+  }
 }

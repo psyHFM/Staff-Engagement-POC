@@ -28,8 +28,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 /**
  * BDD unit tests for {@link InteractionController}. The service is mocked — no
@@ -81,75 +83,76 @@ class InteractionControllerTest {
         // Given — the service returns a page of one interaction
         InteractionSummary summary = new InteractionSummary(
                 new InteractionId(7L), InteractionType.MENTORING, new EmployeeId(1L), new EmployeeId(2L),
-                "Facilitator Name", "n", "n", Instant.parse("2026-06-25T10:00:00Z"));
+                "Facilitator Name", "n", "n", Instant.parse("2026-06-25T10:00:00Z"),
+                false, false, false, false);
         Paged<InteractionSummary> page = new Paged<>(List.of(summary), 0, 20, 1L);
-        when(interactionService.findPageBySubject(any(), any(), any())).thenReturn(page);
+        when(interactionService.findPageBySubject(any(), any(), any(), anyBoolean())).thenReturn(page);
 
         // When
-        Paged<InteractionSummary> result = controller.listBySubject(1L, 0, 20, "createdAt,desc");
+        Paged<InteractionSummary> result = controller.listBySubject(1L, 0, 20, "createdAt,desc", false);
 
         // Then — the subject id is bound to an EmployeeId and offset/limit are forwarded
         assertThat(result).isEqualTo(page);
-        verify(interactionService).findPageBySubject(eq(new EmployeeId(1L)), eq(PageRequest.of(0, 20)), any(Sort.class));
+        verify(interactionService).findPageBySubject(eq(new EmployeeId(1L)), eq(PageRequest.of(0, 20)), any(Sort.class), eq(false));
     }
 
     @Test
     void listBySubjectAppliesDefaultSortWhenParamOmitted() {
         // Given
-        when(interactionService.findPageBySubject(any(), any(), any()))
+        when(interactionService.findPageBySubject(any(), any(), any(), anyBoolean()))
                 .thenReturn(new Paged<>(List.of(), 0, 20, 0L));
 
         // When — no sort param
-        controller.listBySubject(1L, 0, 20, null);
+        controller.listBySubject(1L, 0, 20, null, false);
 
         // Then — the service receives the default createdAt,desc sort
         ArgumentCaptor<Sort> sort = ArgumentCaptor.forClass(Sort.class);
-        verify(interactionService).findPageBySubject(any(), any(), sort.capture());
+        verify(interactionService).findPageBySubject(any(), any(), sort.capture(), eq(false));
         assertThat(sort.getValue()).isEqualTo(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
     @Test
     void listBySubjectParsesExplicitAscendingSort() {
         // Given
-        when(interactionService.findPageBySubject(any(), any(), any()))
+        when(interactionService.findPageBySubject(any(), any(), any(), anyBoolean()))
                 .thenReturn(new Paged<>(List.of(), 0, 20, 0L));
 
         // When
-        controller.listBySubject(1L, 0, 20, "createdAt,asc");
+        controller.listBySubject(1L, 0, 20, "createdAt,asc", false);
 
         // Then
         ArgumentCaptor<Sort> sort = ArgumentCaptor.forClass(Sort.class);
-        verify(interactionService).findPageBySubject(any(), any(), sort.capture());
+        verify(interactionService).findPageBySubject(any(), any(), sort.capture(), eq(false));
         assertThat(sort.getValue()).isEqualTo(Sort.by(Sort.Direction.ASC, "createdAt"));
     }
 
     @Test
     void listBySubjectFallsBackToDefaultSortForUnknownField() {
         // Given — an unsupported field is supplied
-        when(interactionService.findPageBySubject(any(), any(), any()))
+        when(interactionService.findPageBySubject(any(), any(), any(), anyBoolean()))
                 .thenReturn(new Paged<>(List.of(), 0, 20, 0L));
 
         // When
-        controller.listBySubject(1L, 0, 20, "name,desc");
+        controller.listBySubject(1L, 0, 20, "name,desc", false);
 
         // Then — unknown fields never reach the query; default createdAt,desc applies
         ArgumentCaptor<Sort> sort = ArgumentCaptor.forClass(Sort.class);
-        verify(interactionService).findPageBySubject(any(), any(), sort.capture());
+        verify(interactionService).findPageBySubject(any(), any(), sort.capture(), eq(false));
         assertThat(sort.getValue()).isEqualTo(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
     @Test
     void listBySubjectFallsBackToDefaultSortForMalformedParam() {
         // Given — a single-token (no direction) sort param
-        when(interactionService.findPageBySubject(any(), any(), any()))
+        when(interactionService.findPageBySubject(any(), any(), any(), anyBoolean()))
                 .thenReturn(new Paged<>(List.of(), 0, 20, 0L));
 
         // When
-        controller.listBySubject(1L, 0, 20, "createdAt");
+        controller.listBySubject(1L, 0, 20, "createdAt", false);
 
         // Then — malformed input falls back to the default, never throws
         ArgumentCaptor<Sort> sort = ArgumentCaptor.forClass(Sort.class);
-        verify(interactionService).findPageBySubject(any(), any(), sort.capture());
+        verify(interactionService).findPageBySubject(any(), any(), sort.capture(), eq(false));
         assertThat(sort.getValue()).isEqualTo(Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
@@ -158,7 +161,8 @@ class InteractionControllerTest {
         // Given
         InteractionSummary summary = new InteractionSummary(
                 new InteractionId(5L), InteractionType.CATCH_UP, new EmployeeId(1L), new EmployeeId(2L),
-                "Facilitator Name", "subject", "note", Instant.parse("2026-06-25T10:00:00Z"));
+                "Facilitator Name", "subject", "note", Instant.parse("2026-06-25T10:00:00Z"),
+                false, false, false, false);
         when(interactionService.findById(new InteractionId(5L))).thenReturn(Optional.of(summary));
 
         // When
@@ -187,7 +191,7 @@ class InteractionControllerTest {
                 new InteractionId(5L), InteractionType.MENTORING, new EmployeeId(1L), new EmployeeId(2L),
                 "Facilitator Name", "subject", "new", Instant.parse("2026-06-25T11:00:00Z"));
         when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
-        var principal = adminPrincipal();
+        Authentication principal = adminPrincipal();
 
         // When
         var response = controller.update(5L, new UpdateInteractionRequest(InteractionType.MENTORING, "new"), principal);
@@ -213,7 +217,7 @@ class InteractionControllerTest {
                 new InteractionId(6L), InteractionType.OTHER, new EmployeeId(1L), new EmployeeId(2L),
                 "Facilitator Name", "subject", "n", Instant.parse("2026-06-25T11:00:00Z"));
         when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
-        var principal = employeePrincipal("2");
+        Authentication principal = employeePrincipal("2");
 
         // When
         controller.update(6L, new UpdateInteractionRequest(InteractionType.OTHER, "n"), principal);
@@ -229,7 +233,7 @@ class InteractionControllerTest {
                 .thenReturn(new InteractionSummary(
                         new InteractionId(7L), InteractionType.OTHER, new EmployeeId(1L), new EmployeeId(2L),
                         "Facilitator Name", "subject", "n", Instant.parse("2026-06-25T11:00:00Z")));
-        var principal = employeePrincipal("42");
+        Authentication principal = employeePrincipal("42");
 
         // When
         controller.update(7L, new UpdateInteractionRequest(InteractionType.OTHER, "n"), principal);
@@ -246,7 +250,7 @@ class InteractionControllerTest {
         // "truly absent" and "non-owner non-admin" — collapsed to 404 by the service)
         when(interactionService.update(any(), any(), any(), any(), anyBoolean()))
                 .thenThrow(new InteractionNotFoundException(99L));
-        var principal = adminPrincipal();
+        Authentication principal = adminPrincipal();
 
         // When / Then
         assertThatThrownBy(() -> controller.update(99L,
@@ -259,7 +263,7 @@ class InteractionControllerTest {
         // Given — request with null type (Jackson would normally reject unknown types,
         // but null can pass through if explicitly sent or missing from JSON)
         // No service stub needed — controller validates before calling service
-        var principal = adminPrincipal();
+        Authentication principal = adminPrincipal();
 
         // When / Then — null type is rejected with 400
         assertThatThrownBy(() -> controller.update(5L,
@@ -275,7 +279,7 @@ class InteractionControllerTest {
                 new InteractionId(5L), InteractionType.CATCH_UP, new EmployeeId(1L), new EmployeeId(2L),
                 "Facilitator Name", "subject", "updated note", Instant.parse("2026-06-25T11:00:00Z"));
         when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
-        var principal = adminPrincipal();
+        Authentication principal = adminPrincipal();
 
         // When — update with catch-up type
         var response = controller.update(5L,
@@ -294,7 +298,7 @@ class InteractionControllerTest {
                 new InteractionId(6L), InteractionType.CHECK_IN, new EmployeeId(1L), new EmployeeId(2L),
                 "Facilitator Name", "subject", "note", Instant.parse("2026-06-25T11:00:00Z"));
         when(interactionService.update(any(), any(), any(), any(), anyBoolean())).thenReturn(updated);
-        var principal = adminPrincipal();
+        Authentication principal = adminPrincipal();
 
         // When — update with check-in type
         var response = controller.update(6L,
@@ -306,11 +310,17 @@ class InteractionControllerTest {
         verify(interactionService).update(any(), eq(InteractionType.CHECK_IN), any(), any(), anyBoolean());
     }
 
-    private static User adminPrincipal() {
-        return new User("1", "n/a", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    private static Authentication adminPrincipal() {
+        return new UsernamePasswordAuthenticationToken(
+                "admin@staff.eng",
+                "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
     }
 
-    private static User employeePrincipal(String username) {
-        return new User(username, "n/a", List.of(new SimpleGrantedAuthority("ROLE_USER")));
+    private static Authentication employeePrincipal(String username) {
+        return new UsernamePasswordAuthenticationToken(
+                username + "@staff.eng",
+                "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 }

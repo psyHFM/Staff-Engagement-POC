@@ -60,6 +60,7 @@ export class InteractionPage implements OnInit {
           this.preSelected.set(true);
           this.state.selectSubject(mySubject.id);
           this.state.loadHistory();
+          this.state.loadArchivedHistory();
         }
       }
     });
@@ -74,6 +75,12 @@ export class InteractionPage implements OnInit {
     const value = Number((event.target as HTMLSelectElement).value);
     this.state.selectSubject({ value });
     this.state.loadHistory();
+    this.state.loadArchivedHistory();
+  }
+
+  protected loadAllHistory(): void {
+    this.state.loadHistory();
+    this.state.loadArchivedHistory();
   }
 
   protected onRowEdit(interaction: InteractionSummary): void {
@@ -96,5 +103,28 @@ export class InteractionPage implements OnInit {
     this.creatingTaskFor.set(null);
     // Refresh history so any newly created task is reflected.
     this.state.loadHistory();
+    this.state.loadArchivedHistory();
+  }
+
+  protected onArchive(interaction: InteractionSummary): void {
+    // No confirmation needed - archive is reversible
+    this.state.archiveInteraction(interaction.id.value.toString());
+    // Reload both active and archived lists to reflect the toggle
+    this.state.loadHistory();
+    this.state.loadArchivedHistory();
+  }
+
+  protected onDelete(interaction: InteractionSummary): void {
+    if (!confirm(
+      'Are you sure you want to delete this interaction?\n\n' +
+      'If the other party hasn\'t deleted it, they will still see it.\n' +
+      'This action cannot be undone for you.'
+    )) {
+      return;
+    }
+    this.state.deleteInteraction(interaction.id.value.toString());
+    // Reload both lists
+    this.state.loadHistory();
+    this.state.loadArchivedHistory();
   }
 }

@@ -15,10 +15,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Interaction service — the single implementor of the frozen
@@ -55,10 +58,22 @@ public class InteractionService implements InteractionContract {
      * {@link Sort} (default {@code createdAt,desc} from the controller). The
      * frozen {@link InteractionContract#findBySubject(EmployeeId)} returns the
      * full list and is not modified (Phase 6 consumes it).
+     *
+     * <p>ATSE1-83: filters out interactions deleted by the subject, and optionally
+     * filters out archived interactions (default: exclude archived).
      */
     public Paged<InteractionSummary> findPageBySubject(EmployeeId subject, PageRequest request, Sort sort) {
+        return findPageBySubject(subject, request, sort, false);
+    }
+
+    /**
+     * Paginated read with archive filtering option (ATSE1-83).
+     *
+     * @param includeArchived if true, includes interactions archived by the subject
+     */
+    public Paged<InteractionSummary> findPageBySubject(EmployeeId subject, PageRequest request, Sort sort, boolean includeArchived) {
         Pageable pageable = new OffsetPageRequest(request.offset(), request.limit(), sort);
-        Page<Interaction> page = repository.findBySubjectIdOrFacilitatorId(subject.value(), subject.value(), pageable);
+        Page<Interaction> page = repository.findBySubjectIdAndNotDeleted(subject.value(), includeArchived, pageable);
         List<InteractionSummary> content = page.getContent().stream()
                 .map(this::toSummary)
                 .toList();
@@ -160,6 +175,8 @@ public class InteractionService implements InteractionContract {
      * Convert domain entity to read-model summary. Includes denormalised
      * {@code facilitatorName} so the UI can render history without extra lookup.
      * {@code subjectText} is the brief subject/summary from the form.
+     *
+     * <p>ATSE1-83: includes archive/delete flags for UI rendering.
      */
     private InteractionSummary toSummary(Interaction entity) {
         EmployeeId facilitatorId = new EmployeeId(entity.getFacilitatorId());
@@ -173,6 +190,79 @@ public class InteractionService implements InteractionContract {
                 facilitatorName,
                 entity.getSubjectText() != null ? entity.getSubjectText() : "",
                 entity.getNote(),
-                entity.getCreatedAt());
+                entity.getCreatedAt(),
+                entity.isArchivedBySubject(),
+                entity.isArchivedByFacilitator(),
+                entity.isDeletedBySubject(),
+                entity.isDeletedByFacilitator());
+    }
+
+    /**
+     * Archive/unarchive an interaction for the acting user (ATSE1-83).
+     *
+     * <p>Only the subject or facilitator can archive. The archive flag is
+     * toggled — calling again un-archives (restores visibility).
+     *
+     * @throws InteractionNotFoundException if the interaction does not exist
+     * @throws AccessDeniedException if the actor is neither subject nor facilitator
+     */
+    @Transactional
+    public InteractionSummary archiveInteraction(InteractionId id, EmployeeId actor) {
+        Interaction entity = repository.findById(id.value())
+                .orElseThrow(() -> new InteractionNotFoundException(id.value()));
+
+        boolean isSubject = entity.getSubjectId().equals(actor.value());
+        boolean isFacilitator = entity.getFacilitatorId().equals(actor.value());
+
+        if (!isSubject && !isFacilitator) {
+            throw new AccessDeniedException("Not authorized to archive this interaction: " + id.value());
+        }
+
+        if (isSubject) {
+            entity.setArchivedBySubject(!entity.isArchivedBySubject());
+        } else {
+            entity.setArchivedByFacilitator(!entity.isArchivedByFacilitator());
+        }
+
+        entity.setUpdatedAt(Instant.now());
+        Interaction saved = repository.save(entity);
+        return toSummary(saved);
+    }
+
+    /**
+     * Soft-delete an interaction (ATSE1-83).
+     *
+     * <p>Sets the actor's delete flag. If both parties have deleted, the
+     * interaction is hard-deleted from the database. Otherwise, it remains
+     * but is hidden from the deleting party's view.
+     *
+     * @throws InteractionNotFoundException if the interaction does not exist
+     * @throws AccessDeniedException if the actor is neither subject nor facilitator
+     */
+    @Transactional
+    public void softDeleteInteraction(InteractionId id, EmployeeId actor) {
+        Interaction entity = repository.findById(id.value())
+                .orElseThrow(() -> new InteractionNotFoundException(id.value()));
+
+        boolean isSubject = entity.getSubjectId().equals(actor.value());
+        boolean isFacilitator = entity.getFacilitatorId().equals(actor.value());
+
+        if (!isSubject && !isFacilitator) {
+            throw new AccessDeniedException("Not authorized to delete this interaction: " + id.value());
+        }
+
+        if (isSubject) {
+            entity.setDeletedBySubject(true);
+        } else {
+            entity.setDeletedByFacilitator(true);
+        }
+
+        // If both parties have deleted, hard-delete from DB
+        if (entity.isDeletedBySubject() && entity.isDeletedByFacilitator()) {
+            repository.delete(entity);
+        } else {
+            entity.setUpdatedAt(Instant.now());
+            repository.save(entity);
+        }
     }
 }

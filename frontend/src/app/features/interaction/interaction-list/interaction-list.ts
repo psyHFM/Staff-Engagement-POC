@@ -16,15 +16,17 @@ export interface PageRequest {
  * <p>Pure presentation component: receives the {@link Paged} history and loading
  * flag, and emits page-change requests to the parent / state service.
  *
- * <p>Per-row actions (ATSE1-28, ATSE1-29):
+ * <p>Per-row actions (ATSE1-28, ATSE1-29, ATSE1-83):
  * <ul>
  *   <li>{@link rowEdit} — emitted when the user clicks the row's Edit button.
  *       The page opens an edit modal; the component does not know about it.</li>
  *   <li>{@link createTask} — emitted when the user clicks the row's
  *       "Create task" button. The page mounts a {@code TaskCreateForm} with
  *       the interaction's id pre-populated.</li>
+ *   <li>{@link archiveRequested} — emitted when the user clicks the Archive button.</li>
+ *   <li>{@link deleteRequested} — emitted when the user clicks the Delete button.</li>
  * </ul>
- * Both events bubble the full {@link InteractionSummary} so the page does
+ * All events bubble the full {@link InteractionSummary} so the page does
  * not need to re-look-it-up from the cached page.
  */
 @Component({
@@ -37,9 +39,12 @@ export interface PageRequest {
 export class InteractionList {
   @Input({ required: true }) history: Paged<InteractionSummary> | null = null;
   @Input({ required: true }) loading = false;
+  @Input() currentUserIsSubject = true;
   @Output() pageRequested = new EventEmitter<PageRequest>();
   @Output() rowEdit = new EventEmitter<InteractionSummary>();
   @Output() createTask = new EventEmitter<InteractionSummary>();
+  @Output() archiveRequested = new EventEmitter<InteractionSummary>();
+  @Output() deleteRequested = new EventEmitter<InteractionSummary>();
 
   protected readonly limit = 20;
 
@@ -91,5 +96,19 @@ export class InteractionList {
 
   protected onCreateTask(interaction: InteractionSummary): void {
     this.createTask.emit(interaction);
+  }
+
+  protected isArchivedByCurrentUser(interaction: InteractionSummary): boolean {
+    return this.currentUserIsSubject
+      ? (interaction.archivedBySubject ?? false)
+      : (interaction.archivedByFacilitator ?? false);
+  }
+
+  protected onArchive(interaction: InteractionSummary): void {
+    this.archiveRequested.emit(interaction);
+  }
+
+  protected onDelete(interaction: InteractionSummary): void {
+    this.deleteRequested.emit(interaction);
   }
 }

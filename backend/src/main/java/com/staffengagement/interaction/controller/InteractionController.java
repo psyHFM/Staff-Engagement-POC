@@ -4,6 +4,8 @@ import com.staffengagement.interaction.controller.dto.CreateInteractionRequest;
 import com.staffengagement.interaction.controller.dto.UpdateInteractionRequest;
 import com.staffengagement.interaction.service.InteractionNotFoundException;
 import com.staffengagement.interaction.service.InteractionService;
+import com.staffengagement.shared.api.EmployeeContract;
+import com.staffengagement.shared.api.EmployeeSummary;
 import com.staffengagement.shared.api.InteractionSummary;
 import com.staffengagement.shared.kernel.EmployeeId;
 import com.staffengagement.shared.api.PageRequest;
@@ -13,8 +15,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,9 +44,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class InteractionController {
 
     private final InteractionService interactionService;
+    private final EmployeeContract employeeContract;
 
-    public InteractionController(InteractionService interactionService) {
+    public InteractionController(InteractionService interactionService, EmployeeContract employeeContract) {
         this.interactionService = interactionService;
+        this.employeeContract = employeeContract;
     }
 
     @PostMapping("/interactions")
@@ -61,8 +65,9 @@ public class InteractionController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "20") int limit,
-            @RequestParam(required = false) String sort) {
-        return interactionService.findPageBySubject(new EmployeeId(id), PageRequest.of(offset, limit), parseSort(sort));
+            @RequestParam(required = false) String sort,
+            @RequestParam(defaultValue = "false") boolean includeArchived) {
+        return interactionService.findPageBySubject(new EmployeeId(id), PageRequest.of(offset, limit), parseSort(sort), includeArchived);
     }
 
     @GetMapping("/interactions/{id}")
@@ -91,19 +96,14 @@ public class InteractionController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InteractionSummary> update(@PathVariable Long id,
                                                       @RequestBody UpdateInteractionRequest body,
-                                                      @AuthenticationPrincipal UserDetails userDetails) {
+                                                      Authentication authentication) {
         // Controller-level validation: type is required
         if (body.type() == null) {
             throw new IllegalArgumentException("type is required");
         }
-        // The Phase 0 principal is a username; for the POC we map the username
-        // to a best-effort employee id the same way the create endpoint does.
-        // Admins bypass the ownership check (isAdmin=true). The service
-        // resolves ownership and surfaces 404 for "not yours" to prevent
-        // existence leakage.
-        boolean isAdmin = userDetails.getAuthorities().stream()
+        boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        EmployeeId actor = new EmployeeId(Long.parseLong(userDetails.getUsername()));
+        EmployeeId actor = toActor(authentication);
         InteractionSummary updated = interactionService.update(
                 new InteractionId(id), body.type(), body.note(), actor, isAdmin);
         return ResponseEntity.ok(updated);
@@ -115,6 +115,17 @@ public class InteractionController {
      * any other or malformed value falls back to the default so unknown fields are
      * never pushed into the query.
      */
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    private EmployeeId toActor(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new IllegalStateException("No authenticated user available");
+        }
+        String email = authentication.getName();
+        return employeeContract.findByEmail(email)
+                .map(EmployeeSummary::id)
+                .orElseThrow(() -> new IllegalStateException("Authenticated employee not found: " + email));
+    }
+
     private static Sort parseSort(String sort) {
         if (sort == null || sort.isBlank()) {
             return Sort.by(Sort.Direction.DESC, "createdAt");
@@ -127,5 +138,36 @@ public class InteractionController {
             return Sort.by(direction, "createdAt");
         }
         return Sort.by(Sort.Direction.DESC, "createdAt");
+    }
+
+    /**
+     * Archive/unarchive an interaction (ATSE1-83).
+     *
+     * <p>Only the subject or facilitator can archive. The archive flag is
+     * toggled — calling again un-archives (restores visibility).
+     */
+    @PostMapping("/interactions/{id}/archive")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
+    public ResponseEntity<InteractionSummary> archiveInteraction(@PathVariable Long id,
+                                                                  Authentication authentication) {
+        EmployeeId actor = toActor(authentication);
+        InteractionSummary updated = interactionService.archiveInteraction(new InteractionId(id), actor);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Soft-delete an interaction (ATSE1-83).
+     *
+     * <p>Sets the actor's delete flag. If both parties have deleted, the
+     * interaction is hard-deleted from the database. Otherwise, it remains
+     * but is hidden from the deleting party's view.
+     */
+    @DeleteMapping("/interactions/{id}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE','ADMIN')")
+    public ResponseEntity<Void> deleteInteraction(@PathVariable Long id,
+                                                   Authentication authentication) {
+        EmployeeId actor = toActor(authentication);
+        interactionService.softDeleteInteraction(new InteractionId(id), actor);
+        return ResponseEntity.noContent().build();
     }
 }

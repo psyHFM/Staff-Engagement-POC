@@ -3,6 +3,7 @@ package com.staffengagement.interaction.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -182,7 +183,7 @@ class InteractionServiceTest {
         Interaction a = interaction(10L, InteractionType.CHECK_IN, 1L, 2L, "a");
         Interaction b = interaction(11L, InteractionType.OTHER, 1L, 3L, "b");
         Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
-        when(repository.findBySubjectIdOrFacilitatorId(any(Long.class), any(Long.class), any(org.springframework.data.domain.Pageable.class)))
+        when(repository.findBySubjectIdAndNotDeleted(any(Long.class), anyBoolean(), any(org.springframework.data.domain.Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(a, b), org.springframework.data.domain.PageRequest.of(0, 20, sort), 2L));
 
         // When
@@ -191,7 +192,7 @@ class InteractionServiceTest {
         // Then — the Pageable handed to the repository carries the true offset/limit/sort
         ArgumentCaptor<org.springframework.data.domain.Pageable> captor =
                 ArgumentCaptor.forClass(org.springframework.data.domain.Pageable.class);
-        verify(repository).findBySubjectIdOrFacilitatorId(any(Long.class), any(Long.class), captor.capture());
+        verify(repository).findBySubjectIdAndNotDeleted(any(Long.class), anyBoolean(), captor.capture());
         org.springframework.data.domain.Pageable passed = captor.getValue();
         assertThat(passed.getOffset()).isZero();
         assertThat(passed.getPageSize()).isEqualTo(20);
@@ -207,7 +208,7 @@ class InteractionServiceTest {
     @Test
     void findPageBySubjectWithOffsetBeyondDataReturnsEmptyWindow() {
         // Given — page offset 20 / limit 20 over 2 total rows
-        when(repository.findBySubjectIdOrFacilitatorId(any(Long.class), any(Long.class), any(org.springframework.data.domain.Pageable.class)))
+        when(repository.findBySubjectIdAndNotDeleted(any(Long.class), anyBoolean(), any(org.springframework.data.domain.Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(), org.springframework.data.domain.PageRequest.of(1, 20), 2L));
 
         // When

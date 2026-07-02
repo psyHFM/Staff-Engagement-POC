@@ -11,6 +11,7 @@ import com.staffengagement.task.domain.TaskItem;
 import com.staffengagement.task.repository.TaskItemRepository;
 import com.staffengagement.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -234,6 +235,28 @@ public class TaskService implements TaskContract {
             return items.stream().anyMatch(TaskItem::isCompleted);
         }
         return items.stream().allMatch(TaskItem::isCompleted);
+    }
+
+    /**
+     * Deletes a task (ATSE1-83).
+     *
+     * <p>Only the subject (owner) can delete their task. The task and
+     * all its sub-items are permanently removed from the database.
+     *
+     * @throws IllegalArgumentException if no task with the given id exists
+     * @throws AccessDeniedException if the actor is not the task subject
+     */
+    @Transactional
+    public void deleteTask(TaskId id, EmployeeId actor) {
+        Task task = taskRepository.findById(id.value())
+                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + id.value()));
+
+        // Ownership check: only the subject can delete their task
+        if (!task.getSubjectId().value().equals(actor.value())) {
+            throw new AccessDeniedException("Not authorized to delete this task: " + id.value());
+        }
+
+        taskRepository.delete(task);
     }
 
     // --- internal helpers ---------------------------------------------------

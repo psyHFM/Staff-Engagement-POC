@@ -15,6 +15,8 @@ import java.time.Instant;
  *
  * <p>{@code facilitatorName} is the denormalised full name of the facilitator at the time
  * of creation, so the UI can render the history without an extra employee lookup.
+ *
+ * <p>ATSE1-83: adds archive and delete flags for per-party visibility control.
  */
 public record InteractionSummary(
         InteractionId id,
@@ -24,5 +26,22 @@ public record InteractionSummary(
         String facilitatorName,
         String subjectText,
         String note,
-        Instant createdAt) {
+        Instant createdAt,
+        boolean archivedBySubject,
+        boolean archivedByFacilitator,
+        boolean deletedBySubject,
+        boolean deletedByFacilitator) {
+
+    public InteractionSummary(
+            InteractionId id,
+            InteractionType type,
+            EmployeeId subject,
+            EmployeeId facilitator,
+            String facilitatorName,
+            String subjectText,
+            String note,
+            Instant createdAt) {
+        this(id, type, subject, facilitator, facilitatorName, subjectText, note, createdAt,
+                false, false, false, false);
+    }
 }

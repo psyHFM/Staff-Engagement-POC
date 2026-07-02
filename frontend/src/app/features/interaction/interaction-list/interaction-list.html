@@ -35,6 +35,14 @@
             <button
               type="button"
               class="interaction-list__action-btn"
+              [attr.aria-label]="'Archive interaction ' + interaction.id.value"
+              (click)="onArchive(interaction)">
+              <i class="pi pi-archive" aria-hidden="true"></i>
+              {{ isArchivedByCurrentUser(interaction) ? 'Unarchive' : 'Archive' }}
+            </button>
+            <button
+              type="button"
+              class="interaction-list__action-btn"
               [attr.aria-label]="'Edit interaction ' + interaction.id.value"
               (click)="onEdit(interaction)">
               <i class="pi pi-pencil" aria-hidden="true"></i>
@@ -47,6 +55,14 @@
               (click)="onCreateTask(interaction)">
               <i class="pi pi-plus" aria-hidden="true"></i>
               Create task
+            </button>
+            <button
+              type="button"
+              class="interaction-list__action-btn interaction-list__action-btn--danger"
+              [attr.aria-label]="'Delete interaction ' + interaction.id.value"
+              (click)="onDelete(interaction)">
+              <i class="pi pi-trash" aria-hidden="true"></i>
+              Delete
             </button>
           </div>
         </li>
