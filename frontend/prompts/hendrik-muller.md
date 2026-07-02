@@ -61,4 +61,3 @@ this is the error on the PR :Run docker compose up -d --build
  postgres Error Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
 Error response from daemon: Get "https://registry-1.docker.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
 Error: Process completed with exit code 1.
-

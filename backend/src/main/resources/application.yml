@@ -26,3 +26,8 @@ staffengagement:
       secret: ${JWT_SECRET:Y2hhbmdlLW1lLXRvLWEtcmVhbC1zZWNyZXQta2V5LWZvci1zdGFmZi1lbmdhZ2VtZW50LXBvYw==}
       issuer: staff-engagement-poc
       expiration-minutes: 60
+
+# Database seeding configuration (ATSE1-84)
+app:
+  seed:
+    enabled: ${APP_SEED_ENABLED:true}
