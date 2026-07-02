@@ -280,4 +280,30 @@ export class TaskStateService extends StateService {
     const next = current.filter(existing => existing.id !== itemId);
     this.upsertItems(taskId, next);
   }
+
+  /**
+   * Delete a task (DELETE /api/v1/tasks/{id}).
+   * On success the task is removed from the list and any sub-items are cleared.
+   */
+  deleteTask(taskId: string): void {
+    this.beginLoad();
+    this.api.delete<void>(`tasks/${taskId}`)
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad())
+      )
+      .subscribe({
+        next: () => {
+          // Remove from tasks list
+          this._tasks.update(tasks => tasks.filter(t => t.id.value.toString() !== taskId));
+          // Clear sub-items for this task
+          this._itemsByTask.update(map => {
+            const newMap = new Map(map);
+            newMap.delete(taskId);
+            return newMap;
+          });
+        },
+        error: (err) => console.error('Failed to delete task:', err)
+      });
+  }
 }

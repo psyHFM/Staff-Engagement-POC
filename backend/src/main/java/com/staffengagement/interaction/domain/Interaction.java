@@ -67,4 +67,16 @@ public class Interaction {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @Column(name = "archived_by_subject", nullable = false)
+    private boolean archivedBySubject = false;
+
+    @Column(name = "archived_by_facilitator", nullable = false)
+    private boolean archivedByFacilitator = false;
+
+    @Column(name = "deleted_by_subject", nullable = false)
+    private boolean deletedBySubject = false;
+
+    @Column(name = "deleted_by_facilitator", nullable = false)
+    private boolean deletedByFacilitator = false;
 }

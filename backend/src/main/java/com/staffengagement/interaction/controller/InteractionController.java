@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -127,5 +128,36 @@ public class InteractionController {
             return Sort.by(direction, "createdAt");
         }
         return Sort.by(Sort.Direction.DESC, "createdAt");
+    }
+
+    /**
+     * Archive/unarchive an interaction (ATSE1-83).
+     *
+     * <p>Only the subject or facilitator can archive. The archive flag is
+     * toggled — calling again un-archives (restores visibility).
+     */
+    @PostMapping("/interactions/{id}/archive")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<InteractionSummary> archiveInteraction(@PathVariable Long id,
+                                                                  @AuthenticationPrincipal UserDetails userDetails) {
+        EmployeeId actor = new EmployeeId(Long.parseLong(userDetails.getUsername()));
+        InteractionSummary updated = interactionService.archiveInteraction(new InteractionId(id), actor);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Soft-delete an interaction (ATSE1-83).
+     *
+     * <p>Sets the actor's delete flag. If both parties have deleted, the
+     * interaction is hard-deleted from the database. Otherwise, it remains
+     * but is hidden from the deleting party's view.
+     */
+    @DeleteMapping("/interactions/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<Void> deleteInteraction(@PathVariable Long id,
+                                                   @AuthenticationPrincipal UserDetails userDetails) {
+        EmployeeId actor = new EmployeeId(Long.parseLong(userDetails.getUsername()));
+        interactionService.softDeleteInteraction(new InteractionId(id), actor);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -30,7 +30,9 @@
                           [loading]="state.isLoading()"
                           (pageRequested)="state.loadHistory($event.offset, $event.limit)"
                           (rowEdit)="onRowEdit($event)"
-                          (createTask)="onRowCreateTask($event)"></app-interaction-list>
+                          (createTask)="onRowCreateTask($event)"
+                          (archiveRequested)="onArchive($event)"
+                          (deleteRequested)="onDelete($event)"></app-interaction-list>
   </div>
 
   <app-edit-interaction [editing]="editing()"

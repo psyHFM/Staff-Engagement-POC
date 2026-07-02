@@ -37,6 +37,11 @@ export interface InteractionSummary {
   readonly facilitatorName: string;
   readonly note: string;
   readonly createdAt: string;
+  readonly subjectText?: string;
+  readonly archivedBySubject?: boolean;
+  readonly archivedByFacilitator?: boolean;
+  readonly deletedBySubject?: boolean;
+  readonly deletedByFacilitator?: boolean;
 }
 
 /** Offset-paginated response — matches the backend {@code Paged<T>} record. */

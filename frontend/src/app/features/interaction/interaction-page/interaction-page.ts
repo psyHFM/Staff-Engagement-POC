@@ -97,4 +97,20 @@ export class InteractionPage implements OnInit {
     // Refresh history so any newly created task is reflected.
     this.state.loadHistory();
   }
+
+  protected onArchive(interaction: InteractionSummary): void {
+    // No confirmation needed - archive is reversible
+    this.state.archiveInteraction(interaction.id.value.toString());
+  }
+
+  protected onDelete(interaction: InteractionSummary): void {
+    if (!confirm(
+      'Are you sure you want to delete this interaction?\n\n' +
+      'If the other party hasn\'t deleted it, they will still see it.\n' +
+      'This action cannot be undone for you.'
+    )) {
+      return;
+    }
+    this.state.deleteInteraction(interaction.id.value.toString());
+  }
 }

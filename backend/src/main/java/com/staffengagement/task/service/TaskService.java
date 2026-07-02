@@ -236,6 +236,28 @@ public class TaskService implements TaskContract {
         return items.stream().allMatch(TaskItem::isCompleted);
     }
 
+    /**
+     * Deletes a task (ATSE1-83).
+     *
+     * <p>Only the subject (owner) can delete their task. The task and
+     * all its sub-items are permanently removed from the database.
+     *
+     * @throws IllegalArgumentException if no task with the given id exists
+     * @throws SecurityException if the actor is not the task subject
+     */
+    @Transactional
+    public void deleteTask(TaskId id, EmployeeId actor) {
+        Task task = taskRepository.findById(id.value())
+                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + id.value()));
+
+        // Ownership check: only the subject can delete their task
+        if (!task.getSubjectId().equals(actor.value())) {
+            throw new SecurityException("Not authorized to delete this task: " + id.value());
+        }
+
+        taskRepository.delete(task);
+    }
+
     // --- internal helpers ---------------------------------------------------
 
     private TaskItem requireItemForTask(Long taskId, Long itemId) {

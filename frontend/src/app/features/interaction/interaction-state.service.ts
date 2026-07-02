@@ -221,4 +221,55 @@ export class InteractionStateService extends StateService {
     }
     return page.content.filter(i => i.subject.value === employeeId);
   }
+
+  /**
+   * Archive/unarchive an interaction (ATSE1-83).
+   *
+   * <p>Only the subject or facilitator can archive. The archive flag is
+   * toggled — calling again un-archives (restores visibility).
+   */
+  archiveInteraction(interactionId: string): void {
+    this.beginLoad();
+    this.lastError.set(null);
+    this.api
+      .post<InteractionSummary>(`interactions/${interactionId}/archive`, {})
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad()),
+        tap({
+          next: () => {
+            // Reload the history to reflect the archive toggle
+            this.loadHistory();
+          },
+          error: (err: ApiError) => this.lastError.set(err)
+        })
+      )
+      .subscribe();
+  }
+
+  /**
+   * Soft-delete an interaction (ATSE1-83).
+   *
+   * <p>Sets the actor's delete flag. If both parties have deleted, the
+   * interaction is hard-deleted from the database. Otherwise, it remains
+   * but is hidden from the deleting party's view.
+   */
+  deleteInteraction(interactionId: string): void {
+    this.beginLoad();
+    this.lastError.set(null);
+    this.api
+      .delete(`interactions/${interactionId}`)
+      .pipe(
+        catchApiError(),
+        finalize(() => this.endLoad()),
+        tap({
+          next: () => {
+            // Reload the history to reflect the deletion
+            this.loadHistory();
+          },
+          error: (err: ApiError) => this.lastError.set(err)
+        })
+      )
+      .subscribe();
+  }
 }

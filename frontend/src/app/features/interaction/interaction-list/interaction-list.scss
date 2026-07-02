@@ -81,6 +81,15 @@
     &--secondary {
       color: var(--accent);
     }
+
+    &--danger {
+      color: var(--danger);
+
+      &:hover:not(:disabled) {
+        background: var(--danger);
+        color: #ffffff;
+      }
+    }
   }
 
   &__pagination {

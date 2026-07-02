@@ -214,6 +214,22 @@ public class TaskController {
     }
 
     /**
+     * Deletes a task (ATSE1-83).
+     *
+     * <p>Only the subject (owner) can delete their task. The task and
+     * all its sub-items are permanently removed from the database.
+     */
+    @DeleteMapping("/tasks/{id}")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        EmployeeId actor = new EmployeeId(Long.parseLong(username));
+        taskService.deleteTask(new TaskId(id), actor);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * Request body for {@code POST /api/v1/tasks}. ATSE1-31 adds a distinct
      * {@code title} field that is stored on the {@code task.title} column.
      * Bean Validation is wired through the {@code @Valid} annotation that
