@@ -387,6 +387,19 @@ type TaskFilter = 'all' | 'open' | 'done';
       box-shadow: 0 20px 50px rgba(15, 23, 42, 0.24);
       padding: 1.5rem;
     }
+    .icon-button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+    }
+    .icon-button:hover { background: var(--surface-2); color: var(--text); }
     .task-detail-modal__header {
       display: flex;
       align-items: flex-start;
@@ -491,6 +504,7 @@ type TaskFilter = 'all' | 'open' | 'done';
       cursor: pointer;
       font: inherit;
       font-weight: 500;
+      min-height: 36px;
     }
     .btn-primary {
       background: var(--accent);
@@ -501,6 +515,7 @@ type TaskFilter = 'all' | 'open' | 'done';
       cursor: pointer;
       font: inherit;
       font-weight: 600;
+      min-height: 36px;
     }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
